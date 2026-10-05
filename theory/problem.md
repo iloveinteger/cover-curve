@@ -32,6 +32,6 @@ $E(g) = \int_a^b (g(x)-f(x))\,dx.$
 
 The optimum value is
 
-$E_n^*=\min_{g\in\mathcal A_n}E(g),
+$E_n^*=\min_{g\in\mathcal A_n}E(g)$
 
 where existence is proved in `existence.md`.

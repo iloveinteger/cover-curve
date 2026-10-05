@@ -1,153 +1,167 @@
 #include "grid_dp.hpp"
 
-#include "one_segment_cost.hpp"
 #include "../../numerical/integration.hpp"
+#include "../../numerical/support_max.hpp"
 
 #include <algorithm>
 #include <cmath>
-#include <exception>
 #include <limits>
-#include <mutex>
 #include <stdexcept>
-#include <thread>
 #include <utility>
 #include <vector>
 
 namespace {
 
-template <class F>
-void parallelFor(int begin, int end, F&& fn) {
-#ifdef __EMSCRIPTEN__
-    for (int i = begin; i < end; ++i) fn(i);
-#else
-    const int count = end - begin;
-    if (count <= 1) {
-        for (int i = begin; i < end; ++i) fn(i);
-        return;
-    }
+using cover_curve::Function;
+using cover_curve::Segment;
 
-    const unsigned workers = std::max(
-        1u,
-        std::thread::hardware_concurrency()
+struct TransitionConstraint {
+    double height;
+    double contact;
+};
+
+struct DPState {
+    double value = std::numeric_limits<double>::infinity();
+    int parentGrid = -1;
+    int parentHeight = -1;
+};
+
+double safeFunctionMinimum(
+    const Function& f,
+    const std::vector<double>& points
+) {
+    double minimum = std::numeric_limits<double>::infinity();
+
+    for (double x : points)
+        minimum = std::min(minimum, f(x));
+
+    const Function negated = [&](double x) {
+        return -f(x);
+    };
+
+    const auto support = cover_curve::numerical::adaptiveSupportMaximum(
+        negated,
+        points.front(),
+        points.back(),
+        0.0
     );
-    const int threadCount = std::min(
-        count,
-        static_cast<int>(workers)
-    );
 
-    if (threadCount <= 1) {
-        for (int i = begin; i < end; ++i) fn(i);
-        return;
-    }
+    if (std::isfinite(support.value))
+        minimum = std::min(minimum, -support.value);
 
-    std::vector<std::thread> threads;
-    threads.reserve(threadCount);
-    std::exception_ptr firstException;
-    std::mutex exceptionMutex;
-
-    const int chunk = (count + threadCount - 1) / threadCount;
-    for (int t = 0; t < threadCount; ++t) {
-        const int first = begin + t * chunk;
-        const int last = std::min(end, first + chunk);
-        if (first >= last) break;
-        threads.emplace_back([first, last, &fn, &firstException, &exceptionMutex] {
-            try {
-                for (int i = first; i < last; ++i) fn(i);
-            } catch (...) {
-                std::lock_guard lock(exceptionMutex);
-                if (!firstException)
-                    firstException = std::current_exception();
-            }
-        });
-    }
-
-    for (auto& thread : threads) thread.join();
-
-    if (firstException)
-        std::rethrow_exception(firstException);
-#endif
+    return minimum;
 }
 
-// The one-segment DP cost is separable, so the raw segment lines can have
-// different heights at a shared breakpoint.  Before returning a piecewise
-// linear function, lift the shared breakpoint heights to the maximum of the
-// incident raw lines.  Raising both endpoints of a segment can only raise
-// that affine segment, so this preserves the upper-majorant property of the
-// numerically computed raw segments while enforcing continuity.
-Result makeContinuousResult(
+double safeFunctionMaximum(
     const Function& f,
-    const std::vector<double>& breakpoints,
-    const std::vector<Segment>& rawSegments
+    const std::vector<double>& points
 ) {
-    const int n = static_cast<int>(rawSegments.size());
-    std::vector<double> heights(n + 1);
+    double maximum = -std::numeric_limits<double>::infinity();
 
-    for (int k = 0; k <= n; ++k) {
-        double height = f(breakpoints[k]);
+    for (double x : points)
+        maximum = std::max(maximum, f(x));
 
-        if (k > 0) {
-            const auto& left = rawSegments[k - 1];
-            height = std::max(
-                height,
-                left.intercept + left.slope * breakpoints[k]
-            );
-        }
+    const auto support = cover_curve::numerical::adaptiveSupportMaximum(
+        f,
+        points.front(),
+        points.back(),
+        0.0
+    );
 
-        if (k < n) {
-            const auto& right = rawSegments[k];
-            height = std::max(
-                height,
-                right.intercept + right.slope * breakpoints[k]
-            );
-        }
+    if (std::isfinite(support.value))
+        maximum = std::max(maximum, support.value);
 
-        heights[k] = height;
-    }
+    return maximum;
+}
 
-    std::vector<Segment> segments;
-    segments.reserve(n);
-
-    double totalCost = 0.0;
-
-    for (int k = 0; k < n; ++k) {
-        const double x0 = breakpoints[k];
-        const double x1 = breakpoints[k + 1];
-        const double dx = x1 - x0;
-
-        const double slope =
-            (heights[k + 1] - heights[k]) / dx;
-        const double intercept =
-            heights[k] - slope * x0;
-
-        const double integral =
-            numerical::adaptiveIntegral(f, x0, x1);
-
-        const double cost = std::max(
-            0.0,
-            dx * (heights[k] + heights[k + 1]) / 2.0
-                - integral
+std::vector<double> makeHeightGrid(
+    double minimum,
+    double maximum,
+    double rho,
+    int heightLevels
+) {
+    if (heightLevels < 2)
+        throw std::invalid_argument(
+            "heightLevels must be at least 2."
         );
 
-        segments.push_back({
-            x0,
-            x1,
-            slope,
-            intercept,
-            cost,
-            rawSegments[k].contact
-        });
+    const double C =
+        std::max(0.0, maximum - minimum);
 
-        totalCost += cost;
+    const double lengthScale =
+        std::max(rho, std::numeric_limits<double>::min());
+
+    double upper =
+        minimum + 4.0 * C / lengthScale;
+
+    if (!std::isfinite(upper) || upper < maximum) {
+        upper = maximum;
     }
 
+    if (upper <= minimum) {
+        return {minimum};
+    }
+
+    std::vector<double> heights(heightLevels);
+
+    for (int i = 0; i < heightLevels; ++i) {
+        heights[i] =
+            minimum
+            + (upper - minimum) * i
+                / (heightLevels - 1);
+    }
+
+    return heights;
+}
+
+TransitionConstraint transitionConstraint(
+    const Function& f,
+    double u,
+    double v,
+    double p
+) {
+    const double width = v - u;
+
+    // T(u,v;p) uses x>u.  The support-search primitive evaluates the
+    // interval endpoints, so replace the singular endpoint by a point
+    // infinitesimally inside the interval.
+    const double epsilon =
+        std::max(
+            1e-12 * width,
+            32.0 * std::numeric_limits<double>::epsilon()
+                * std::max({1.0, std::abs(u), std::abs(v)})
+        );
+
+    const double left =
+        std::min(v, u + epsilon);
+
+    const Function ratio = [&](double x) {
+        const double xx = std::max(x, left);
+        return
+            (f(xx) - p) / (xx - u);
+    };
+
+    const auto support =
+        cover_curve::numerical::adaptiveSupportMaximum(
+            ratio,
+            left,
+            v,
+            0.0
+        );
+
+    if (!std::isfinite(support.value))
+        return {
+            std::numeric_limits<double>::infinity(),
+            support.x
+        };
+
     return {
-        totalCost,
-        breakpoints,
-        std::move(segments)
+        p + width * support.value,
+        support.x
     };
 }
 
-}
+} // namespace
 
 namespace cover_curve::algorithms::adaptive_grid_dp {
 
@@ -156,13 +170,11 @@ Result solveGridDP(
     double a,
     double b,
     int n,
-    int N
+    int N,
+    int heightLevels
 ) {
-    if (!f) {
-        throw std::invalid_argument(
-            "Function must be valid."
-        );
-    }
+    if (!f)
+        throw std::invalid_argument("Function must be valid.");
 
     if (!std::isfinite(a) ||
         !std::isfinite(b) ||
@@ -172,17 +184,20 @@ Result solveGridDP(
         );
     }
 
-    if (n < 1) {
+    if (n < 1)
         throw std::invalid_argument(
             "n must be positive."
         );
-    }
 
-    if (N < n) {
+    if (N < n)
         throw std::invalid_argument(
             "N must satisfy N >= n."
         );
-    }
+
+    if (heightLevels < 2)
+        throw std::invalid_argument(
+            "heightLevels must be at least 2."
+        );
 
     const double infinity =
         std::numeric_limits<double>::infinity();
@@ -194,128 +209,330 @@ Result solveGridDP(
             a + (b - a) * i / N;
     }
 
-    std::vector<std::vector<double>> costs(
-        N + 1,
-        std::vector<double>(N + 1, infinity)
-    );
+    const double rho =
+        (b - a) / N;
 
-    std::vector<std::vector<Segment>> segments(
-        N + 1,
-        std::vector<Segment>(N + 1)
-    );
+    const double minimum =
+        safeFunctionMinimum(f, points);
 
-    // Every segment (i, j) is independent, so the expensive one-segment
-    // computations can be evaluated concurrently on native builds.
-    parallelFor(0, N, [&](int i) {
-        for (int j = i + 1; j <= N; ++j) {
-            const Segment segment =
-                oneSegmentCost(
-                    f,
-                    points[i],
-                    points[j]
-                );
+    const double maximum =
+        safeFunctionMaximum(f, points);
 
-            if (!std::isfinite(segment.cost)) {
-                throw std::runtime_error(
-                    "Failed to compute segment cost."
-                );
-            }
-
-            costs[i][j] = segment.cost;
-            segments[i][j] = segment;
-        }
-    });
-
-    std::vector<std::vector<double>> dp(
-        n + 1,
-        std::vector<double>(N + 1, infinity)
-    );
-
-    std::vector<std::vector<int>> parent(
-        n + 1,
-        std::vector<int>(N + 1, -1)
-    );
-
-    dp[0][0] = 0.0;
-
-    // For a fixed layer k, each destination j reads only the previous
-    // layer and writes a distinct dp[k][j], so these states are independent.
-    for (int k = 1; k <= n; ++k) {
-        parallelFor(k, N + 1, [&](int j) {
-            double best = infinity;
-            int bestParent = -1;
-
-            for (int i = k - 1; i < j; ++i) {
-                if (!std::isfinite(dp[k - 1][i])) {
-                    continue;
-                }
-
-                const double candidate =
-                    dp[k - 1][i] +
-                    costs[i][j];
-
-                if (candidate < best) {
-                    best = candidate;
-                    bestParent = i;
-                }
-            }
-
-            dp[k][j] = best;
-            parent[k][j] = bestParent;
-        });
-    }
-
-    if (!std::isfinite(dp[n][N])) {
+    if (!std::isfinite(minimum) ||
+        !std::isfinite(maximum) ||
+        minimum > maximum) {
         throw std::runtime_error(
-            "No feasible solution found."
+            "Failed to determine a finite function range."
         );
     }
 
-    std::vector<int> breakpointIndices(n + 1);
+    const std::vector<double> heights =
+        makeHeightGrid(
+            minimum,
+            maximum,
+            rho,
+            heightLevels
+        );
 
-    int j = N;
-    breakpointIndices[n] = N;
+    const int H =
+        static_cast<int>(heights.size());
+
+    // For every candidate segment (i,j) and every left height p,
+    // store the minimum right height required by the sampled numerical
+    // transition evaluator.
+    std::vector<
+        std::vector<std::vector<TransitionConstraint>>
+    > transitions(
+        N + 1,
+        std::vector<std::vector<TransitionConstraint>>(
+            N + 1,
+            std::vector<TransitionConstraint>(H)
+        )
+    );
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j <= N; ++j) {
+            const double u = points[i];
+            const double v = points[j];
+
+            for (int hp = 0; hp < H; ++hp) {
+                const double p = heights[hp];
+
+                if (p < f(u))
+                    continue;
+
+                transitions[i][j][hp] =
+                    transitionConstraint(
+                        f,
+                        u,
+                        v,
+                        p
+                    );
+            }
+        }
+    }
+
+    std::vector<
+        std::vector<DPState>
+    > previous(
+        N + 1,
+        std::vector<DPState>(H)
+    );
+
+    std::vector<
+        std::vector<DPState>
+    > current(
+        N + 1,
+        std::vector<DPState>(H)
+    );
+
+    for (int hp = 0; hp < H; ++hp) {
+        if (heights[hp] >= f(a)) {
+            previous[0][hp].value = 0.0;
+        }
+    }
+
+    for (int k = 1; k <= n; ++k) {
+        for (int j = 0; j <= N; ++j) {
+            for (int hp = 0; hp < H; ++hp) {
+                current[j][hp] = {};
+            }
+        }
+
+        for (int j = k; j <= N; ++j) {
+            const double x1 = points[j];
+
+            for (int hq = 0; hq < H; ++hq) {
+                const double q = heights[hq];
+
+                if (q < f(x1))
+                    continue;
+
+                double best = infinity;
+                int bestGrid = -1;
+                int bestHeight = -1;
+
+                for (int i = k - 1; i < j; ++i) {
+                    const double dx =
+                        x1 - points[i];
+
+                    const double qCoefficient =
+                        dx / 2.0;
+
+                    for (int hp = 0; hp < H; ++hp) {
+                        const DPState& state =
+                            previous[i][hp];
+
+                        if (!std::isfinite(state.value))
+                            continue;
+
+                        const TransitionConstraint& transition =
+                            transitions[i][j][hp];
+
+                        if (q < transition.height)
+                            continue;
+
+                        const double candidate =
+                            state.value
+                            + qCoefficient * (heights[hp] + q);
+
+                        if (candidate < best) {
+                            best = candidate;
+                            bestGrid = i;
+                            bestHeight = hp;
+                        }
+                    }
+                }
+
+                current[j][hq].value = best;
+                current[j][hq].parentGrid = bestGrid;
+                current[j][hq].parentHeight = bestHeight;
+            }
+        }
+
+        previous.swap(current);
+    }
+
+    double bestIntegral = infinity;
+    int finalHeight = -1;
+
+    for (int hq = 0; hq < H; ++hq) {
+        if (previous[N][hq].value < bestIntegral) {
+            bestIntegral = previous[N][hq].value;
+            finalHeight = hq;
+        }
+    }
+
+    if (!std::isfinite(bestIntegral) ||
+        finalHeight < 0) {
+        throw std::runtime_error(
+            "No feasible shared-height solution found."
+        );
+    }
+
+    std::vector<int> gridIndices(n + 1);
+    std::vector<int> heightIndices(n + 1);
+
+    gridIndices[n] = N;
+    heightIndices[n] = finalHeight;
+
+    // The current layer stores only parents for the final k. Recompute
+    // predecessor layers during backtracking using the same recurrence.
+    // This keeps the persistent memory independent of n.
+    //
+    // For the current implementation, retain the complete DP history
+    // instead of attempting to reconstruct through recomputation.
+    std::vector<
+        std::vector<
+            std::vector<DPState>
+        >
+    > history(
+        n + 1,
+        std::vector<std::vector<DPState>>(
+            N + 1,
+            std::vector<DPState>(H)
+        )
+    );
+
+    for (int hp = 0; hp < H; ++hp) {
+        if (heights[hp] >= f(a))
+            history[0][0][hp].value = 0.0;
+    }
+
+    for (int k = 1; k <= n; ++k) {
+        for (int j = k; j <= N; ++j) {
+            const double x1 = points[j];
+
+            for (int hq = 0; hq < H; ++hq) {
+                const double q = heights[hq];
+
+                if (q < f(x1))
+                    continue;
+
+                DPState bestState;
+
+                for (int i = k - 1; i < j; ++i) {
+                    const double dx =
+                        x1 - points[i];
+
+                    for (int hp = 0; hp < H; ++hp) {
+                        const DPState& state =
+                            history[k - 1][i][hp];
+
+                        if (!std::isfinite(state.value))
+                            continue;
+
+                        const auto& transition =
+                            transitions[i][j][hp];
+
+                        if (q < transition.height)
+                            continue;
+
+                        const double candidate =
+                            state.value
+                            + dx * (heights[hp] + q) / 2.0;
+
+                        if (candidate < bestState.value) {
+                            bestState.value = candidate;
+                            bestState.parentGrid = i;
+                            bestState.parentHeight = hp;
+                        }
+                    }
+                }
+
+                history[k][j][hq] = bestState;
+            }
+        }
+    }
 
     for (int k = n; k >= 1; --k) {
-        const int i = parent[k][j];
+        const DPState& state =
+            history[k][gridIndices[k]][heightIndices[k]];
 
-        if (i < 0) {
+        if (state.parentGrid < 0 ||
+            state.parentHeight < 0) {
             throw std::runtime_error(
-                "Failed to reconstruct solution."
+                "Failed to reconstruct shared-height solution."
             );
         }
 
-        breakpointIndices[k - 1] = i;
-        j = i;
+        gridIndices[k - 1] = state.parentGrid;
+        heightIndices[k - 1] = state.parentHeight;
     }
 
     std::vector<double> breakpoints(n + 1);
+    std::vector<double> vertexHeights(n + 1);
+    std::vector<Segment> segments;
+    segments.reserve(n);
 
     for (int k = 0; k <= n; ++k) {
-        breakpoints[k] =
-            points[breakpointIndices[k]];
+        breakpoints[k] = points[gridIndices[k]];
+        vertexHeights[k] = heights[heightIndices[k]];
     }
 
-    std::vector<Segment> rawSegments;
-    rawSegments.reserve(n);
+    const double integralF =
+        numerical::adaptiveIntegral(f, a, b);
+
+    double totalCost = 0.0;
 
     for (int k = 0; k < n; ++k) {
-        const int i =
-            breakpointIndices[k];
+        const double x0 = breakpoints[k];
+        const double x1 = breakpoints[k + 1];
+        const double y0 = vertexHeights[k];
+        const double y1 = vertexHeights[k + 1];
+        const double dx = x1 - x0;
 
-        const int j2 =
-            breakpointIndices[k + 1];
+        const double slope =
+            (y1 - y0) / dx;
 
-        rawSegments.push_back(
-            segments[i][j2]
-        );
+        const double intercept =
+            y0 - slope * x0;
+
+        const auto& transition =
+            transitions[
+                gridIndices[k]
+            ][
+                gridIndices[k + 1]
+            ][
+                heightIndices[k]
+            ];
+
+        const double segmentIntegral =
+            dx * (y0 + y1) / 2.0;
+
+        const double segmentF =
+            numerical::adaptiveIntegral(
+                f,
+                x0,
+                x1
+            );
+
+        const double cost =
+            segmentIntegral - segmentF;
+
+        if (cost < -1e-9) {
+            throw std::runtime_error(
+                "Constructed segment violates numerical majorant constraints."
+            );
+        }
+
+        segments.push_back({
+            x0,
+            x1,
+            slope,
+            intercept,
+            std::max(0.0, cost),
+            transition.contact
+        });
+
+        totalCost += cost;
     }
 
-    return makeContinuousResult(
-        f,
-        breakpoints,
-        rawSegments
-    );
+    return {
+        std::max(0.0, totalCost),
+        std::move(breakpoints),
+        std::move(segments)
+    };
 }
 
-}
+} // namespace cover_curve::algorithms::adaptive_grid_dp

@@ -8,7 +8,7 @@ onmessage=event=>{
   if(!wasmModule){postMessage({type:"error",error:"Solver is still loading."});return;}
   try{
     const {expression,a,b,n}=event.data;
-    const result=wasmModule.solve(makeFunction(expression),a,b,n);
+    const result=wasmModule.solve(expression,a,b,n);
     postMessage({type:"result",value:result.value,breakpoints:result.breakpoints,segments:result.segments,error:result.error});
   }catch(error){postMessage({type:"error",error:error.message||String(error)});}
 };

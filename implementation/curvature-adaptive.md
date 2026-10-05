@@ -2,106 +2,52 @@
 
 ## 1. Solver role
 
-The curvature-adaptive solver is a separate experimental solver. It does not modify the baseline `adaptive_grid_dp` algorithm.
+The curvature-adaptive solver is a candidate-grid strategy for the continuous piecewise-linear majorant problem. It must ultimately feed the same shared-height optimization as the baseline.
 
-Its pipeline is
+Pipeline:
 
-```text
-f
-↓
-numerical estimate of f''
-↓
-w(x)=sqrt(|f''(x)|)
-↓
-cumulative density
-↓
-curvature-adaptive candidate grid
-↓
-finite-grid DP
-↓
-grid refinement
-```
+    f
+    ↓
+    numerical estimate of f''
+    ↓
+    w(x)=sqrt(|f''(x)|)
+    ↓
+    cumulative density
+    ↓
+    curvature-adaptive candidate grid
+    ↓
+    shared-height coupled optimization
 
-The finite-grid optimization reuses the baseline one-segment cost routine.
+The curvature stage selects candidate breakpoint locations; it does not remove the continuity constraint.
 
 ## 2. Grid construction
 
-The theoretical target density is
+The theoretical heuristic is $w(x)=\sqrt{|f''(x)|}$. The implementation samples this quantity, integrates it numerically, and places candidate breakpoints at approximately equal cumulative-density increments.
 
-```math
-w(x)=sqrt{|f''(x)|}.
-```
-
-The implementation samples this quantity at equally spaced points and integrates it with the trapezoidal rule. Breakpoints are obtained by linearly inverting the cumulative integral at equal fractions of its total mass.
-
-A positive floor and an upper cap prevent zero-density intervals and pathological clustering. These parameters are implementation safeguards rather than theoretical constants.
+A positive floor and upper cap are implementation safeguards, not theoretical constants.
 
 ## 3. Numerical second derivative
 
-Interior samples use the symmetric finite difference
+For a black-box callable, interior samples may use $D_2f(x)=[f(x+h)-2f(x)+f(x-h)]/h^2$, with suitable one-sided formulas near the endpoints.
 
-```math
-D_2f(x)=
-rac{f(x+h)-2f(x)+f(x-h)}{h^2}.
-```
+## 4. Coupled finite-grid optimization
 
-Endpoint samples use a second-order one-sided difference when the required neighboring samples exist.
+For a selected sequence $z_{j_0}=a<\cdots<z_{j_n}=b$, introduce shared heights $y_0,\ldots,y_n$. The segments are determined by these heights and must satisfy all majorant constraints simultaneously.
 
-The public function remains a generic black-box callable; the curvature estimate is used only by the grid-generation layer.
+For fixed breakpoints this is a linear semi-infinite program. A finite-constraint implementation may use support samples together with exchange/refinement.
 
-## 4. Finite-grid DP
-
-For a generated grid
-
-```math
-a=x_0<x_1<cdots<x_N=b,
-```
-
-the solver uses
-
-```math
-F[k][j]
-=
-min_{i=k-1,ldots,j-1}
-left(
-F[k-1][i]+C(x_i,x_j)
-ight).
-```
-
-Every candidate pair $(i,j)$ has its one-segment cost computed once and reused across all DP layers.
+The old scalar recurrence using independent $C_{\mathrm{ind}}$ is not the exact coupled solver.
 
 ## 5. Refinement
 
-The default refinement sequence is
-
-```text
-N -> 2N -> 4N -> ...
-```
-
-until either the same relative objective-change criterion as the baseline is satisfied or the maximum grid size is reached:
-
-```math
-rac{|E_{2N}-E_N|}
-{max(1,|E_{2N}|,|E_N|)}
-<arepsilon.
-```
-
-The default parameters are tolerance $10^{-6}$, initial grid $32$, maximum grid $1024$, and $257$ curvature samples.
+Grid refinement may still use $N\to2N\to4N\to\cdots$, but objective stabilization is meaningful only when each grid solves the same shared-height problem.
 
 ## 6. Numerical status
 
-This is a heuristic grid-selection method followed by finite-grid DP. It does not establish global optimality for the continuous problem beyond the finite-grid formulation.
+The curvature density is a heuristic candidate-grid rule. It does not establish global optimality or the exact asymptotic density for the continuous coupled problem.
 
-The baseline remains the reference method for robustness and convergence comparison.
+A rigorous curvature result must first derive the local asymptotic error of the shared-height formulation.
 
-## 7. Experimental comparison
+## 7. Separation of concerns
 
-The curvature solver should be evaluated against the baseline using:
-
-- objective value;
-- runtime;
-- final grid size;
-- breakpoint distribution;
-- refinement history.
-
-A difference in objective value is not by itself evidence that one continuous optimization result is globally better, because the two solvers use different candidate grids.
+The implementation should keep curvature estimation, candidate breakpoint generation, shared-height feasibility/optimization, numerical constraint refinement, and grid refinement/convergence diagnostics as separate stages.

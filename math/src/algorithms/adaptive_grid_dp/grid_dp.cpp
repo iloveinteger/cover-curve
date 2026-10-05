@@ -1,7 +1,9 @@
 #include "grid_dp.hpp"
 
 #include "one_segment_cost.hpp"
+#include "../../numerical/integration.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <limits>
@@ -64,6 +66,85 @@ void parallelFor(int begin, int end, F&& fn) {
     if (firstException)
         std::rethrow_exception(firstException);
 #endif
+}
+
+// The one-segment DP cost is separable, so the raw segment lines can have
+// different heights at a shared breakpoint.  Before returning a piecewise
+// linear function, lift the shared breakpoint heights to the maximum of the
+// incident raw lines.  Raising both endpoints of a segment can only raise
+// that affine segment, so this preserves the upper-majorant property of the
+// numerically computed raw segments while enforcing continuity.
+Result makeContinuousResult(
+    const Function& f,
+    const std::vector<double>& breakpoints,
+    const std::vector<Segment>& rawSegments
+) {
+    const int n = static_cast<int>(rawSegments.size());
+    std::vector<double> heights(n + 1);
+
+    for (int k = 0; k <= n; ++k) {
+        double height = f(breakpoints[k]);
+
+        if (k > 0) {
+            const auto& left = rawSegments[k - 1];
+            height = std::max(
+                height,
+                left.intercept + left.slope * breakpoints[k]
+            );
+        }
+
+        if (k < n) {
+            const auto& right = rawSegments[k];
+            height = std::max(
+                height,
+                right.intercept + right.slope * breakpoints[k]
+            );
+        }
+
+        heights[k] = height;
+    }
+
+    std::vector<Segment> segments;
+    segments.reserve(n);
+
+    double totalCost = 0.0;
+
+    for (int k = 0; k < n; ++k) {
+        const double x0 = breakpoints[k];
+        const double x1 = breakpoints[k + 1];
+        const double dx = x1 - x0;
+
+        const double slope =
+            (heights[k + 1] - heights[k]) / dx;
+        const double intercept =
+            heights[k] - slope * x0;
+
+        const double integral =
+            numerical::adaptiveIntegral(f, x0, x1);
+
+        const double cost = std::max(
+            0.0,
+            dx * (heights[k] + heights[k + 1]) / 2.0
+                - integral
+        );
+
+        segments.push_back({
+            x0,
+            x1,
+            slope,
+            intercept,
+            cost,
+            rawSegments[k].contact
+        });
+
+        totalCost += cost;
+    }
+
+    return {
+        totalCost,
+        breakpoints,
+        std::move(segments)
+    };
 }
 
 }
@@ -215,8 +296,8 @@ Result solveGridDP(
             points[breakpointIndices[k]];
     }
 
-    std::vector<Segment> resultSegments;
-    resultSegments.reserve(n);
+    std::vector<Segment> rawSegments;
+    rawSegments.reserve(n);
 
     for (int k = 0; k < n; ++k) {
         const int i =
@@ -225,16 +306,16 @@ Result solveGridDP(
         const int j2 =
             breakpointIndices[k + 1];
 
-        resultSegments.push_back(
+        rawSegments.push_back(
             segments[i][j2]
         );
     }
 
-    return {
-        dp[n][N],
-        std::move(breakpoints),
-        std::move(resultSegments)
-    };
+    return makeContinuousResult(
+        f,
+        breakpoints,
+        rawSegments
+    );
 }
 
 }

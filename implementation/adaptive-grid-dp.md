@@ -1,74 +1,73 @@
-# Adaptive Grid Dynamic Programming
+# Adaptive Grid Optimization
 
-The global breakpoint problem is continuous, so the implementation introduces a temporary uniform breakpoint grid.
+The original solver is defined by a continuous piecewise-linear majorant problem with a crucial continuity constraint at every breakpoint.
 
-```math
-G_N=\left\{a+j\frac{b-a}{N}:j=0,\ldots,N\right\}.
-```
+A breakpoint grid
+\[
+G_N=\{z_0,\ldots,z_N\}
+\]
+discretizes only the **locations** of candidate breakpoints. It does not make adjacent segments independent.
 
-Only breakpoint positions are discretized. Each candidate segment still uses the continuous numerical one-segment solver on its interval.
+## Current mathematical target
 
-## Grid dynamic programming
+For a selected breakpoint sequence
+\[
+z_{j_0}=a<\cdots<z_{j_n}=b,
+\]
+the implementation must optimize shared vertex heights
+\[
+y_0,\ldots,y_n.
+\]
 
-Let $F[k][j]$ be the minimum cost of covering the first $j$ grid intervals using $k$ segments. The recurrence is
+The segment is
+\[
+L_i(x)
+=
+y_i+
+\frac{y_{i+1}-y_i}{z_{j_{i+1}}-z_{j_i}}
+(x-z_{j_i}),
+\]
+and feasibility requires
+\[
+L_i(x)\ge f(x)
+\]
+throughout the segment.
 
-```math
-F[k][j]=\min_{i=k-1,\ldots,j-1}
-\left(F[k-1][i]+C(x_i,x_j)\right).
-```
+For fixed breakpoints this is a linear semi-infinite program.
 
-A predecessor table stores the minimizing index. Backtracking from $(n,N)$ reconstructs the breakpoint sequence.
+## Important implementation invariant
 
-The implementation evaluates the one-segment costs needed by the DP and then fills the DP table in increasing numbers of segments.
+The following pattern is **not valid** for the target problem:
 
-## Adaptive refinement
+1. independently call oneSegmentCost for every candidate pair;
+2. run scalar-cost DP;
+3. alter the resulting lines afterward to make them continuous.
 
-The outer solver starts from an initial grid size and repeatedly doubles it:
+Continuity must be enforced while optimizing the candidate solution.
 
-```text
-N -> 2N -> 4N -> ...
-```
+## Numerical route
 
-After two consecutive grids, it compares their objective values using
+The intended implementation should separate:
 
-```math
-\frac{|E_{2N}-E_N|}
-{\max(1,|E_{2N}|,|E_N|)}.
-```
+1. candidate breakpoint selection;
+2. shared-height optimization for a selected breakpoint sequence;
+3. support/constraint refinement;
+4. final result construction.
 
-When this quantity is below the requested tolerance, the current solution is returned. A maximum grid size provides a hard computational limit.
+The existing oneSegmentCost routine may remain as an independent-relaxation/reference routine, but it must not supply the exact global transition cost unless a new theorem proves an equivalent coupled decomposition.
 
-The grid size is an internal numerical parameter; callers specify the approximation problem and tolerance rather than having to choose a grid manually.
+## Refinement
 
-## Complexity
+Grid refinement remains conceptually
+\[
+N\to2N\to4N\to\cdots,
+\]
+but the convergence quantity must be computed from the objective of the **continuous shared-height problem**.
 
-For a grid with $N+1$ points and $n$ segments, the basic DP has $O(nN^2)$ candidate transitions. Each transition requires a one-segment cost unless values are cached or reused.
+Numerical convergence of an independent relaxation is not sufficient.
 
-## Structural performance optimizations
+## Performance
 
-The baseline recurrence and candidate set are unchanged, but the implementation removes avoidable computation.
+The old $O(nN^2)$ scalar DP complexity describes the independent relaxation only. The coupled solver has a different computational structure and must be analyzed after its optimization method is implemented.
 
-### Segment-cost reuse
-
-For a fixed grid, every pair $(i,j)$ has one segment cost $C(x_i,x_j)$. The implementation computes each pair once before the DP and stores both the cost and the corresponding segment. The DP then reuses these values across every layer.
-
-Thus the expensive one-segment numerical optimization is not repeated for the same pair.
-
-### Parallel segment-cost evaluation
-
-All candidate pairs with a fixed left endpoint are independent. The implementation evaluates these rows concurrently on native C++ builds. The WebAssembly build keeps this stage sequential unless threading is explicitly enabled by the web build configuration.
-
-The function supplied to the native solver should therefore behave as a mathematical, side-effect-free function when parallel execution is used.
-
-### Parallel DP states
-
-For a fixed layer $k$, every destination $j$ reads only $F[k-1][i]$ and the precomputed cost matrix, then writes only $F[k][j]$. Therefore all $j$ states in one layer are independent and can be evaluated concurrently.
-
-Layers themselves remain sequential because layer $k$ depends on layer $k-1$.
-
-### Final support reuse
-
-The one-segment solver already evaluates the support maximum at the final optimized slope. The final cost is now formed directly from that support value instead of calling the objective once more, which would repeat the same adaptive support maximization.
-
-These are implementation-level optimizations only. They do not change the candidate grid, DP recurrence, one-segment objective, or refinement criterion.
-
+Until then, complexity claims inherited from the old scalar DP must not be presented as complexity bounds for the target problem.

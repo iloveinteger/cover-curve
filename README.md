@@ -1,156 +1,54 @@
 # Cover Curve
 
-**Numerical library for optimal piecewise-linear upper approximation of a curve.**
+**Numerical library for optimal continuous piecewise-linear upper approximation of a curve.**
 
-Given a continuous function $f:[a,b]\to\mathbb R$, the problem is to find a continuous piecewise-linear function $g\ge f$ with exactly $n$ nondegenerate line segments while minimizing
-
-```math
-E(g)=\int_a^b(g(x)-f(x))\,dx.
-```
-
-The repository contains the C++ numerical implementation and separate documentation for the mathematical theory and implementation details. A browser interface will be added separately.
+Given a continuous function $f:[a,b]\to\mathbb R$, the target problem is to find a continuous piecewise-linear function $g\ge f$ with exactly $n$ nondegenerate line segments while minimizing
+\[ E(g)=\int_a^b(g(x)-f(x))\,dx. \]
 
 ## Mathematical formulation
 
-We seek a continuous piecewise-linear function $g:[a,b]\to\mathbb R$ with exactly $n$ nondegenerate segments such that
+The breakpoints are $a=x_0<x_1<\cdots<x_n=b$, with shared vertex heights $y_i=g(x_i)$. Each segment is
+\[ L_i(x)=y_i+\frac{y_{i+1}-y_i}{x_{i+1}-x_i}(x-x_i). \]
+This representation enforces continuity automatically: $L_i(x_i)=y_i=L_{i-1}(x_i)$.
 
-```math
-g(x)\ge f(x)
-\qquad\text{for all }x\in[a,b].
-```
+Every segment must satisfy $L_i(x)\ge f(x)$ throughout its interval. For fixed breakpoints, minimizing the total area over the shared heights is a linear semi-infinite program.
 
-The breakpoints are
+## Independent one-segment relaxation
 
-```math
-a=x_0<x_1<\cdots<x_n=b.
-```
+The repository also contains the `oneSegmentCost()` routine. It computes
+\[ C_{\mathrm{ind}}(u,v)=\min_{L\text{ affine},\ L\ge f}\int_u^v(L-f). \]
+This is the exact independent one-segment relaxation. It is useful as a reference and lower bound, but summing these costs does not enforce continuity between neighboring segments.
 
-On each interval $[x_i,x_{i+1}]$, $g$ is affine and lies above $f$.
+The old scalar DP based on $\sum_i C_{\mathrm{ind}}(x_i,x_{i+1})$ therefore is not an exact solver for the continuous target problem.
 
-No differentiability of $f$ is required for the mathematical problem; continuity on $[a,b]$ is sufficient.
+## Theory
 
-For the one-segment problem on $[u,v]$,
+The theory documents distinguish the continuous shared-height formulation, the independent relaxation, finite-grid optimization with continuity, convergence of the coupled problem, and curvature-based candidate-grid heuristics.
 
-```math
-C(u,v)
-=
-\min_{\substack{L\text{ affine}\\
-L(x)\ge f(x)\ \forall x\in[u,v]}}
-\int_u^v(L(x)-f(x))\,dx.
-```
-
-Writing $L(x)=\alpha+\beta x$, the smallest feasible intercept for a fixed slope is
-
-```math
-\alpha(\beta)=\max_{x\in[u,v]}(f(x)-\beta x).
-```
-
-Thus
-
-```math
-C(u,v)
-=
-\min_{\beta\in\mathbb R}\left[
-(v-u)\max_{x\in[u,v]}(f(x)-\beta x)
-+\beta\frac{v^2-u^2}{2}
--\int_u^v f(x)\,dx
-\right].
-```
-
-The support function $\beta\mapsto\max_x(f(x)-\beta x)$ is convex, so the resulting one-dimensional slope optimization is convex.
-
-For global optimization, the breakpoint objective is
-
-```math
-J(x_1,\ldots,x_{n-1})
-=
-\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
-```
-
-A uniform breakpoint grid reduces this continuous problem to a finite dynamic program, and the grid is refined adaptively.
-
-For the detailed mathematical derivations and convergence discussion, see the [theory documentation](theory/).
+See the [theory documentation](theory/).
 
 ## Numerical implementation
 
-The solver uses:
+The numerical components include adaptive integration, support maximization, slope minimization for the independent relaxation, breakpoint candidate generation, and the shared-height coupled optimization under development.
 
-- adaptive numerical integration;
-- numerical support maximization;
-- one-dimensional convex slope minimization;
-- dynamic programming over breakpoint grids;
-- adaptive breakpoint-grid refinement.
+Finite support sampling and numerical optimization are separate numerical approximations from the mathematical grid-discretization problem.
 
-The implementation details are documented separately so that the README remains focused on the library's purpose and public behavior.
+## Curvature-adaptive grids
 
-The experimental **curvature-adaptive solver** uses a separate candidate-grid strategy based on local curvature while keeping the finite-grid DP structure.
+The experimental curvature strategy uses $\rho(x)\propto\sqrt{|f''(x)|}$ as a candidate-grid heuristic derived from a local quadratic model.
 
-See:
-
-- [Curvature-adaptive solver](implementation/curvature-adaptive.md)
-- [Numerical methods](implementation/numerical-methods.md)
-- [Support maximization](implementation/support-maximization.md)
-- [Slope minimization](implementation/slope-minimization.md)
-- [Adaptive-grid DP](implementation/adaptive-grid-dp.md)
-- [Interpolation](implementation/interpolation.md)
-
-The support maximization is a numerical global-search heuristic for a general continuous black-box function. Finite sampling alone cannot certify a global maximum without additional assumptions on $f$.
-
-## Interpolation
-
-For sampled data, the library provides:
-
-- piecewise-linear interpolation;
-- natural cubic spline interpolation.
-
-The core solver also accepts a generic callable representing $f(x)$ directly.
-
-## Build
-
-The project uses CMake and requires C++20.
-
-```text
-cmake -S . -B build
-cmake --build build
-```
-
-The numerical library is built as the `cover_curve` target.
-
-## Project structure
-
-```text
-cover-curve/
-├── CMakeLists.txt
-├── math/
-│   ├── include/cover_curve/
-│   │   ├── cover_curve.hpp
-│   │   ├── interpolation.hpp
-│   │   ├── types.hpp
-│   │   └── solvers/
-│   │       └── adaptive_grid_dp.hpp
-│   └── src/
-│       ├── algorithms/
-│       │   └── adaptive_grid_dp/
-│       ├── interpolation/
-│       └── numerical/
-├── theory/
-│   ├── convergence.md
-│   ├── dynamic-programming.md
-│   ├── one-segment-cost.md
-│   └── problem.md
-└── implementation/
-    ├── adaptive-grid-dp.md
-    └── curvature-adaptive.md
-    ├── interpolation.md
-    ├── numerical-methods.md
-    ├── slope-minimization.md
-    ├── support-maximization.md
-    └── curvature-adaptive.md
-```
+This density is not currently claimed to be the exact optimal allocation for the coupled continuous problem. A rigorous curvature theorem must be derived from the shared-height formulation itself.
 
 ## Status
 
-The mathematical formulation, numerical components, C++ library structure, and adaptive grid-DP solver are currently implemented. Automated tests and the browser service are the next development stages.
+The repository is being migrated from the old independent-segment DP to the mathematically correct continuous formulation. The `fix/continuous-segments` branch contains the transition work; post-processing that merely lifts breakpoint heights is not considered a final solution.
+
+## Build
+
+    cmake -S . -B build
+    cmake --build build
+
+The numerical library is built as the `cover_curve` target.
 
 ## License
 

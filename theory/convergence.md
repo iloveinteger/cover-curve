@@ -4,7 +4,7 @@ Let A_n be the admissible continuous piecewise-affine majorants with at most n n
 
 ## 1. Breakpoint-grid convergence
 
-Let G_N={z_0^(N),...,z_{m_N}^(N)} contain a and b and have mesh delta_N=max_j(z_{j+1}^(N)-z_j^(N)) tending to zero. Let A_{n,N} be the admissible majorants whose breakpoints belong to G_N, and let E_{n,N}^* be their optimum.
+Let G_N={z_0^(N),...,z_{m_N}^(N)} contain a and b. Define the maximum mesh delta_N=max_j(z_{j+1}^(N)-z_j^(N)) and the minimum gap rho_N=min_j(z_{j+1}^(N)-z_j^(N)). For breakpoint convergence we require delta_N -> 0. Let A_{n,N} be the admissible majorants whose breakpoints belong to G_N, and let E_{n,N}^* be their optimum.
 
 Then E_{n,N}^* tends to E_n^*.
 
@@ -22,9 +22,11 @@ Put eta_N=||p_N-g*||_infinity and g_N=p_N+eta_N. Then g_N>=g*>=f, so g_N is admi
 
 The exact grid DP still has continuous height states. To obtain a genuinely finite algorithm, discretize heights as well.
 
-Let m=min f, M=max f, and C_0=(b-a)(M-m). For a grid with mesh delta_N>0, define
+Let m=min f, M=max f, and C_0=(b-a)(M-m). For the height bound, define
 
-B_N = m + 4 C_0 / delta_N.
+B_N = m + 4 C_0 / rho_N.
+
+Thus a fully general grid also requires rho_N>0. For uniform grids, rho_N=delta_N.
 
 Let H_N be a finite height grid containing m and B_N with mesh at most eta_N, where eta_N tends to zero. Round every height upward to the next point of H_N.
 
@@ -34,11 +36,11 @@ Every optimum of every fixed breakpoint problem whose breakpoints belong to G_N 
 
 ### Proof
 
-The constant function M is feasible and has error C_0, so an optimum has error at most C_0. For a fixed breakpoint vector, write h_i=x_{i+1}-x_i and let c_i be the positive objective coefficient of y_i. Every vertex satisfies y_i>=m and c_i>=delta_N/2. Since
+The constant function M is feasible and has error C_0, so an optimum has error at most C_0. For a fixed breakpoint vector, write h_i=x_{i+1}-x_i and let c_i be the positive objective coefficient of y_i. Every vertex satisfies y_i>=m and c_i>=rho_N/2. Since
 
 sum_i c_i(y_i-m) = E_X(y) + integral_a^b(f-m) <= 2 C_0,
 
-we obtain y_i-m <= 2 C_0/c_i <= 4 C_0/delta_N. ∎
+we obtain y_i-m <= 2 C_0/c_i <= 4 C_0/rho_N. ∎
 
 ### Lemma 3 — Height rounding error
 
@@ -52,7 +54,7 @@ Take an exact grid optimum. Round every vertex height upward by at most eta_N. I
 
 ## Theorem 4 — Fully discrete convergence
 
-If delta_N tends to zero and eta_N tends to zero, then
+If delta_N tends to zero, eta_N tends to zero, and each height grid uses the bound B_N above, then
 
 E_{n,N,eta}^* -> E_n^*.
 

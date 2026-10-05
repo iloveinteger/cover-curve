@@ -11,7 +11,8 @@ Result solve(
     int n,
     double tolerance = 1e-6,
     int initialN = 32,
-    int maxN = 1024
+    int maxN = 1024,
+    int initialHeightLevels = 32
 );
 
 }

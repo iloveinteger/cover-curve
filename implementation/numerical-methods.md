@@ -45,7 +45,7 @@ p+\frac{v-u}{x-u}(f(x)-p)
 \right].
 \]
 
-The sampled maximum is a lower approximation to the exact supremum. It must not be silently treated as a proof of feasibility.
+The sampled maximum is a lower approximation to the exact supremum. The current shared-height solver samples every breakpoint and every cell midpoint, reusing a running maximum for each left-height state. It must not be silently treated as a proof of feasibility.
 
 ## 3. Support-search primitive
 

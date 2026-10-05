@@ -10,9 +10,9 @@ Result solve(
     double b,
     int n,
     double tolerance = 1e-6,
-    int initialN = 32,
-    int maxN = 1024,
-    int initialHeightLevels = 32,
+    int initialN = 16,
+    int maxN = 64,
+    int initialHeightLevels = 128,
     int curvatureSamples = 128
 );
 

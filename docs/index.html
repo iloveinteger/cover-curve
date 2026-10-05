@@ -4,119 +4,610 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cover Curve</title>
+
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 24px; }
-    canvas { width: 100%; border: 1px solid #ccc; background: white; }
-    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
-    label { display: flex; gap: 6px; align-items: center; }
-    button { padding: 6px 12px; cursor: pointer; }
-    #status { margin: 12px 0; white-space: pre-wrap; }
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .description {
+      margin-top: 0;
+      color: #555;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+      padding: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control label {
+      font-weight: 600;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid #bbb;
+      border-radius: 5px;
+      font: inherit;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid #888;
+      border-radius: 5px;
+      background: white;
+      font: inherit;
+      cursor: pointer;
+      align-self: end;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+    }
+
+    .function-help {
+      grid-column: 1 / -1;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .plot-container {
+      position: relative;
+      width: 100%;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 4px;
+      display: inline-block;
+    }
+
+    .legend-function {
+      background: #222;
+    }
+
+    .legend-cover {
+      background: #d33;
+    }
+
+    .legend-point {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #06c;
+      display: inline-block;
+    }
+
+    #status {
+      margin-top: 16px;
+      padding: 12px;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f7f7f7;
+      border-radius: 6px;
+    }
+
+    #error {
+      margin-top: 12px;
+      color: #b00020;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
+
 <body>
   <h1>Cover Curve</h1>
-  <p>Optimal piecewise-linear upper approximation using breakpoint-grid dynamic programming.</p>
+
+  <p class="description">
+    Optimal piecewise-linear upper approximation using breakpoint-grid
+    dynamic programming.
+  </p>
 
   <div class="controls">
-    <label>Segments <input id="n" type="number" min="1" max="12" value="4"></label>
-    <label>Grid N <input id="N" type="number" min="4" max="300" value="40"></label>
-    <button id="run">Solve</button>
+
+    <div class="control" style="grid-column: 1 / -1;">
+      <label for="function">Function f(x)</label>
+      <input
+        id="function"
+        type="text"
+        value="Math.sin(x) + 0.18 * Math.cos(3 * x)"
+        spellcheck="false"
+      >
+    </div>
+
+    <div class="control">
+      <label for="a">Left endpoint a</label>
+      <input id="a" type="number" step="any" value="0">
+    </div>
+
+    <div class="control">
+      <label for="b">Right endpoint b</label>
+      <input id="b" type="number" step="any" value="6.283185307179586">
+    </div>
+
+    <div class="control">
+      <label for="n">Segments n</label>
+      <input id="n" type="number" min="1" max="30" step="1" value="4">
+    </div>
+
+    <div class="control">
+      <label for="N">Breakpoint grid N</label>
+      <input id="N" type="number" min="4" max="300" step="1" value="40">
+    </div>
+
+    <div class="control">
+      <button id="run">Solve</button>
+    </div>
+
+    <div class="function-help">
+      Examples:
+      <code>Math.sin(x)</code>,
+      <code>x*x</code>,
+      <code>Math.exp(-x*x)</code>,
+      <code>Math.sin(x) + 0.3*Math.sin(5*x)</code>
+    </div>
+
   </div>
 
-  <canvas id="plot" width="960" height="520"></canvas>
+  <div class="plot-container">
+    <canvas id="plot" width="1100" height="600"></canvas>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-line legend-function"></span>
+      <span>f(x)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-line legend-cover"></span>
+      <span>Optimal upper piecewise-linear approximation</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-point"></span>
+      <span>Breakpoints</span>
+    </div>
+  </div>
+
   <div id="status">Ready.</div>
+  <div id="error"></div>
 
   <script type="module">
     import { solveGridDP } from "../src/math/gridDP.js";
 
     const canvas = document.getElementById("plot");
     const ctx = canvas.getContext("2d");
+
     const status = document.getElementById("status");
+    const errorBox = document.getElementById("error");
 
-    // Example function. The numerical core accepts arbitrary JavaScript f.
-    const f = x => Math.sin(x) + 0.18 * Math.cos(3 * x);
-    const a = 0;
-    const b = 2 * Math.PI;
+    function createFunction(expression) {
+      if (!expression.trim()) {
+        throw new Error("Please enter a function f(x).");
+      }
 
-    function draw(result) {
+      let fn;
+
+      try {
+        fn = new Function(
+          "x",
+          `"use strict"; return (${expression});`
+        );
+      } catch {
+        throw new Error("Invalid JavaScript expression for f(x).");
+      }
+
+      // Check that the function actually returns finite numbers.
+      const testPoints = [0, 0.5, 1];
+
+      for (const x of testPoints) {
+        let y;
+
+        try {
+          y = fn(x);
+        } catch {
+          throw new Error(`f(${x}) could not be evaluated.`);
+        }
+
+        if (!Number.isFinite(y)) {
+          throw new Error(
+            `f(${x}) is not a finite number.`
+          );
+        }
+      }
+
+      return fn;
+    }
+
+    function draw(result, f, a, b) {
       const W = canvas.width;
       const H = canvas.height;
-      const pad = 55;
+
+      const padLeft = 65;
+      const padRight = 25;
+      const padTop = 25;
+      const padBottom = 50;
 
       ctx.clearRect(0, 0, W, H);
 
-      const values = [];
-      for (let i = 0; i <= 800; i++) {
-        const x = a + (b - a) * i / 800;
-        values.push(f(x));
+      /*
+       * Sample the original function densely enough for visualization.
+       */
+      const functionSamples = [];
+
+      for (let i = 0; i <= 1200; i++) {
+        const x = a + (b - a) * i / 1200;
+        const y = f(x);
+
+        if (!Number.isFinite(y)) {
+          throw new Error(
+            `f(x) is not finite near x = ${x}.`
+          );
+        }
+
+        functionSamples.push({ x, y });
       }
 
-      for (const s of result.segments) {
-        values.push(s.intercept + s.slope * s.x0);
-        values.push(s.intercept + s.slope * s.x1);
+      /*
+       * Collect values from both f and the piecewise-linear cover
+       * so that the whole solution fits into the plot.
+       */
+      const values = functionSamples.map(p => p.y);
+
+      for (const segment of result.segments) {
+        values.push(
+          segment.intercept + segment.slope * segment.x0
+        );
+
+        values.push(
+          segment.intercept + segment.slope * segment.x1
+        );
       }
 
-      const ymin = Math.min(...values);
-      const ymax = Math.max(...values);
-      const yrange = Math.max(1e-9, ymax - ymin);
+      let ymin = Math.min(...values);
+      let ymax = Math.max(...values);
 
-      const X = x => pad + (x - a) / (b - a) * (W - 2 * pad);
-      const Y = y => H - pad - (y - ymin) / yrange * (H - 2 * pad);
+      /*
+       * Add a small vertical margin.
+       */
+      let yrange = ymax - ymin;
+
+      if (!Number.isFinite(yrange) || yrange < 1e-12) {
+        yrange = 1;
+      }
+
+      const margin = yrange * 0.08;
+      ymin -= margin;
+      ymax += margin;
+      yrange = ymax - ymin;
+
+      const plotWidth = W - padLeft - padRight;
+      const plotHeight = H - padTop - padBottom;
+
+      const X = x =>
+        padLeft +
+        (x - a) / (b - a) * plotWidth;
+
+      const Y = y =>
+        H -
+        padBottom -
+        (y - ymin) / yrange * plotHeight;
+
+      /*
+       * Background.
+       */
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, W, H);
+
+      /*
+       * Axes.
+       */
+      ctx.strokeStyle = "#ddd";
+      ctx.lineWidth = 1;
 
       ctx.beginPath();
-      for (let i = 0; i <= 800; i++) {
-        const x = a + (b - a) * i / 800;
-        const y = f(x);
-        if (i === 0) ctx.moveTo(X(x), Y(y));
-        else ctx.lineTo(X(x), Y(y));
-      }
-      ctx.lineWidth = 2;
+      ctx.moveTo(padLeft, padTop);
+      ctx.lineTo(padLeft, H - padBottom);
+      ctx.lineTo(W - padRight, H - padBottom);
       ctx.stroke();
 
-      for (const s of result.segments) {
+      /*
+       * Draw f(x).
+       */
+      ctx.beginPath();
+
+      for (let i = 0; i < functionSamples.length; i++) {
+        const p = functionSamples[i];
+
+        if (i === 0) {
+          ctx.moveTo(X(p.x), Y(p.y));
+        } else {
+          ctx.lineTo(X(p.x), Y(p.y));
+        }
+      }
+
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      /*
+       * Draw the optimal piecewise-linear upper approximation.
+       */
+      ctx.strokeStyle = "#d33";
+      ctx.lineWidth = 4;
+
+      for (const segment of result.segments) {
+        const y0 =
+          segment.intercept +
+          segment.slope * segment.x0;
+
+        const y1 =
+          segment.intercept +
+          segment.slope * segment.x1;
+
         ctx.beginPath();
-        ctx.moveTo(X(s.x0), Y(s.intercept + s.slope * s.x0));
-        ctx.lineTo(X(s.x1), Y(s.intercept + s.slope * s.x1));
-        ctx.lineWidth = 4;
+        ctx.moveTo(X(segment.x0), Y(y0));
+        ctx.lineTo(X(segment.x1), Y(y1));
         ctx.stroke();
       }
 
-      for (const x of result.breakpoints) {
-        const y = result.segments.find(s => x >= s.x0 && x <= s.x1);
-        const yy = y ? y.intercept + y.slope * x : f(x);
+      /*
+       * Draw breakpoints.
+       */
+      ctx.fillStyle = "#06c";
+
+      for (let i = 0; i < result.breakpoints.length; i++) {
+        const x = result.breakpoints[i];
+
+        /*
+         * At a breakpoint, use either adjacent segment.
+         */
+        let segment = result.segments.find(
+          s => x >= s.x0 - 1e-12 &&
+               x <= s.x1 + 1e-12
+        );
+
+        const y = segment
+          ? segment.intercept + segment.slope * x
+          : f(x);
+
         ctx.beginPath();
-        ctx.arc(X(x), Y(yy), 5, 0, Math.PI * 2);
+        ctx.arc(X(x), Y(y), 5, 0, Math.PI * 2);
         ctx.fill();
       }
 
+      /*
+       * x-axis labels.
+       */
+      ctx.fillStyle = "#444";
+      ctx.font = "13px system-ui, sans-serif";
+      ctx.textAlign = "center";
+
+      ctx.fillText(
+        formatNumber(a),
+        X(a),
+        H - padBottom + 24
+      );
+
+      ctx.fillText(
+        formatNumber((a + b) / 2),
+        X((a + b) / 2),
+        H - padBottom + 24
+      );
+
+      ctx.fillText(
+        formatNumber(b),
+        X(b),
+        H - padBottom + 24
+      );
+
+      /*
+       * y-axis labels.
+       */
+      ctx.textAlign = "right";
+
+      ctx.fillText(
+        formatNumber(ymax),
+        padLeft - 8,
+        Y(ymax) + 4
+      );
+
+      ctx.fillText(
+        formatNumber((ymin + ymax) / 2),
+        padLeft - 8,
+        Y((ymin + ymax) / 2) + 4
+      );
+
+      ctx.fillText(
+        formatNumber(ymin),
+        padLeft - 8,
+        Y(ymin) + 4
+      );
+
+      /*
+       * Status information.
+       */
       status.textContent =
         `N = ${result.N}\n` +
         `n = ${result.n}\n` +
         `Grid optimum E(n,N) = ${result.value.toPrecision(10)}\n` +
-        `Breakpoints = [${result.breakpoints.map(x => x.toFixed(5)).join(", ")}]`;
+        `Breakpoints = [` +
+        result.breakpoints
+          .map(x => x.toFixed(6))
+          .join(", ") +
+        `]`;
+    }
+
+    function formatNumber(x) {
+      if (Math.abs(x) >= 1000 || Math.abs(x) < 0.001 && x !== 0) {
+        return x.toExponential(4);
+      }
+
+      return x.toFixed(4);
     }
 
     function run() {
-      const n = Number(document.getElementById("n").value);
-      const N = Number(document.getElementById("N").value);
+      errorBox.textContent = "";
       status.textContent = "Solving...";
+
+      let f;
+      let a;
+      let b;
+      let n;
+      let N;
+
+      try {
+        const expression =
+          document.getElementById("function").value;
+
+        f = createFunction(expression);
+
+        a = Number(
+          document.getElementById("a").value
+        );
+
+        b = Number(
+          document.getElementById("b").value
+        );
+
+        n = Number(
+          document.getElementById("n").value
+        );
+
+        N = Number(
+          document.getElementById("N").value
+        );
+
+        if (!Number.isFinite(a) || !Number.isFinite(b)) {
+          throw new Error(
+            "The endpoints a and b must be finite numbers."
+          );
+        }
+
+        if (!(a < b)) {
+          throw new Error(
+            "The interval must satisfy a < b."
+          );
+        }
+
+        if (!Number.isInteger(n) || n < 1) {
+          throw new Error(
+            "n must be a positive integer."
+          );
+        }
+
+        if (!Number.isInteger(N) || N < 4) {
+          throw new Error(
+            "N must be an integer greater than or equal to 4."
+          );
+        }
+
+        if (n > N) {
+          throw new Error(
+            "The number of segments n cannot exceed the grid size N."
+          );
+        }
+
+      } catch (error) {
+        status.textContent = "Error.";
+        errorBox.textContent = error.message;
+        return;
+      }
+
+      /*
+       * Let the browser update the status message before
+       * starting the potentially expensive computation.
+       */
       setTimeout(() => {
         try {
-          const result = solveGridDP(f, a, b, n, {
-            N,
-            oneSegment: {
-              samples: 96,
-              slopeIterations: 42
+          const result = solveGridDP(
+            f,
+            a,
+            b,
+            n,
+            {
+              N,
+              oneSegment: {
+                samples: 96,
+                slopeIterations: 42
+              }
             }
-          });
-          draw(result);
+          );
+
+          draw(result, f, a, b);
+
         } catch (error) {
-          status.textContent = error.message;
+          status.textContent = "Error.";
+          errorBox.textContent =
+            error instanceof Error
+              ? error.message
+              : String(error);
         }
       }, 0);
     }
 
-    document.getElementById("run").addEventListener("click", run);
+    document
+      .getElementById("run")
+      .addEventListener("click", run);
+
+    /*
+     * Pressing Enter in an input runs the solver.
+     */
+    document
+      .querySelectorAll("input")
+      .forEach(input => {
+        input.addEventListener("keydown", event => {
+          if (event.key === "Enter") {
+            run();
+          }
+        });
+      });
+
     run();
   </script>
 </body>

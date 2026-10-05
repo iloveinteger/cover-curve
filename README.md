@@ -9,8 +9,7 @@ Given a function $f:[a,b]\to\mathbb R$, approximate it from above by exactly $n$
 We seek a continuous piecewise-linear function $g$ with exactly $n$ segments such that
 
 $$
-g(x)\ge f(x)
-\qquad (a\le x\le b)
+g(x)\ge f(x)\qquad(a\le x\le b)
 $$
 
 and minimize
@@ -58,9 +57,7 @@ j=0,\ldots,N
 \right\},
 $$
 
-the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval.
-
-The finite breakpoint problem is then solved exactly by dynamic programming:
+the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval. The finite breakpoint problem is then solved exactly by dynamic programming:
 
 $$
 F[k][j]
@@ -86,30 +83,30 @@ $$
 and, under standard regularity assumptions,
 
 $$
-E_{n,N}\longrightarrow E_n^*.
+\boxed{
+E_{n,N}\longrightarrow E_n^*
+}.
 $$
 
-This gives a principled grid-refinement method rather than a greedy search.
+This gives a principled refinement method rather than a greedy search.
 
 ## Project status
 
 This repository contains the initial reference implementation and an interactive browser demo.
 
-The numerical implementation currently uses a one-dimensional numerical search for the optimal supporting line on each interval. The breakpoint optimization itself is solved globally by dynamic programming.
+The numerical implementation currently uses a robust one-dimensional search for the optimal supporting line on each interval. The breakpoint optimization itself is solved globally by dynamic programming.
 
 ## Run the demo
 
 The project is static JavaScript, so `docs/index.html` can be opened directly in a browser or served through GitHub Pages.
 
-For local development, any static HTTP server works. For example:
+For local development, any static HTTP server works, for example:
 
 ```bash
 python -m http.server 8000 -d docs
 ```
 
-Then open:
-
-`http://localhost:8000`
+Then open `http://localhost:8000`.
 
 ## License
 

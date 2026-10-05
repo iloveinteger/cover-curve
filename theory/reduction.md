@@ -1,41 +1,31 @@
 # Reduction: no vertical segments
 
-Assume \(f\in C^1([a,b])\).
+Assume $f\in C^1([a,b])$.
 
 An optimal boundary contains no vertical segment.
 
-Suppose a boundary contains a vertical segment at \(x=c\), from height \(y_0\) to \(y_1>y_0\). Since the graph of \(f\) must lie below the boundary,
+Suppose a boundary contains a vertical segment at $x=c$, from height $y_0$ to $y_1>y_0$. Since the boundary lies above $f$,
 
-\[
+```math
 f(c)\le y_0.
-\]
+```
 
-Because \(f\in C^1\), it is locally Lipschitz. Hence for some \(M,\delta>0\),
+Because $f\in C^1$, there exist $M,\delta>0$ such that
 
-\[
+```math
 |f(x)-f(c)|\le M|x-c|
-\]
+```
 
-whenever \(|x-c|<\delta\).
+for $|x-c|<\delta$.
 
-Choose \(m>M\) and tilt the upper endpoint slightly to the right:
+Choose $m>M$ and replace the vertical segment by a segment of slope $-m$ or $m$, tilted toward a side where the boundary continues. For sufficiently small displacement, the new segment remains above $f$ and strictly lowers the boundary on a set of positive measure.
 
-\[
-\varepsilon=\frac{y_1-y_0}{m}.
-\]
+Thus the enclosed area decreases, contradicting optimality.
 
-For sufficiently small \(\varepsilon\), the tilted segment remains above \(f\) near \(c\), while the region under the boundary decreases by a positive triangular area
+Therefore an optimal boundary contains no vertical segments.
 
-\[
-\frac12(y_1-y_0)\varepsilon.
-\]
+Consequently, it can be represented as a continuous piecewise-linear function with breakpoints
 
-If the right side is unavailable, tilt to the left instead.
-
-Therefore a vertical segment cannot occur in an optimum.
-
-Consequently an optimal boundary can be represented as a continuous piecewise-linear function with ordered breakpoints
-
-\[
+```math
 a=x_0<x_1<\cdots<x_n=b.
-\]
+```

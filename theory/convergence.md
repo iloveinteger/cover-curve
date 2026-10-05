@@ -14,7 +14,7 @@ $a=z_0^{(N)} < \cdots < z_{m_N}^{(N)}=b$
 
 and
 
-$\delta_N = \max_j \left( z_{j+1}^{(N)}-z_j^{(N)} \right) \longrightarrow0.$
+$\delta_N = \max_j ( z_{j+1}^{(N)}-z_j^{(N)} ) \longrightarrow0.$
 
 Let $\mathcal A_{n,N}\subseteq\mathcal A_n$ consist of admissible majorants whose breakpoints belong to $G_N$, and define
 
@@ -32,7 +32,7 @@ $a=z_0^{(N)} < z_1^{(N)} < \cdots < z_n^{(N)}=b$
 
 such that
 
-$\left|z_i^{(N)}-x_i\right| \le\delta_N \qquad (0\le i\le n).$
+$|z_i^{(N)}-x_i| \le\delta_N \qquad (0\le i\le n).$
 
 If $p_N$ is the piecewise-affine interpolant satisfying
 
@@ -54,7 +54,7 @@ $2\delta_N<d.$
 
 Choose, for each interior breakpoint $x_i$, a grid point $z_i^{(N)}$ satisfying
 
-$\left|z_i^{(N)}-x_i\right| \le\delta_N,$
+$|z_i^{(N)}-x_i| \le\delta_N,$
 
 and set
 
@@ -72,27 +72,27 @@ For each $i$, let $L_i$ be the affine extension to $\mathbb R$ of the restrictio
 
 At either selected endpoint,
 
-$\left|g(z_i^{(N)})-L_i(z_i^{(N)})\right| \le2K\delta_N,$
+$|g(z_i^{(N)})-L_i(z_i^{(N)})| \le2K\delta_N,$
 
 and the analogous estimate holds at $z_{i+1}^{(N)}$.
 
 Since $p_N-L_i$ is affine on $[z_i^{(N)},z_{i+1}^{(N)}]$, its absolute value is bounded by the maximum of its absolute values at the two endpoints. Hence
 
-$\left|p_N(x)-L_i(x)\right| \le2K\delta_N$
+$|p_N(x)-L_i(x)| \le2K\delta_N$
 
 throughout $[z_i^{(N)},z_{i+1}^{(N)}]$.
 
 If $x\in[x_i,x_{i+1}]$, then $g(x)=L_i(x)$, so
 
-$\left|p_N(x)-g(x)\right| \le2K\delta_N.$
+$|p_N(x)-g(x)| \le2K\delta_N.$
 
 If $x$ lies in an endpoint strip where $x$ is outside $[x_i,x_{i+1}]$, then its distance from the corresponding original breakpoint is at most $\delta_N$. Therefore
 
-$\left|g(x)-L_i(x)\right| \le K\delta_N,$
+$|g(x)-L_i(x)| \le K\delta_N,$
 
 and consequently
 
-$\left|p_N(x)-g(x)\right| \le3K\delta_N.$
+$|p_N(x)-g(x)| \le3K\delta_N.$
 
 Thus
 
@@ -160,6 +160,6 @@ $E_{n,N}^*\to E_n^*.$
 
 For the uniform grid
 
-$G_N = \left\{ a+j\frac{b-a}{N}:0\le j\le N \right\},$
+$G_N = { a+j\frac{b-a}{N}:0\le j\le N },$
 
 the exact coupled optimization restricted to grid breakpoints converges to the original $n$-segment problem. ∎

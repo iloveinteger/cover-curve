@@ -76,17 +76,17 @@ so the selected points are strictly ordered.
 
 Because \(g\) is continuous and piecewise affine on finitely many intervals, it is Lipschitz. Let \(K\) be a Lipschitz constant.
 
-Let \(L_i\) be the affine restriction of \(g\) to \([x_i,x_{i+1}]\), extended affinely to all of \(\mathbb R\). Since \(g(x_i)=L_i(x_i)\), \(g\) and \(L_i\) are both (K)-Lipschitz, and \(|z_i^{(N)}-x_i|\le\delta_N\),
+Let \(L_i\) be the affine restriction of \(g\) to \([x_i,x_{i+1}]\), extended affinely to all of \(\mathbb R\). Since \(g(x_i)=L_i(x_i)\), \(g\) and \(L_i\) are both \(K\)-Lipschitz, and \(|z_i^{(N)}-x_i|\le\delta_N\),
 \[
 |g(z_i^{(N)})-L_i(z_i^{(N)})|\le2K\delta_N.
 \]
-The same bound holds at (z_{i+1}^{(N)}).
+The same bound holds at \(z_{i+1}^{(N)}\).
 
-Hence the affine interpolant (p_N) differs from (L_i) by at most (2Kdelta_N) on the whole interval ([z_i^{(N)},z_{i+1}^{(N)}]), because an affine function on an interval is bounded in absolute value by the maximum of its absolute endpoint values. If ($x\in[x_i,x_{i+1}]$), then ($g(x)=L_i(x)$), so
+Hence the affine interpolant \(p_N\) differs from \(L_i\) by at most \(2K\delta_N\) on the whole interval \([z_i^{(N)},z_{i+1}^{(N)}]\), because an affine function on an interval is bounded in absolute value by the maximum of its absolute endpoint values. If \(x\in[x_i,x_{i+1}]\), then \(g(x)=L_i(x)\), so
 \[
 |p_N(x)-g(x)|\le2K\delta_N.
 \]
-If (x\in[z_i^{(N)},x_i]) or (x\in[x_{i+1},z_{i+1}^{(N)}]), then (x) is within \(\delta_N\) of the corresponding breakpoint. Thus
+If \(x\in[z_i^{(N)},x_i]\) or \(x\in[x_{i+1},z_{i+1}^{(N)}]\), then \(x\) is within \(\delta_N\) of the corresponding breakpoint. Thus
 \[
 |g(x)-L_i(x)|\le2K\delta_N,
 \]

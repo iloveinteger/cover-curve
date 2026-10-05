@@ -126,10 +126,10 @@ D_{k+1}(l,q)
 =
 \min_{k\le j<l}
 \min_{p\in H_N}
-\left[
+[
 D_k(j,p)+
 \frac{z_l-z_j}{2}(p+q)
-\right],
+],
 $
 
 where the minimization is restricted to feasible transitions.

@@ -80,7 +80,8 @@ Result solve(
             solveGrid(
                 f,
                 grid,
-                n
+                n,
+                heightLevels
             );
 
         if (hasPrevious) {

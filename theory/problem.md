@@ -36,7 +36,7 @@ $X=(x_0,\ldots,x_n),$
 
 define
 
-$E_X(y) = \sum_{i=0}^{n-1} \left[ \frac{x_{i+1}-x_i}{2}(y_i+y_{i+1}) - \int_{x_i}^{x_{i+1}} f(x)\,dx \right].$
+$E_X(y) = \sum_{i=0}^{n-1} [ \frac{x_{i+1}-x_i}{2}(y_i+y_{i+1}) - \int_{x_i}^{x_{i+1}} f(x)\,dx  ].$
 
 Define
 
@@ -48,7 +48,7 @@ $V(X) = \min_{y\in\mathcal F_X} E_X(y).$
 
 The global value is
 
-$E_n^* = \inf \left\{ E(g): g\text{ is an admissible }n\text{-segment majorant} \right\}.$
+$E_n^* = \inf { E(g): g\text{ is an admissible }n\text{-segment majorant} }.$
 
 ## Theorem 1 — Existence for fixed breakpoints
 
@@ -98,7 +98,7 @@ $y_i\ge f(x_i).$
 
 Therefore every sublevel set
 
-$\left\{ y\in\mathcal F_X:E_X(y)\le C \right\}$
+${ y\in\mathcal F_X:E_X(y)\le C }$
 
 is bounded below coordinatewise. Since every $c_i>0$, the same inequality also bounds every coordinate above. Hence every sublevel set is compact.
 

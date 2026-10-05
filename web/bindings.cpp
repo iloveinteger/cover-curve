@@ -14,9 +14,6 @@ namespace {
 
 val solveWeb(val function, double a, double b, int n) {
     try {
-        if (!function.isFunction())
-            throw std::invalid_argument("function must be callable");
-
         cover_curve::Function f = [function](double x) {
             return function(x).as<double>();
         };

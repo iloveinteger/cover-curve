@@ -188,52 +188,203 @@ function makeFunction(expression) {
 function draw(result, f, a, b) {
   const canvas = document.getElementById("plot");
   const ctx = canvas.getContext("2d");
-  const w = canvas.width, h = canvas.height;
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = canvas.clientWidth || 900;
+  const cssHeight = Math.max(420, Math.min(560, cssWidth * 0.56));
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const w = cssWidth;
+  const h = cssHeight;
   ctx.clearRect(0, 0, w, h);
 
-  const values = [];
-  for (let i = 0; i <= 500; ++i) {
-    const x = a + (b - a) * i / 500;
-    values.push([x, Number(f(x))]);
+  const samples = [];
+  for (let i = 0; i <= 600; ++i) {
+    const x = a + (b - a) * i / 600;
+    const y = Number(f(x));
+    if (Number.isFinite(y)) samples.push([x, y]);
   }
-  for (const s of result.segments) {
-    for (let i = 0; i <= 40; ++i) {
-      const x = s.x0 + (s.x1 - s.x0) * i / 40;
-      values.push([x, s.slope * x + s.intercept]);
+  if (samples.length < 2)
+    throw new Error("Function produced too few finite values.");
+
+  const curveValues = samples.map(p => p[1]);
+  const upperValues = [];
+  for (const seg of result.segments) {
+    for (let i = 0; i <= 50; ++i) {
+      const x = seg.x0 + (seg.x1 - seg.x0) * i / 50;
+      upperValues.push(seg.slope * x + seg.intercept);
     }
   }
 
-  const ys = values.map(v => v[1]).filter(Number.isFinite);
-  if (!ys.length)
-    throw new Error("Function produced no finite values on the interval.");
+  const allY = curveValues.concat(upperValues).filter(Number.isFinite);
+  let ymin = Math.min(...allY);
+  let ymax = Math.max(...allY);
+  if (ymax - ymin < 1e-12) {
+    ymin -= 1;
+    ymax += 1;
+  }
 
-  const ymin = Math.min(...ys), ymax = Math.max(...ys);
-  const pad = Math.max(1e-9, (ymax - ymin) * 0.08);
-  const X = x => (x - a) / (b - a) * (w - 40) + 20;
-  const Y = y => h - 20 - (y - (ymin - pad)) / (ymax - ymin + 2 * pad) * (h - 40);
+  const yPad = (ymax - ymin) * 0.12;
+  ymin -= yPad;
+  ymax += yPad;
 
-  ctx.beginPath();
-  values.slice(0, 501).forEach(([x, y], i) =>
-    i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))
-  );
-  ctx.stroke();
+  const margin = {left: 58, right: 20, top: 28, bottom: 44};
+  const plotW = w - margin.left - margin.right;
+  const plotH = h - margin.top - margin.bottom;
+  const X = x => margin.left + (x - a) / (b - a) * plotW;
+  const Y = y => margin.top + (ymax - y) / (ymax - ymin) * plotH;
 
-  for (const s of result.segments) {
+  function niceStep(range, targetTicks) {
+    const raw = range / targetTicks;
+    const power = Math.pow(10, Math.floor(Math.log10(raw)));
+    const normalized = raw / power;
+    let factor = 1;
+    if (normalized >= 5) factor = 5;
+    else if (normalized >= 2) factor = 2;
+    return factor * power;
+  }
+
+  function decimals(step) {
+    return Math.max(0, Math.min(8, Math.ceil(-Math.log10(step))));
+  }
+
+  const xStep = niceStep(b - a, 7);
+  const yStep = niceStep(ymax - ymin, 6);
+  const xDigits = decimals(xStep);
+  const yDigits = decimals(yStep);
+  const xStart = Math.ceil(a / xStep) * xStep;
+  const yStart = Math.ceil(ymin / yStep) * yStep;
+
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.lineWidth = 1;
+
+  // Plot background.
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+
+  // Grid and tick labels.
+  ctx.strokeStyle = "#edf0f5";
+  ctx.fillStyle = "#737c8d";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  for (let x = xStart; x <= b + xStep * 0.001; x += xStep) {
+    const px = X(x);
     ctx.beginPath();
-    ctx.moveTo(X(s.x0), Y(s.slope * s.x0 + s.intercept));
-    ctx.lineTo(X(s.x1), Y(s.slope * s.x1 + s.intercept));
+    ctx.moveTo(px, margin.top);
+    ctx.lineTo(px, h - margin.bottom);
+    ctx.stroke();
+    ctx.fillText(x.toFixed(xDigits), px, h - margin.bottom + 9);
+  }
+
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let y = yStart; y <= ymax + yStep * 0.001; y += yStep) {
+    const py = Y(y);
+    ctx.beginPath();
+    ctx.moveTo(margin.left, py);
+    ctx.lineTo(w - margin.right, py);
+    ctx.stroke();
+    ctx.fillText(y.toFixed(yDigits), margin.left - 9, py);
+  }
+
+  // Axes when zero is in view.
+  ctx.strokeStyle = "#aeb6c5";
+  ctx.lineWidth = 1.2;
+  if (a <= 0 && b >= 0) {
+    const px = X(0);
+    ctx.beginPath();
+    ctx.moveTo(px, margin.top);
+    ctx.lineTo(px, h - margin.bottom);
+    ctx.stroke();
+  }
+  if (ymin <= 0 && ymax >= 0) {
+    const py = Y(0);
+    ctx.beginPath();
+    ctx.moveTo(margin.left, py);
+    ctx.lineTo(w - margin.right, py);
     ctx.stroke();
   }
 
-  for (const x of result.breakpoints) {
-    const y = Math.max(
-      ...[f(x), ...result.segments.map(s => s.slope * x + s.intercept)]
-        .filter(Number.isFinite)
-    );
+  // f(x)
+  ctx.strokeStyle = "#315efb";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  samples.forEach(([x, y], i) => {
+    const px = X(x), py = Y(y);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+  ctx.stroke();
+
+  // Upper piecewise-linear cover.
+  ctx.strokeStyle = "#e06b2f";
+  ctx.lineWidth = 2.6;
+  for (const seg of result.segments) {
     ctx.beginPath();
-    ctx.arc(X(x), Y(y), 4, 0, 2 * Math.PI);
-    ctx.fill();
+    ctx.moveTo(X(seg.x0), Y(seg.slope * seg.x0 + seg.intercept));
+    ctx.lineTo(X(seg.x1), Y(seg.slope * seg.x1 + seg.intercept));
+    ctx.stroke();
   }
+
+  // Breakpoints.
+  ctx.fillStyle = "#e06b2f";
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  for (const x of result.breakpoints) {
+    const candidates = [
+      Number(f(x)),
+      ...result.segments
+        .filter(seg => x >= seg.x0 - 1e-10 && x <= seg.x1 + 1e-10)
+        .map(seg => seg.slope * x + seg.intercept)
+    ].filter(Number.isFinite);
+    if (!candidates.length) continue;
+
+    const y = Math.max(...candidates);
+    ctx.beginPath();
+    ctx.arc(X(x), Y(y), 4.5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // Axis labels.
+  ctx.fillStyle = "#626b7b";
+  ctx.font = '600 12px system-ui, sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("x", margin.left + plotW / 2, h - 5);
+
+  ctx.save();
+  ctx.translate(15, margin.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText("f(x)", 0, 0);
+  ctx.restore();
+
+  // Legend.
+  const legendY = 12;
+  ctx.font = '600 12px system-ui, sans-serif';
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+
+  ctx.strokeStyle = "#315efb";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(margin.left, legendY);
+  ctx.lineTo(margin.left + 24, legendY);
+  ctx.stroke();
+  ctx.fillStyle = "#4b5565";
+  ctx.fillText("f(x)", margin.left + 31, legendY);
+
+  const secondX = margin.left + 90;
+  ctx.strokeStyle = "#e06b2f";
+  ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  ctx.moveTo(secondX, legendY);
+  ctx.lineTo(secondX + 24, legendY);
+  ctx.stroke();
+  ctx.fillStyle = "#4b5565";
+  ctx.fillText("upper cover", secondX + 31, legendY);
 }
 
 solveButton.addEventListener("click", () => {

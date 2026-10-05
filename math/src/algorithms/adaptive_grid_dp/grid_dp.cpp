@@ -132,6 +132,7 @@ void computeSampledTransitions(
     // max (f(x)-p)/(x-x_i).  This yields all sampled
     // transition thresholds T_{x_i,x_j}(p) in one pass.
     std::vector<double> samples(2 * N + 1);
+    std::vector<double> sampleValues(2 * N + 1);
 
     for (int i = 0; i < N; ++i) {
         samples[2 * i] = points[i];
@@ -140,6 +141,9 @@ void computeSampledTransitions(
     }
 
     samples[2 * N] = points[N];
+
+    for (std::size_t s = 0; s < samples.size(); ++s)
+        sampleValues[s] = f(samples[s]);
 
     for (int i = 0; i < N; ++i) {
         const double u = points[i];
@@ -160,7 +164,7 @@ void computeSampledTransitions(
                     const double x = samples[s];
 
                     const double ratio =
-                        (f(x) - p) / (x - u);
+                        (sampleValues[s] - p) / (x - u);
 
                     if (ratio > bestRatio) {
                         bestRatio = ratio;

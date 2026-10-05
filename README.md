@@ -69,7 +69,7 @@ $
 
 and the integral must eventually be controlled so that their numerical errors vanish under refinement.
 
-The implementation should therefore be regarded as an approximation of the finite mathematical DP, not as a substitute for the shared-height formulation.
+The baseline implementation now uses the shared-height DP with breakpoint/height discretization and finite transition constraints. Its transition constraints are sampled numerically, so they are not global feasibility certificates for arbitrary continuous black-box functions.
 
 ## Status
 

@@ -2,7 +2,7 @@
 
 Let $a\le u<v\le b$. Define
 
-$C_{\mathrm{ind}}(u,v) = \min_{\substack{L\text{ affine}\\L(x)\ge f(x)\ \forall x\in[u,v]}} \int_u^v (L(x)-f(x))\,dx.$
+Define $C_{\mathrm{ind}}(u,v)$ as the minimum of $\int_u^v(L(x)-f(x))\,dx$ over affine $L$ satisfying $L(x)\ge f(x)$ for every $x\in[u,v]$.
 
 Write
 

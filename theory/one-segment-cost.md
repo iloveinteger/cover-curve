@@ -1,6 +1,6 @@
 # Independent one-segment problem
 
-Let $a\le u<v\le b$. Define
+Let $a\le u<v\le b$.
 
 Define $C_{\mathrm{ind}}(u,v)$ as the minimum of $\int_u^v(L(x)-f(x))\,dx$ over affine $L$ satisfying $L(x)\ge f(x)$ for every $x\in[u,v]$.
 

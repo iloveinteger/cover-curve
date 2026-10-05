@@ -4,35 +4,35 @@
 
 Given a continuous function $f:[a,b]\to\mathbb R$, the target problem is to find a continuous piecewise-linear function $g\ge f$ with exactly $n$ line segments while minimizing
 
-\[
+$
 E(g)=\int_a^b(g(x)-f(x))\,dx.
-\]
+$
 
 ## Mathematical formulation
 
 Choose breakpoints
 
-\[
+$
 a=x_0<x_1<\cdots<x_n=b
-\]
+$
 
 and shared vertex heights $y_i=g(x_i)$. Each segment is
 
-\[
+$
 L_i(x)
 =
 \frac{x_{i+1}-x}{x_{i+1}-x_i}y_i
 +
 \frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.
-\]
+$
 
 The shared vertex heights enforce continuity automatically. The constraint is
 
-\[
+$
 L_i(x)\ge f(x)
 \qquad
 (x\in[x_i,x_{i+1}]).
-\]
+$
 
 For fixed breakpoints, the problem is a linear semi-infinite program in the shared heights. The exact Bellman formulation uses the current breakpoint height as its state, so continuity is enforced inside the optimization rather than by post-processing.
 
@@ -48,9 +48,9 @@ The theory is organized as one logical chain:
 
 The main convergence statement is
 
-\[
+$
 E_{n,N,\eta}^*\longrightarrow E_n^*
-\]
+$
 
 when the breakpoint-grid mesh and height-grid mesh both tend to zero.
 
@@ -60,12 +60,12 @@ The free-breakpoint existence theorem uses standard spline approximation results
 
 The implementation is separate from the mathematical convergence theorem. In particular, numerical evaluation of $f$, the support function
 
-\[
+$
 T_{u,v}(p)
 =
 \sup_{u<x\le v}
 \frac{(v-u)f(x)-(v-x)p}{x-u},
-\]
+$
 
 and the integral must eventually be controlled so that their numerical errors vanish under refinement.
 

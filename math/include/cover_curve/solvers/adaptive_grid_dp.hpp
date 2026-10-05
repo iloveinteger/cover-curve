@@ -1,11 +1,10 @@
 #pragma once
 
-#include <cover_curve/function.hpp>
-#include <cover_curve/result.hpp>
+#include <cover_curve/cover_curve.hpp>
 
 namespace cover_curve {
 
-Result solve(
+Result adaptiveGridDP(
     const Function& f,
     double a,
     double b,

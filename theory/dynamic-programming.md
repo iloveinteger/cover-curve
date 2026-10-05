@@ -64,7 +64,7 @@ $V_n(p) = \begin{cases} 0,&p\ge f(b),\\ +\infty,&p<f(b). \end{cases}$
 
 For $i=n-1,\ldots,0$, define
 
-$V_i(p) = \begin{cases} \displaystyle \inf_{q\ge T_{x_i,x_{i+1}}(p)} \left[ \frac{h_i}{2}(p+q)+V_{i+1}(q) \right], & p\ge f(x_i),\\[2ex] +\infty, & p<f(x_i). \end{cases}$
+$V_i(p)=\begin{cases}\inf_{q\ge T_{x_i,x_{i+1}}(p)}\left[\frac{h_i}{2}(p+q)+V_{i+1}(q)\right],&p\ge f(x_i),\\+\infty,&p<f(x_i).\end{cases}$
 
 ## Theorem 3 — Exact Bellman recursion
 

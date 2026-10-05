@@ -12,7 +12,8 @@ Result solve(
     double tolerance = 1e-6,
     int initialN = 32,
     int maxN = 1024,
-    int curvatureSamples = 257
+    int initialHeightLevels = 32,
+    int curvatureSamples = 128
 );
 
 }

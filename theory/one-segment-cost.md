@@ -58,6 +58,38 @@ The function minimized in Corollary 2 is convex in \(\beta\).
 
 For each \(x\in[u,v]\), \(\beta\mapsto f(x)-\beta x\) is affine. Its pointwise supremum is convex. The remaining terms are affine or constant. ∎
 
+## Lemma 4 — Existence of the independent optimum
+
+The minimum in Corollary 2 is attained.
+
+### Proof
+
+Let \(F(\beta)\) denote the objective in Corollary 2. It is continuous because
+\[
+\beta\mapsto\max_{x\in[u,v]}(f(x)-\beta x)
+\]
+is the supremum of affine functions whose slopes belong to the bounded interval \([-v,-u]\), hence is Lipschitz.
+
+As \(\beta\to+\infty\), using the term \(x=u\) in the maximum gives
+\[
+F(\beta)
+\ge
+(v-u)f(u)
++\frac{(v-u)^2}{2}\beta
+-\int_u^v f(x)\,dx
+\longrightarrow+\infty.
+\]
+As \(\beta\to-\infty\), using the term \(x=v\) gives
+\[
+F(\beta)
+\ge
+(v-u)f(v)
+-\frac{(v-u)^2}{2}\beta
+-\int_u^v f(x)\,dx
+\longrightarrow+\infty.
+\]
+Thus \(F\) is continuous and coercive on \(\mathbb R\), so it attains its minimum. ∎
+
 ## Proposition 4 — Relation to the continuous problem
 
 For prescribed endpoint heights \(p,q\), the unique affine segment joining \((u,p)\) and \((v,q)\) is

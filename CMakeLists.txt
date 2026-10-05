@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(cover_curve
+    math/src/expression.cpp
     math/src/numerical/integration.cpp
     math/src/numerical/minimization.cpp
     math/src/numerical/support_max.cpp

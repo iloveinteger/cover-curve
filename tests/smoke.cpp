@@ -39,3 +39,6 @@ int main() {
     std::cout << "All smoke tests passed.\n";
     return 0;
 }
+
+    const auto r4 = cover_curve::curvatureAdaptive(square, 0.0, 1.0, 2);
+    expectNear(r4.value, 1.0 / 24.0, 3e-3, "curvature square n=2");

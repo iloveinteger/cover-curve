@@ -1,125 +1,167 @@
 # Breakpoint-grid convergence
 
-Let (mathcal A_n) be the set of admissible continuous piecewise-linear majorants with exactly (n) nondegenerate segments, and let
-[
-E_n^*=inf_{ginmathcal A_n}E(g).
-]
+Let \(\mathcal A_n\) be the set of admissible continuous piecewise-affine majorants with exactly \(n\) nondegenerate intervals, and define
+\[
+E_n^*=\inf_{g\in\mathcal A_n}E(g).
+\]
 
-Let (G_Nsubset[a,b]) be finite grids containing (a,b), and let
-[
-delta_N=max_j(z_{j+1}-z_j)
-]
-be the mesh of the ordered grid points. Assume
-[
-delta_N	o0.
-]
+Let
+\[
+G_N=\{z_0^{(N)},\ldots,z_{m_N}^{(N)}\}
+\]
+be finite ordered grids satisfying
+\[
+a=z_0^{(N)}<\cdots<z_{m_N}^{(N)}=b
+\]
+and
+\[
+\delta_N
+=
+\max_j\bigl(z_{j+1}^{(N)}-z_j^{(N)}\bigr)
+\longrightarrow0.
+\]
 
-Let (mathcal A_{n,N}subsetmathcal A_n) consist of functions whose (n+1) breakpoints all belong to (G_N), and define
-[
+Let \(\mathcal A_{n,N}\subseteq\mathcal A_n\) consist of admissible majorants whose breakpoints belong to \(G_N\), and define
+\[
 E_{n,N}^*
 =
-inf_{ginmathcal A_{n,N}}E(g).
-]
+\inf_{g\in\mathcal A_{n,N}}E(g).
+\]
 
-## Theorem 1 — Grid convergence
+## Lemma 1 — Grid interpolation approximation
 
-If (delta_N	o0), then
-[
-oxed{E_{n,N}^*longrightarrow E_n^*.}
-]
+Let \(g\in\mathcal A_n\) have breakpoints
+\[
+a=x_0<x_1<\cdots<x_n=b.
+\]
+For every sufficiently large \(N\), there exist grid points
+\[
+a=z_0^{(N)}<z_1^{(N)}<\cdots<z_n^{(N)}=b
+\]
+such that
+\[
+|z_i^{(N)}-x_i|\le\delta_N
+\qquad(0\le i\le n).
+\]
+If \(p_N\) is the piecewise-affine interpolant satisfying
+\[
+p_N(z_i^{(N)})=g(z_i^{(N)}),
+\]
+then
+\[
+\|p_N-g\|_\infty\longrightarrow0.
+\]
 
 ### Proof
 
-Since
-[
-mathcal A_{n,N}subseteqmathcal A_n,
-]
-we have
-[
-E_n^*le E_{n,N}^*.
-]
-
-Fix (arepsilon>0). By the definition of (E_n^*), choose
-[
-ginmathcal A_n
-]
-such that
-[
-E(g)<E_n^*+arepsilon.
-]
-Let its breakpoints be
-[
-a=x_0<x_1<cdots<x_n=b.
-]
-
-Because the set of breakpoints is finite and strictly ordered, for all sufficiently large (N) there exist grid points
-[
-a=z_0^{(N)}<z_1^{(N)}<cdots<z_n^{(N)}=b
-]
-such that
-[
-max_i|z_i^{(N)}-x_i|ledelta_N.
-]
-
-Let (p_N) be the piecewise-linear interpolant of the values
-[
-g(z_i^{(N)})
-]
-at these grid breakpoints. Since (g) is continuous and piecewise linear, its uniform modulus of continuity tends to zero, and the perturbation of finitely many breakpoints implies
-[
-|p_N-g|_inftylongrightarrow0.
-]
-
-Set
-[
-eta_N=|p_N-g|_infty
-]
-and define
-[
-g_N=p_N+eta_N.
-]
+Let
+\[
+d=\min_{0\le i<n}(x_{i+1}-x_i)>0.
+\]
+For sufficiently large \(N\), \(2\delta_N<d\). Choose, for each interior \(x_i\), a grid point \(z_i^{(N)}\) with
+\[
+|z_i^{(N)}-x_i|\le\delta_N.
+\]
 Then
-[
-g_Nge gge f
-]
-on ([a,b]). Moreover (g_N) has the same (n) nondegenerate breakpoint intervals for all sufficiently large (N), so
-[
-g_Ninmathcal A_{n,N}.
-]
+\[
+z_{i+1}^{(N)}-z_i^{(N)}
+\ge
+(x_{i+1}-x_i)-2\delta_N>0,
+\]
+so the selected grid points are strictly ordered.
 
-Finally,
-[
-|E(g_N)-E(g)|
+Since \(g\) is continuous on the compact interval \([a,b]\), it is uniformly continuous. Let \(\omega_g\) be its modulus of continuity:
+\[
+\omega_g(r)
 =
-left|int_a^b(g_N-g),dxight|
-le
-(b-a)|g_N-g|_infty
-le
-2(b-a)eta_N
-longrightarrow0.
-]
-Hence, for all sufficiently large (N),
-[
-E_{n,N}^*
-le E(g_N)
-< E_n^*+2arepsilon.
-]
-Together with (E_n^*le E_{n,N}^*),
-[
-E_n^*leliminf_{N	oinfty}E_{n,N}^*
-lelimsup_{N	oinfty}E_{n,N}^*
-le E_n^*+2arepsilon.
-]
-Since (arepsilon>0) is arbitrary,
-[
-E_{n,N}^*	o E_n^*.
-]
+\sup\{|g(s)-g(t)|:|s-t|\le r\}.
+\]
+Then \(\omega_g(r)\to0\) as \(r\to0\).
+
+For \(x\in[z_i^{(N)},z_{i+1}^{(N)}]\), write
+\[
+p_N(x)=(1-\lambda)g(z_i^{(N)})+\lambda g(z_{i+1}^{(N)})
+\]
+for some \(\lambda\in[0,1]\). Since \(g\) is affine on \([x_i,x_{i+1}]\), and the endpoints \(z_i^{(N)},z_{i+1}^{(N)}\) converge to \(x_i,x_{i+1}\), the two affine functions \(p_N\) and \(g\) converge uniformly on that interval. There are only finitely many intervals, hence
+\[
+\|p_N-g\|_\infty\to0.
+\]
 ∎
 
-## Corollary 2
+## Theorem 2 — Grid convergence
 
-For uniform grids,
-[
-G_N=left{a+jrac{b-a}{N}:0le jle Night},
-]
-the exact coupled optimization restricted to the grid converges to the original (n)-segment problem as (N	oinfty). ∎
+If \(\delta_N\to0\), then
+\[
+\boxed{E_{n,N}^*\longrightarrow E_n^*.}
+\]
+
+### Proof
+
+Because
+\[
+\mathcal A_{n,N}\subseteq\mathcal A_n,
+\]
+we have
+\[
+E_n^*\le E_{n,N}^*.
+\]
+
+Fix \(\varepsilon>0\). Choose \(g\in\mathcal A_n\) such that
+\[
+E(g)<E_n^*+\varepsilon.
+\]
+By Lemma 1, choose \(p_N\) with
+\[
+\|p_N-g\|_\infty\to0.
+\]
+Put
+\[
+\eta_N=\|p_N-g\|_\infty,
+\qquad
+g_N=p_N+\eta_N.
+\]
+Then
+\[
+g_N(x)\ge g(x)\ge f(x)
+\]
+for every \(x\), so \(g_N\in\mathcal A_{n,N}\) for all sufficiently large \(N\).
+
+Moreover,
+\[
+0\le g_N-g\le2\eta_N,
+\]
+hence
+\[
+0\le E(g_N)-E(g)
+\le2(b-a)\eta_N
+\longrightarrow0.
+\]
+Therefore, for sufficiently large \(N\),
+\[
+E_{n,N}^*
+\le E(g_N)
+< E_n^*+2\varepsilon.
+\]
+Together with \(E_n^*\le E_{n,N}^*\),
+\[
+E_n^*
+\le\liminf_{N\to\infty}E_{n,N}^*
+\le\limsup_{N\to\infty}E_{n,N}^*
+\le E_n^*+2\varepsilon.
+\]
+Since \(\varepsilon>0\) is arbitrary,
+\[
+E_{n,N}^*\to E_n^*.
+\]
+∎
+
+## Corollary 3
+
+For the uniform grid
+\[
+G_N=
+\left\{
+a+j\frac{b-a}{N}:0\le j\le N
+\right\},
+\]
+the exact coupled optimization restricted to grid breakpoints converges to the original \(n\)-segment problem. ∎

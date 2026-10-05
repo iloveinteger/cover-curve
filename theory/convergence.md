@@ -174,6 +174,6 @@ For the uniform grid
 G_N=
 \left\{
 a+j\frac{b-a}{N}:0\le j\le N
-\right\},
+\right\}.
 \]
 the exact coupled optimization restricted to grid breakpoints converges to the original \(n\)-segment problem. ∎

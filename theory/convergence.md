@@ -58,7 +58,11 @@ Let
 \[
 d=\min_{0\le i<n}(x_{i+1}-x_i)>0.
 \]
-For sufficiently large \(N\), \(2\delta_N<d\). Choose, for each interior \(x_i\), a grid point \(z_i^{(N)}\) with
+For sufficiently large \(N\),
+\[
+2\delta_N<d.
+\]
+For each interior \(x_i\), choose a grid point \(z_i^{(N)}\) with
 \[
 |z_i^{(N)}-x_i|\le\delta_N.
 \]
@@ -68,23 +72,25 @@ z_{i+1}^{(N)}-z_i^{(N)}
 \ge
 (x_{i+1}-x_i)-2\delta_N>0,
 \]
-so the selected grid points are strictly ordered.
+so the selected points are strictly ordered.
 
-Since \(g\) is continuous on the compact interval \([a,b]\), it is uniformly continuous. Let \(\omega_g\) be its modulus of continuity:
-\[
-\omega_g(r)
-=
-\sup\{|g(s)-g(t)|:|s-t|\le r\}.
-\]
-Then \(\omega_g(r)\to0\) as \(r\to0\).
+Because \(g\) is continuous and piecewise affine on finitely many intervals, it is Lipschitz. Let \(K\) be a Lipschitz constant.
 
-For \(x\in[z_i^{(N)},z_{i+1}^{(N)}]\), write
+Fix \(i\), and let \(L_i\) denote the affine restriction of \(g\) to \([x_i,x_{i+1}]\). For sufficiently large \(N\), each \(z_i^{(N)}\) lies in \((x_{i-1},x_{i+1})\). Hence
 \[
-p_N(x)=(1-\lambda)g(z_i^{(N)})+\lambda g(z_{i+1}^{(N)})
+|g(z_i^{(N)})-L_i(z_i^{(N)})|
+\le 2K\delta_N
 \]
-for some \(\lambda\in[0,1]\). Since \(g\) is affine on \([x_i,x_{i+1}]\), and the endpoints \(z_i^{(N)},z_{i+1}^{(N)}\) converge to \(x_i,x_{i+1}\), the two affine functions \(p_N\) and \(g\) converge uniformly on that interval. There are only finitely many intervals, hence
+whenever \(z_i^{(N)}\) lies outside \([x_i,x_{i+1}]\), while the difference is \(0\) when it lies inside. The same statement holds at \(z_{i+1}^{(N)}\).
+
+On \([z_i^{(N)},z_{i+1}^{(N)}]\), the difference between \(p_N\) and the affine function \(L_i\) is affine wherever both selected endpoints lie on the corresponding side of the original breakpoints, and in the remaining endpoint subintervals its magnitude is bounded by the Lipschitz error produced over a distance at most \(\delta_N\). Consequently there is a constant \(C\), independent of \(N\), such that
 \[
-\|p_N-g\|_\infty\to0.
+\|p_N-g\|_{\infty,[z_i^{(N)},z_{i+1}^{(N)}]}
+\le C K\delta_N.
+\]
+There are finitely many \(i\), so
+\[
+\|p_N-g\|_\infty\le CK\delta_N\longrightarrow0.
 \]
 ∎
 

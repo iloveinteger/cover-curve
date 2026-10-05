@@ -60,11 +60,11 @@ The supremum of affine functions is convex and lower semicontinuous. Since every
 
 Define
 
-$V_n(p) = \begin{cases} 0,&p\ge f(b),\\ +\infty,&p<f(b). \end{cases}$
+$V_n(p)=0$ if $p\ge f(b)$, and $V_n(p)=+\infty$ if $p<f(b)$.
 
 For $i=n-1,\ldots,0$, define
 
-$V_i(p)=\begin{cases}\inf_{q\ge T_{x_i,x_{i+1}}(p)}\left[\frac{h_i}{2}(p+q)+V_{i+1}(q)\right],&p\ge f(x_i),\\+\infty,&p<f(x_i).\end{cases}$
+$V_i(p)=\inf_{q\ge T_{x_i,x_{i+1}}(p)}[\frac{h_i}{2}(p+q)+V_{i+1}(q) ],&p\ge f(x_i),\\+\infty,&p<f(x_i).$
 
 ## Theorem 3 — Exact Bellman recursion
 
@@ -124,7 +124,7 @@ hence is convex.
 
 Assume $V_{i+1}$ is convex. The set
 
-$D_i = \left\{ (p,q): p\ge f(x_i), \quad q\ge T_{x_i,x_{i+1}}(p) \right\}$
+$D_i = { (p,q): p\ge f(x_i), \quad q\ge T_{x_i,x_{i+1}}(p) }$
 
 is convex because it is the intersection of a half-line constraint with the epigraph of the convex function $T_{x_i,x_{i+1}}$.
 

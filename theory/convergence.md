@@ -83,14 +83,27 @@ Fix \(i\), and let \(L_i\) denote the affine restriction of \(g\) to \([x_i,x_{i
 \]
 whenever \(z_i^{(N)}\) lies outside \([x_i,x_{i+1}]\), while the difference is \(0\) when it lies inside. The same statement holds at \(z_{i+1}^{(N)}\).
 
-On \([z_i^{(N)},z_{i+1}^{(N)}]\), the difference between \(p_N\) and the affine function \(L_i\) is affine wherever both selected endpoints lie on the corresponding side of the original breakpoints, and in the remaining endpoint subintervals its magnitude is bounded by the Lipschitz error produced over a distance at most \(\delta_N\). Consequently there is a constant \(C\), independent of \(N\), such that
+Let \(L_i\) be the affine restriction of \(g\) to \([x_i,x_{i+1}]\), extended affinely to all of \(\mathbb R\). Since \(g(x_i)=L_i(x_i)\), \(g\) and \(L_i\) are both (K)-Lipschitz, and \(|z_i^{(N)}-x_i|\le\delta_N\),
 \[
-\|p_N-g\|_{\infty,[z_i^{(N)},z_{i+1}^{(N)}]}
-\le C K\delta_N.
+|g(z_i^{(N)})-L_i(z_i^{(N)})|\le2K\delta_N.
 \]
-There are finitely many \(i\), so
+The same bound holds at (z_{i+1}^{(N)}).
+
+Hence the affine interpolant (p_N) differs from (L_i) by at most (2K\delta_N) on the whole interval ([z_i^{(N)},z_{i+1}^{(N)}]), because an affine function on an interval is bounded in absolute value by the maximum of its absolute endpoint values. If (x\in[x_i,x_{i+1}]), then (g(x)=L_i(x)), so
 \[
-\|p_N-g\|_\infty\le CK\delta_N\longrightarrow0.
+|p_N(x)-g(x)|\le2K\delta_N.
+\]
+If (x\in[z_i^{(N)},x_i]) or (x\in[x_{i+1},z_{i+1}^{(N)}]), then (x) is within \(\delta_N\) of the corresponding breakpoint. Thus
+\[
+|g(x)-L_i(x)|\le2K\delta_N,
+\]
+and therefore
+\[
+|p_N(x)-g(x)|\le4K\delta_N.
+\]
+Taking the maximum over the finitely many intervals gives
+\[
+\|p_N-g\|_\infty\le4K\delta_N\longrightarrow0.
 \]
 ∎
 

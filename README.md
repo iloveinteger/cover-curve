@@ -10,23 +10,21 @@ We seek a continuous piecewise-linear function $g$ with exactly $n$ segments suc
 
 $$
 g(x)\ge f(x)
-\qquad
-(a\le x\le b)
 $$
 
-and minimize
+for $a\le x\le b$, and minimize
 
 $$
 E(g)=\int_a^b (g(x)-f(x))\,dx.
 $$
 
-For sufficiently regular $f$, an optimum can be taken to have no vertical segments, so its breakpoints satisfy
+For sufficiently regular $f$, an optimum can be taken to have no vertical segments. Therefore, its breakpoints satisfy
 
 $$
 a=x_0<x_1<\cdots<x_n=b.
 $$
 
-For one interval define
+For one interval, define
 
 $$
 C(u,v)
@@ -53,7 +51,7 @@ For
 $$
 G_N
 =
-\{a+\frac{j(b-a)}{N}\mid j=0,\ldots,N\},
+\{a+j(b-a)/N : j=0,\ldots,N\},
 $$
 
 the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval.
@@ -64,9 +62,9 @@ $$
 F[k][j]
 =
 \min_{i<j}
-\bigl(
+\left(
 F[k-1][i]+C(x_i,x_j)
-\bigr).
+\right)
 $$
 
 Thus

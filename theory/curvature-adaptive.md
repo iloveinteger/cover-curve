@@ -1,137 +1,117 @@
 # Curvature-adaptive breakpoint grids
 
-## 1. Motivation
+## 1. Role of curvature
 
-The baseline solver uses a uniform breakpoint grid and dynamic programming. For a sufficiently smooth function, the local error of a short affine upper cover contains information about the local curvature. This suggests spending more breakpoint resolution where the curve bends more strongly.
+The target problem is the continuous piecewise-linear **majorant with shared breakpoint heights**. Any curvature-based grid rule must therefore be interpreted as a strategy for selecting candidate breakpoint locations for this coupled problem.
 
-This document derives the first-order grid-density heuristic used by the experimental curvature-adaptive solver.
+It is not a proof that independent one-segment costs determine the global optimum.
 
-## 2. Local model
+## 2. Local quadratic model
 
-Consider a short interval of length $h$ centered at $x$, and suppose $fin C^2$. To second order,
-
-```math
-f(x+t)=f(x)+f'(x)t+rac12 f''(x)t^2+o(h^2).
-```
-
-The affine part is reproduced exactly by an affine cover, so the leading local covering error is determined by the quadratic term.
-
-For a quadratic with constant second derivative $q$, the least-area affine upper cover is obtained from its secant/tangent geometry. In either sign of $q$, the leading error is
-
-```math
-Cleft(x-rac h2,x+rac h2ight)
+For a sufficiently smooth function, on a short interval of length $h$ centered at $x$,
+\[
+f(x+t)
 =
-rac{|q|}{12}h^3+o(h^3).
-```
+f(x)+f'(x)t+\frac12f''(x)t^2+o(h^2).
+\]
 
-Hence, locally,
+The affine part is represented exactly by an affine segment. For the local independent majorant, the leading area error is proportional to
+\[
+|f''(x)|h^3.
+\]
 
-```math
-Cleft(x-rac h2,x+rac h2ight)
-=
-rac{|f''(x)|}{12}h^3+o(h^3).
-```
+Consequently the familiar local model has the form
+\[
+E_{\mathrm{local}}
+\approx
+K|f''(x)|h^3
+\]
+for an appropriate convention-dependent constant $K$.
 
-This is an asymptotic statement, not an exact formula for arbitrary finite intervals.
+For the old independent one-segment calculation, the quadratic model gives $K=1/12$ under the centered-interval convention used previously.
 
-## 3. Optimal local spacing
+This local calculation is **not by itself a theorem for the global continuous problem**, because neighboring segments share endpoint heights.
 
-Suppose the interval is partitioned into small cells with lengths $h_i$. The local model gives
+## 3. Density heuristic
 
-```math
-Eapproxrac1{12}sum_i |f''(x_i)|h_i^3.
-```
+If small cells have lengths $h_i$ and the local model
+\[
+E\approx K\sum_i q_i h_i^3,
+\qquad
+q_i\approx|f''(x_i)|,
+\]
+is used as an asymptotic surrogate, minimizing subject to
+\[
+\sum_i h_i=b-a
+\]
+gives
+\[
+3Kq_i h_i^2=\lambda,
+\]
+hence
+\[
+h_i\propto q_i^{-1/2}.
+\]
 
-For a fixed number of cells $n$, minimize this approximation subject to
-
-```math
-sum_i h_i=b-a.
-```
-
-The Lagrange multiplier condition is
-
-```math
-3|f''(x_i)|h_i^2=lambda.
-```
-
-Therefore
-
-```math
-h_ipropto |f''(x_i)|^{-1/2}.
-```
-
-Equivalently, the breakpoint density is
-
-```math
-ho(x)proptosqrt{|f''(x)|}.
-```
+Therefore the corresponding heuristic breakpoint density is
+\[
+\rho(x)\propto\sqrt{|f''(x)|}.
+\]
 
 Define
+\[
+w(x)=\sqrt{|f''(x)|},
+\qquad
+W(x)=\int_a^xw(t)\,dt.
+\]
+Equal increments of $W$ give the candidate asymptotic grid
+\[
+W(x_i)\approx\frac{i}{n}W(b).
+\]
 
-```math
-w(x)=sqrt{|f''(x)|},
-qquad
-W(x)=int_a^x w(t),dt.
-```
+## 4. Status after introducing continuity
 
-Then the asymptotic grid is characterized by approximately equal increments of $W$:
+The density rule above remains a **heuristic candidate-grid rule**. It must not be described as the exact optimal allocation for the coupled problem until a local asymptotic analysis of the shared-height formulation establishes that result.
 
-```math
-W(x_i)approxrac{i}{n}W(b),
-qquad i=0,ldots,n.
-```
+In particular, the implication
+\[
+\rho(x)\propto\sqrt{|f''(x)|}
+\quad\Longrightarrow\quad
+\text{globally optimal continuous breakpoint allocation}
+\]
+is currently unjustified.
 
-## 4. Degenerate curvature
+The implementation may continue to use curvature to propose candidate grids, but the final optimization on those grids must solve the same shared-height continuous-cover problem as the baseline.
 
-If $f''(x)=0$ on an interval, the second-order model predicts zero leading error there. The true function may still have higher-order curvature, and numerical second derivatives may also be noisy.
+## 5. Numerical curvature estimate
 
-The implementation therefore does not use $w(x)=sqrt{|f''(x)|}$ literally. It uses a positive curvature floor and a bounded density range. These are numerical safeguards, not part of the asymptotic theorem.
+For a black-box callable, the implementation may estimate
+\[
+f''(x)
+\approx
+\frac{f(x+h)-2f(x)+f(x-h)}{h^2}
+\]
+with suitable one-sided formulas near the endpoints.
 
-## 5. Numerical second derivative
+A positive floor and density cap are numerical safeguards. They are not part of the mathematical theory.
 
-The public function type is a generic callable, so the solver cannot assume that an analytic derivative is available. The experimental implementation estimates
+## 6. Separation of errors
 
-```math
-f''(x)approx
-rac{f(x+h)-2f(x)+f(x-h)}{h^2},
-```
+The curvature solver has at least two distinct approximations:
+\[
+\text{curvature estimate}
+\to
+\text{candidate grid}
+\]
+and
+\[
+\text{finite candidate optimization}
+\to
+\text{continuous optimum}.
+\]
 
-with one-sided differences near the endpoints.
+They must not be conflated. In particular, a curvature grid may improve efficiency without changing the mathematical target.
 
-This introduces another numerical approximation. Consequently, the curvature solver should be viewed as a grid-generation heuristic followed by finite-grid DP, not as a new proof of global optimality.
+## 7. Future theorem
 
-## 6. Relationship to the baseline
-
-The baseline remains unchanged. The curvature solver changes only the candidate breakpoint grid:
-
-1. estimate $|f''|$;
-2. construct a density proportional to $sqrt{|f''|}$;
-3. place $N+1$ breakpoints at approximately equal cumulative density;
-4. run the finite-grid dynamic program;
-5. refine $N$ until the objective stabilizes.
-
-Thus every fixed curvature grid still receives the same finite-grid optimization structure. The new approximation is entirely in the choice of candidate grid.
-
-## 7. Scope and limitations
-
-The asymptotic derivation assumes sufficient smoothness and short cells. It is most informative when $f$ is locally well approximated by a quadratic.
-
-It is not a universal theorem that a curvature-adaptive grid is better than a uniform grid for every continuous function. In particular:
-
-- nonsmooth functions are outside the $C^2$ derivation;
-- rapidly changing curvature can make coarse curvature sampling inaccurate;
-- sign changes of $f''$ can change exact one-segment geometry;
-- higher-order effects matter where $f''$ is small;
-- numerical differentiation can amplify noise.
-
-For this reason the curvature solver is an experimental second solver and should be compared against the baseline rather than replacing it.
-
-## 8. Future directions
-
-The derivation suggests:
-
-- deriving higher-order local asymptotics when $f''$ vanishes;
-- using analytic or spline derivatives when available;
-- adapting the grid from the actual one-segment cost rather than only from $f''$;
-- combining curvature prediction with a posteriori DP-error indicators;
-- investigating Monge or related structure in the cost matrix for restricted function classes.
+A rigorous curvature theorem should start from the **shared-height local problem**, derive its leading error coefficient, and then optimize the resulting density functional. Only after that derivation can the exponent and weighting function be claimed for the actual target problem.

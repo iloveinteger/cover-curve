@@ -1,31 +1,61 @@
-let wasmModule = null;
+let solverReady = false;
+const worker = new Worker("solver-worker.js");
 
-CoverCurve().then((module) => {
-  wasmModule = module;
-  document.getElementById("status").textContent = "Ready.";
-}).catch((error) => {
-  document.getElementById("status").textContent = "Failed to load WebAssembly: " + error;
-});
+const status = document.getElementById("status");
+const solveButton = document.getElementById("solve");
 
-const FUNCTIONS = {
-  sin: Math.sin,
-  cos: Math.cos,
-  tan: Math.tan,
-  asin: Math.asin,
-  acos: Math.acos,
-  atan: Math.atan,
-  exp: Math.exp,
-  log: Math.log,
-  sqrt: Math.sqrt,
-  abs: Math.abs,
-  floor: Math.floor,
-  ceil: Math.ceil,
-  pow: Math.pow
-};
+status.textContent = "Loading solver...";
+solveButton.disabled = true;
 
-const CONSTANTS = {
-  pi: Math.PI,
-  e: Math.E
+worker.onmessage = (event) => {
+  const data = event.data;
+
+  if (data.type === "ready") {
+    solverReady = true;
+    solveButton.disabled = false;
+    status.textContent = "Ready.";
+    return;
+  }
+
+  if (data.type === "load-error") {
+    solverReady = false;
+    solveButton.disabled = true;
+    status.textContent = "Failed to load WebAssembly: " + data.error;
+    return;
+  }
+
+  if (data.type === "error") {
+    solveButton.disabled = false;
+    status.textContent = data.error;
+    return;
+  }
+
+  if (data.type === "result") {
+    solveButton.disabled = false;
+
+    if (data.error) {
+      status.textContent = data.error;
+      return;
+    }
+
+    const a = Number(document.getElementById("a").value);
+    const b = Number(document.getElementById("b").value);
+    const expression = document.getElementById("expression").value.trim();
+
+    document.getElementById("value").textContent =
+      Number(data.value).toPrecision(10);
+    document.getElementById("details").textContent =
+      "Breakpoints: " + JSON.stringify(data.breakpoints) + "\n\n" +
+      JSON.stringify(data.segments, null, 2);
+
+    try {
+      const f = makeFunction(expression);
+      draw(data, f, a, b);
+      status.textContent = "Solved.";
+    } catch (error) {
+      status.textContent = error.message || String(error);
+    }
+  }
 };
 
 function makeFunction(expression) {
@@ -206,10 +236,9 @@ function draw(result, f, a, b) {
   }
 }
 
-document.getElementById("solve").addEventListener("click", () => {
-  const status = document.getElementById("status");
-  if (!wasmModule) {
-    status.textContent = "WebAssembly is still loading.";
+solveButton.addEventListener("click", () => {
+  if (!solverReady) {
+    status.textContent = "Solver is still loading.";
     return;
   }
 
@@ -224,19 +253,10 @@ document.getElementById("solve").addEventListener("click", () => {
     if (!Number.isInteger(n) || n < 1)
       throw new Error("n must be a positive integer.");
 
-    const f = makeFunction(expression);
-    const result = wasmModule.solve(f, a, b, n);
-    if (result.error)
-      throw new Error(result.error);
-
-    document.getElementById("value").textContent =
-      Number(result.value).toPrecision(10);
-    document.getElementById("details").textContent =
-      "Breakpoints: " + JSON.stringify(result.breakpoints) + "\n\n" +
-      JSON.stringify(result.segments, null, 2);
-
-    draw(result, f, a, b);
-    status.textContent = "Solved.";
+    makeFunction(expression)(0);
+    solveButton.disabled = true;
+    status.textContent = "Solving…";
+    worker.postMessage({expression, a, b, n});
   } catch (error) {
     status.textContent = error.message || String(error);
   }

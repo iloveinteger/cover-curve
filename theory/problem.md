@@ -1,6 +1,6 @@
 # Problem
 
-Let \(f:[a,b]\to\mathbb R\) be sufficiently regular.
+Let $f:[a,b]\to\mathbb R$ be sufficiently regular.
 
 We want a continuous boundary made from exactly \(n\) line segments that lies everywhere above the graph of \(f\), while minimizing the enclosed vertical area:
 

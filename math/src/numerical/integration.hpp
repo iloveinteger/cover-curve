@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cover_curve/cover_curve.hpp>
+#include <cover_curve/types.hpp>
 
 namespace cover_curve::numerical {
 

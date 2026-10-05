@@ -1,4 +1,3 @@
-```javascript id="r8k2qm"
 function simpson(f, a, b, fa, fm, fb) {
   return (b - a) * (fa + 4 * fm + fb) / 6;
 }
@@ -489,4 +488,3 @@ export function oneSegmentCost(
     contact: support.x
   };
 }
-```

@@ -1,39 +1,39 @@
 # Independent one-segment problem
 
 Let $a\le u<v\le b$. Define
-$
+$$
 C_{\mathrm{ind}}(u,v)
 =
 \min_{\substack{L\text{ affine}\\L(x)\ge f(x)\ \forall x\in[u,v]}}
 \int_u^v(L(x)-f(x))\,dx.
-$
+$$
 
 Write
-$
+$$
 L(x)=\alpha+\beta x.
-$
+$$
 
 ## Lemma 1 — Elimination of the intercept
 
 For fixed $\beta$, the least feasible intercept is
-$
+$$
 \alpha(\beta)
 =
 \max_{x\in[u,v]}(f(x)-\beta x).
-$
+$$
 
 ### Proof
 
 The condition $L\ge f$ is equivalent to
-$
+$$
 \alpha\ge f(x)-\beta x
 \qquad(x\in[u,v]).
-$
+$$
 The function $x\mapsto f(x)-\beta x$ is continuous on the compact interval $[u,v]$, so its maximum exists. The least feasible $\alpha$ is therefore the stated maximum. ∎
 
 ## Corollary 2
 
-$
+$$
 C_{\mathrm{ind}}(u,v)
 =
 \min_{\beta\in\mathbb R}
@@ -44,7 +44,7 @@ C_{\mathrm{ind}}(u,v)
 -
 \int_u^v f(x)\,dx
 \right].
-$
+$$
 
 ### Proof
 
@@ -65,45 +65,45 @@ The minimum in Corollary 2 is attained.
 ### Proof
 
 Let $F(\beta)$ denote the objective in Corollary 2. It is continuous because
-$
+$$
 \beta\mapsto\max_{x\in[u,v]}(f(x)-\beta x)
-$
+$$
 is the supremum of affine functions whose slopes belong to the bounded interval $[-v,-u]$, hence is Lipschitz.
 
 As $\beta\to+\infty$, using the term $x=u$ in the maximum gives
-$
+$$
 F(\beta)
 \ge
 (v-u)f(u)
 +\frac{(v-u)^2}{2}\beta
 -\int_u^v f(x)\,dx
 \longrightarrow+\infty.
-$
+$$
 As $\beta\to-\infty$, using the term $x=v$ gives
-$
+$$
 F(\beta)
 \ge
 (v-u)f(v)
 -\frac{(v-u)^2}{2}\beta
 -\int_u^v f(x)\,dx
 \longrightarrow+\infty.
-$
+$$
 Thus $F$ is continuous and coercive on $\mathbb R$, so it attains its minimum. ∎
 
 ## Proposition 4 — Relation to the continuous problem
 
 For prescribed endpoint heights $p,q$, the unique affine segment joining $(u,p)$ and $(v,q)$ is
-$
+$$
 L_{u,v;p,q}(x)
 =
 \frac{v-x}{v-u}p+\frac{x-u}{v-u}q.
-$
+$$
 Its conditional cost is
-$
+$$
 C(u,v;p,q)
 =
 \frac{v-u}{2}(p+q)-\int_u^v f(x)\,dx
-$
+$$
 when $L_{u,v;p,q}\ge f$ on $[u,v]$, and is $+\infty$ otherwise.
 
 Consequently, independent minimization does not impose the shared endpoint heights required by the continuous problem and is, in general, a relaxation of it.
@@ -111,7 +111,7 @@ Consequently, independent minimization does not impose the shared endpoint heigh
 ### Proof
 
 The displayed affine function is the unique affine function taking the prescribed endpoint values. Its integral is the trapezoidal area
-$
+$$
 \frac{v-u}{2}(p+q).
-$
+$$
 The final statement follows because the independent problem allows its two endpoint values to be chosen freely, whereas in a continuous piecewise-affine majorant each endpoint value is shared by the adjacent segments. ∎

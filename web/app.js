@@ -1,7 +1,7 @@
-let moduleReady = false;
+let wasmModule = null;
 
-CoverCurve().then(() => {
-  moduleReady = true;
+CoverCurve().then((module) => {
+  wasmModule = module;
   document.getElementById("status").textContent = "Ready.";
 }).catch((error) => {
   document.getElementById("status").textContent = "Failed to load WebAssembly: " + error;
@@ -50,7 +50,7 @@ function draw(result, f, a, b) {
 
 document.getElementById("solve").addEventListener("click", () => {
   const status = document.getElementById("status");
-  if (!moduleReady) {
+  if (!wasmModule) {
     status.textContent = "WebAssembly is still loading.";
     return;
   }
@@ -66,7 +66,7 @@ document.getElementById("solve").addEventListener("click", () => {
       throw new Error("n must be a positive integer.");
 
     const f = makeFunction(expression);
-    const result = Module.solve(f, a, b, n);
+    const result = wasmModule.solve(f, a, b, n);
     if (result.error) throw new Error(result.error);
 
     document.getElementById("value").textContent = Number(result.value).toPrecision(10);

@@ -165,58 +165,187 @@ TransitionConstraint transitionConstraint(
 
 namespace cover_curve::algorithms::adaptive_grid_dp {
 
-Result solveGridDP(
+namespace {
+
+struct TransitionConstraint {
+    double height = std::numeric_limits<double>::infinity();
+    double contact = std::numeric_limits<double>::quiet_NaN();
+};
+
+struct DPState {
+    double value = std::numeric_limits<double>::infinity();
+    int parentGrid = -1;
+    int parentHeight = -1;
+};
+
+double sampledMinimum(
     const Function& f,
-    double a,
-    double b,
-    int n,
-    int N,
+    const std::vector<double>& points
+) {
+    double minimum = std::numeric_limits<double>::infinity();
+    for (double x : points)
+        minimum = std::min(minimum, f(x));
+
+    const Function negated = [&](double x) {
+        return -f(x);
+    };
+    const auto support =
+        numerical::adaptiveSupportMaximum(
+            negated,
+            points.front(),
+            points.back(),
+            0.0
+        );
+
+    if (std::isfinite(support.value))
+        minimum = std::min(minimum, -support.value);
+
+    return minimum;
+}
+
+double sampledMaximum(
+    const Function& f,
+    const std::vector<double>& points
+) {
+    double maximum = -std::numeric_limits<double>::infinity();
+    for (double x : points)
+        maximum = std::max(maximum, f(x));
+
+    const auto support =
+        numerical::adaptiveSupportMaximum(
+            f,
+            points.front(),
+            points.back(),
+            0.0
+        );
+
+    if (std::isfinite(support.value))
+        maximum = std::max(maximum, support.value);
+
+    return maximum;
+}
+
+std::vector<double> makeHeightGrid(
+    double minimum,
+    double maximum,
+    double rho,
     int heightLevels
 ) {
-    if (!f)
-        throw std::invalid_argument("Function must be valid.");
-
-    if (!std::isfinite(a) ||
-        !std::isfinite(b) ||
-        a >= b) {
-        throw std::invalid_argument(
-            "Require finite a < b."
-        );
-    }
-
-    if (n < 1)
-        throw std::invalid_argument(
-            "n must be positive."
-        );
-
-    if (N < n)
-        throw std::invalid_argument(
-            "N must satisfy N >= n."
-        );
-
     if (heightLevels < 2)
         throw std::invalid_argument(
             "heightLevels must be at least 2."
         );
 
-    const double infinity =
-        std::numeric_limits<double>::infinity();
+    const double C =
+        std::max(0.0, maximum - minimum);
 
-    std::vector<double> points(N + 1);
+    const double upper =
+        minimum
+        + 4.0 * C
+            / std::max(
+                rho,
+                std::numeric_limits<double>::min()
+            );
 
-    for (int i = 0; i <= N; ++i) {
-        points[i] =
-            a + (b - a) * i / N;
+    if (!std::isfinite(upper) || upper <= minimum)
+        return {minimum};
+
+    std::vector<double> heights(heightLevels);
+    for (int i = 0; i < heightLevels; ++i) {
+        heights[i] =
+            minimum
+            + (upper - minimum) * i
+                / (heightLevels - 1);
+    }
+    return heights;
+}
+
+TransitionConstraint computeTransition(
+    const Function& f,
+    double u,
+    double v,
+    double p
+) {
+    const double width = v - u;
+    const double epsilon =
+        std::max(
+            1e-12 * width,
+            32.0 * std::numeric_limits<double>::epsilon()
+                * std::max({1.0, std::abs(u), std::abs(v)})
+        );
+
+    const double left =
+        std::min(v, u + epsilon);
+
+    const Function ratio = [&](double x) {
+        const double xx = std::max(x, left);
+        return (f(xx) - p) / (xx - u);
+    };
+
+    const auto support =
+        numerical::adaptiveSupportMaximum(
+            ratio,
+            left,
+            v,
+            0.0
+        );
+
+    if (!std::isfinite(support.value))
+        return {};
+
+    return {
+        p + width * support.value,
+        support.x
+    };
+}
+
+} // namespace
+
+Result solveGridDPOnGrid(
+    const Function& f,
+    const std::vector<double>& points,
+    int n,
+    int heightLevels
+) {
+    if (!f)
+        throw std::invalid_argument("Function must be valid.");
+
+    if (points.size() < 2)
+        throw std::invalid_argument(
+            "Grid must contain at least two points."
+        );
+
+    if (n < 1 ||
+        static_cast<int>(points.size()) - 1 < n) {
+        throw std::invalid_argument(
+            "Require at least n grid cells."
+        );
     }
 
-    const double rho =
-        (b - a) / N;
+    for (std::size_t i = 1; i < points.size(); ++i) {
+        if (!std::isfinite(points[i - 1]) ||
+            !std::isfinite(points[i]) ||
+            points[i] <= points[i - 1]) {
+            throw std::invalid_argument(
+                "Grid points must be finite and strictly increasing."
+            );
+        }
+    }
+
+    const int N =
+        static_cast<int>(points.size()) - 1;
+
+    double rho = std::numeric_limits<double>::infinity();
+    for (int i = 0; i < N; ++i)
+        rho = std::min(
+            rho,
+            points[i + 1] - points[i]
+        );
 
     const double minimum =
-        safeFunctionMinimum(f, points);
-
+        sampledMinimum(f, points);
     const double maximum =
-        safeFunctionMaximum(f, points);
+        sampledMaximum(f, points);
 
     if (!std::isfinite(minimum) ||
         !std::isfinite(maximum) ||
@@ -237,9 +366,6 @@ Result solveGridDP(
     const int H =
         static_cast<int>(heights.size());
 
-    // For every candidate segment (i,j) and every left height p,
-    // store the minimum right height required by the sampled numerical
-    // transition evaluator.
     std::vector<
         std::vector<std::vector<TransitionConstraint>>
     > transitions(
@@ -252,20 +378,17 @@ Result solveGridDP(
 
     for (int i = 0; i < N; ++i) {
         for (int j = i + 1; j <= N; ++j) {
-            const double u = points[i];
-            const double v = points[j];
-
             for (int hp = 0; hp < H; ++hp) {
                 const double p = heights[hp];
 
-                if (p < f(u))
+                if (p < f(points[i]))
                     continue;
 
                 transitions[i][j][hp] =
-                    transitionConstraint(
+                    computeTransition(
                         f,
-                        u,
-                        v,
+                        points[i],
+                        points[j],
                         p
                     );
             }
@@ -273,32 +396,21 @@ Result solveGridDP(
     }
 
     std::vector<
-        std::vector<DPState>
-    > previous(
-        N + 1,
-        std::vector<DPState>(H)
-    );
-
-    std::vector<
-        std::vector<DPState>
-    > current(
-        N + 1,
-        std::vector<DPState>(H)
+        std::vector<std::vector<DPState>>
+    > history(
+        n + 1,
+        std::vector<std::vector<DPState>>(
+            N + 1,
+            std::vector<DPState>(H)
+        )
     );
 
     for (int hp = 0; hp < H; ++hp) {
-        if (heights[hp] >= f(a)) {
-            previous[0][hp].value = 0.0;
-        }
+        if (heights[hp] >= f(points.front()))
+            history[0][0][hp].value = 0.0;
     }
 
     for (int k = 1; k <= n; ++k) {
-        for (int j = 0; j <= N; ++j) {
-            for (int hp = 0; hp < H; ++hp) {
-                current[j][hp] = {};
-            }
-        }
-
         for (int j = k; j <= N; ++j) {
             const double x1 = points[j];
 
@@ -308,57 +420,53 @@ Result solveGridDP(
                 if (q < f(x1))
                     continue;
 
-                double best = infinity;
-                int bestGrid = -1;
-                int bestHeight = -1;
+                DPState best;
 
                 for (int i = k - 1; i < j; ++i) {
                     const double dx =
                         x1 - points[i];
 
-                    const double qCoefficient =
-                        dx / 2.0;
-
                     for (int hp = 0; hp < H; ++hp) {
-                        const DPState& state =
-                            previous[i][hp];
+                        const DPState& previous =
+                            history[k - 1][i][hp];
 
-                        if (!std::isfinite(state.value))
+                        if (!std::isfinite(previous.value))
                             continue;
 
-                        const TransitionConstraint& transition =
+                        const auto& transition =
                             transitions[i][j][hp];
 
                         if (q < transition.height)
                             continue;
 
                         const double candidate =
-                            state.value
-                            + qCoefficient * (heights[hp] + q);
+                            previous.value
+                            + dx
+                                * (heights[hp] + q)
+                                / 2.0;
 
-                        if (candidate < best) {
-                            best = candidate;
-                            bestGrid = i;
-                            bestHeight = hp;
+                        if (candidate < best.value) {
+                            best.value = candidate;
+                            best.parentGrid = i;
+                            best.parentHeight = hp;
                         }
                     }
                 }
 
-                current[j][hq].value = best;
-                current[j][hq].parentGrid = bestGrid;
-                current[j][hq].parentHeight = bestHeight;
+                history[k][j][hq] = best;
             }
         }
-
-        previous.swap(current);
     }
 
-    double bestIntegral = infinity;
+    double bestIntegral = std::numeric_limits<double>::infinity();
     int finalHeight = -1;
 
     for (int hq = 0; hq < H; ++hq) {
-        if (previous[N][hq].value < bestIntegral) {
-            bestIntegral = previous[N][hq].value;
+        const double value =
+            history[n][N][hq].value;
+
+        if (value < bestIntegral) {
+            bestIntegral = value;
             finalHeight = hq;
         }
     }
@@ -375,75 +483,6 @@ Result solveGridDP(
 
     gridIndices[n] = N;
     heightIndices[n] = finalHeight;
-
-    // The current layer stores only parents for the final k. Recompute
-    // predecessor layers during backtracking using the same recurrence.
-    // This keeps the persistent memory independent of n.
-    //
-    // For the current implementation, retain the complete DP history
-    // instead of attempting to reconstruct through recomputation.
-    std::vector<
-        std::vector<
-            std::vector<DPState>
-        >
-    > history(
-        n + 1,
-        std::vector<std::vector<DPState>>(
-            N + 1,
-            std::vector<DPState>(H)
-        )
-    );
-
-    for (int hp = 0; hp < H; ++hp) {
-        if (heights[hp] >= f(a))
-            history[0][0][hp].value = 0.0;
-    }
-
-    for (int k = 1; k <= n; ++k) {
-        for (int j = k; j <= N; ++j) {
-            const double x1 = points[j];
-
-            for (int hq = 0; hq < H; ++hq) {
-                const double q = heights[hq];
-
-                if (q < f(x1))
-                    continue;
-
-                DPState bestState;
-
-                for (int i = k - 1; i < j; ++i) {
-                    const double dx =
-                        x1 - points[i];
-
-                    for (int hp = 0; hp < H; ++hp) {
-                        const DPState& state =
-                            history[k - 1][i][hp];
-
-                        if (!std::isfinite(state.value))
-                            continue;
-
-                        const auto& transition =
-                            transitions[i][j][hp];
-
-                        if (q < transition.height)
-                            continue;
-
-                        const double candidate =
-                            state.value
-                            + dx * (heights[hp] + q) / 2.0;
-
-                        if (candidate < bestState.value) {
-                            bestState.value = candidate;
-                            bestState.parentGrid = i;
-                            bestState.parentHeight = hp;
-                        }
-                    }
-                }
-
-                history[k][j][hq] = bestState;
-            }
-        }
-    }
 
     for (int k = n; k >= 1; --k) {
         const DPState& state =
@@ -470,9 +509,6 @@ Result solveGridDP(
         vertexHeights[k] = heights[heightIndices[k]];
     }
 
-    const double integralF =
-        numerical::adaptiveIntegral(f, a, b);
-
     double totalCost = 0.0;
 
     for (int k = 0; k < n; ++k) {
@@ -484,7 +520,6 @@ Result solveGridDP(
 
         const double slope =
             (y1 - y0) / dx;
-
         const double intercept =
             y0 - slope * x0;
 
@@ -510,12 +545,6 @@ Result solveGridDP(
         const double cost =
             segmentIntegral - segmentF;
 
-        if (cost < -1e-9) {
-            throw std::runtime_error(
-                "Constructed segment violates numerical majorant constraints."
-            );
-        }
-
         segments.push_back({
             x0,
             x1,
@@ -535,4 +564,39 @@ Result solveGridDP(
     };
 }
 
+Result solveGridDP(
+    const Function& f,
+    double a,
+    double b,
+    int n,
+    int N,
+    int heightLevels
+) {
+    if (!std::isfinite(a) ||
+        !std::isfinite(b) ||
+        a >= b) {
+        throw std::invalid_argument(
+            "Require finite a < b."
+        );
+    }
+
+    if (N < n)
+        throw std::invalid_argument(
+            "N must satisfy N >= n."
+        );
+
+    std::vector<double> points(N + 1);
+    for (int i = 0; i <= N; ++i)
+        points[i] =
+            a + (b - a) * i / N;
+
+    return solveGridDPOnGrid(
+        f,
+        points,
+        n,
+        heightLevels
+    );
+}
+
 } // namespace cover_curve::algorithms::adaptive_grid_dp
+

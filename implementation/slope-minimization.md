@@ -1,44 +1,65 @@
-# Slope Minimization
+# One-Segment Slope Minimization
 
-For $L(x)=\alpha+\beta x$ on $[u,v]$, feasibility gives
+This module is a numerical primitive and reference calculation, not the global optimization algorithm.
 
-```math
+## 1. Independent one-segment problem
+
+For a single interval ([u,v]), an affine line
+\[
+L(x)=\alpha+\beta x
+\]
+is feasible when
+\[
 \alpha\ge\max_{x\in[u,v]}(f(x)-\beta x).
-```
+\]
 
-For fixed $\beta$, choosing the smallest feasible intercept is always optimal because increasing $\alpha$ increases the integral error.
+For fixed (eta), the smallest feasible intercept is
+\[
+\alpha(\beta)=\max_{x\in[u,v]}(f(x)-\beta x).
+\]
 
-Therefore the implementation minimizes the scalar function
-
-```math
+Thus the independent one-segment objective is
+\[
 \Phi(\beta)
-=(v-u)\max_x(f(x)-\beta x)
-+\beta\frac{v^2-u^2}{2}
--\int_u^v f(x)\,dx.
-```
+=
+(v-u)\alpha(\beta)
++
+\beta\frac{v^2-u^2}{2}
+-
+\int_u^v f(x)\,dx.
+\]
 
-## Convexity
+The support term is convex in (eta), so the exact scalar objective is convex.
 
-The support term
+## 2. Role in the current architecture
 
-```math
-\beta\mapsto\max_x(f(x)-\beta x)
-```
+This calculation can be used for:
 
-is a pointwise maximum of affine functions of $\beta$, hence convex. Adding the linear term in $\beta$ and a constant preserves convexity.
+- (n=1) validation;
+- regression tests;
+- numerical diagnostics;
+- benchmarking the support-search primitive.
 
-This means a one-dimensional bracketing method such as golden-section search is appropriate for the exact objective.
+It must **not** be used as the transition cost in the (n>1) shared-height DP.
 
-## Numerical implementation
+The reason is that the independent problem chooses both endpoint heights implicitly for each segment. The target problem must use one common height at every internal breakpoint.
 
-The implementation:
+## 3. Numerical method
 
-- evaluates the support maximum numerically;
-- searches for a finite slope bracket;
-- performs golden-section minimization inside the bracket;
-- reconstructs the optimal intercept from the support maximum at the selected slope.
+The current numerical route is:
 
-The result contains the segment endpoints and numerical cost, together with the line parameters supplied by the solver's internal representation.
+1. evaluate the support maximum numerically;
+2. obtain a finite slope bracket;
+3. minimize the scalar objective inside the bracket;
+4. reconstruct the line.
 
-Because the support maximum itself is approximated, numerical convexity is not guaranteed point-for-point. The minimizer should therefore be interpreted with the requested numerical tolerance rather than as a symbolic certificate.
+Because the support maximum is numerical, the returned value is a numerical approximation rather than an exact certificate.
+
+## 4. Required invariant
+
+No result from this module may be interpreted as
+\[
+C(u,v)
+\]
+for a shared-height DP unless the left and right endpoint heights are explicitly retained as part of the state.
 

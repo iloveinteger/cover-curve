@@ -48,7 +48,7 @@ $V(X) = \min_{y\in\mathcal F_X} E_X(y).$
 
 The global value is
 
-$E_n^* = \inf { E(g): g\text{ is an admissible }n\text{-segment majorant} }.$
+$E_n^* = \inf E(g)$ over all admissible $n$-segment majorants $g$.
 
 ## Theorem 1 — Existence for fixed breakpoints
 

@@ -8,7 +8,7 @@ CoverCurve().then((module) => {
 });
 
 function makeFunction(expression) {
-  if (!/^[0-9a-zA-Z_+\\-*/%()., ?:[\\]]+$/.test(expression))
+  if (!/^[0-9a-zA-Z_+*/%()., ?:[\\]-]+$/.test(expression))
     throw new Error("Function expression contains unsupported characters.");
   return new Function("x", "return (" + expression + ");");
 }

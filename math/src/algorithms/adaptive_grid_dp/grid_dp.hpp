@@ -9,7 +9,8 @@ Result solveGridDP(
     double a,
     double b,
     int n,
-    int N
+    int N,
+    int heightLevels = 64
 );
 
 }

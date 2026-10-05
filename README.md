@@ -9,7 +9,9 @@ Given a function $f:[a,b]\to\mathbb R$, approximate it from above by exactly $n$
 We seek a continuous piecewise-linear function $g$ with exactly $n$ segments such that
 
 $$
-g(x)\ge f(x)\qquad(a\le x\le b)
+g(x)\ge f(x)
+\qquad
+(a\le x\le b)
 $$
 
 and minimize
@@ -27,9 +29,10 @@ $$
 For one interval define
 
 $$
-C(u,v)=
+C(u,v)
+=
 \min_{L\ge f\text{ on }[u,v]}
-\int_u^v(L(x)-f(x))\,dx.
+\int_u^v (L(x)-f(x))\,dx.
 $$
 
 Then the global problem is
@@ -50,22 +53,20 @@ For
 $$
 G_N
 =
-\left\{
-a+\frac{j(b-a)}{N}
-\mid
-j=0,\ldots,N
-\right\},
+\{a+\frac{j(b-a)}{N}\mid j=0,\ldots,N\},
 $$
 
-the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval. The finite breakpoint problem is then solved exactly by dynamic programming:
+the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval.
+
+The finite breakpoint problem is then solved exactly by dynamic programming:
 
 $$
 F[k][j]
 =
 \min_{i<j}
-\left(
+\bigl(
 F[k-1][i]+C(x_i,x_j)
-\right).
+\bigr).
 $$
 
 Thus
@@ -83,9 +84,7 @@ $$
 and, under standard regularity assumptions,
 
 $$
-\boxed{
-E_{n,N}\longrightarrow E_n^*
-}.
+E_{n,N}\longrightarrow E_n^*.
 $$
 
 This gives a principled refinement method rather than a greedy search.
@@ -106,7 +105,9 @@ For local development, any static HTTP server works, for example:
 python -m http.server 8000 -d docs
 ```
 
-Then open `http://localhost:8000`.
+Then open:
+
+`http://localhost:8000`
 
 ## License
 

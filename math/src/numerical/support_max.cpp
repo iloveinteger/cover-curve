@@ -142,7 +142,12 @@ SupportMaximum adaptiveSupportMaximum(
             );
 
         std::vector<Interval> next;
-        next.reserve(count * 2);
+        next.reserve(intervals.size() + count);
+
+        // Keep unselected intervals: a global maximum may lie in any region.
+        for (int i = count; i < static_cast<int>(scored.size()); ++i) {
+            next.push_back(scored[i].interval);
+        }
 
         for (int i = 0; i < count; ++i) {
             const auto& interval =

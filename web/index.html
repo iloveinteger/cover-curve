@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cover Curve</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Cover Curve</h1>
+      <p>Optimal piecewise-linear upper approximation of a continuous curve.</p>
+    </header>
+
+    <section class="panel">
+      <label>Function f(x)
+        <input id="expression" value="x*x" spellcheck="false">
+      </label>
+      <div class="grid">
+        <label>a <input id="a" type="number" value="0" step="any"></label>
+        <label>b <input id="b" type="number" value="1" step="any"></label>
+        <label>Segments n <input id="n" type="number" value="2" min="1" step="1"></label>
+      </div>
+      <button id="solve">Solve</button>
+      <p id="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Result</h2>
+      <p>Minimum area: <strong id="value">—</strong></p>
+      <canvas id="plot" width="900" height="500"></canvas>
+      <pre id="details"></pre>
+    </section>
+  </main>
+  <script src="cover_curve.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

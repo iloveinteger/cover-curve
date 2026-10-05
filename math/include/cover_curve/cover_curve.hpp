@@ -4,3 +4,4 @@
 #include <cover_curve/expression.hpp>
 #include <cover_curve/interpolation.hpp>
 #include <cover_curve/solvers/adaptive_grid_dp.hpp>
+#include <cover_curve/solvers/curvature_adaptive.hpp>

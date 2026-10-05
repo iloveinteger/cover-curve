@@ -1,52 +1,98 @@
 # Numerical Methods
 
-This document describes how the numerical components of Cover Curve are implemented. It is intentionally separate from `theory/`: the theory explains mathematical correctness and the present document explains computational choices.
+This document specifies numerical primitives used by the shared-height solver. It deliberately separates numerical approximation from the mathematical optimization defined in `theory/`.
 
-## Integration
+## 1. Integration
 
-The library uses adaptive Simpson quadrature for integrals of the supplied callable.
+The implementation needs numerical values of
+\[
+I(u,v)=\int_u^v f(x)\,dx.
+\]
 
-For an interval $[u,v]$, Simpson's rule uses
+Adaptive Simpson quadrature is the current integration method. For an interval ([u,v]),
+\[
+S(u,v)=\frac{v-u}{6}
+\left(
+f(u)+4f\left(\frac{u+v}{2}\right)+f(v)
+\right).
+\]
 
-```math
-S(u,v)=\frac{v-u}{6}\left(f(u)+4f\left(\frac{u+v}{2}\right)+f(v)\right).
-```
+The implementation recursively subdivides an interval when the estimated quadrature error exceeds the requested tolerance. The accepted estimate uses the standard Simpson correction.
 
-An interval is recursively subdivided when the difference between the parent Simpson estimate and the two child estimates is too large. The accepted estimate includes the usual Simpson error correction.
+Integration error is independent of breakpoint and height discretization error and should therefore be reported separately.
 
-The implementation is designed for ordinary continuous numerical functions rather than symbolic integration.
+## 2. Transition evaluation
 
-## Support maximum
+The shared-height DP needs
+\[
+T_{u,v}(p)
+=
+\sup_{u<x\le v}
+\left[
+p+\frac{v-u}{x-u}(f(x)-p)
+\right].
+\]
 
-For a fixed slope $\beta$, the one-segment problem needs
+This is not the same numerical problem as the old independent one-segment slope minimization.
 
-```math
-\max_{x\in[u,v]}(f(x)-\beta x).
-```
+For sampled constraint points (S\subset(u,v]), evaluate
+\[
+T_S(u,v;p)
+=
+\max_{x\in S}
+\left[
+p+\frac{v-u}{x-u}(f(x)-p)
+\right].
+\]
 
-The implementation first samples the interval, scores subintervals using endpoint/midpoint information, and recursively refines several promising regions. Importantly, regions that are not selected for immediate refinement are retained for later consideration; they are not discarded.
+The sampled maximum is a lower approximation to the exact supremum. It must not be silently treated as a proof of feasibility.
 
-This is a global-search heuristic. For an arbitrary continuous black-box callable, finite evaluations cannot certify that the discovered maximum is the true global maximum unless additional regularity information such as a known Lipschitz bound is available.
+## 3. Support-search primitive
 
-## Slope minimization
+The existing support-search machinery for
+\[
+\max_{x\in[u,v]}(f(x)-\beta x)
+\]
+may remain as a reusable numerical primitive.
 
-For a fixed interval, the intercept is eliminated analytically:
+It is useful for independent one-segment diagnostics and for future alternative transition evaluators, but it is not the global DP objective.
 
-```math
-\alpha(\beta)=\max_x(f(x)-\beta x).
-```
+For arbitrary continuous black-box input, finite sampling cannot certify a global maximum without additional information such as a modulus of continuity or a Lipschitz bound.
 
-The remaining objective in $\beta$ is convex. The implementation therefore brackets a minimum and applies a one-dimensional golden-section search to the convex objective.
+## 4. Numerical tolerances
 
-The support maximization is evaluated numerically at each slope candidate, so the computed objective is only an approximation to the exact convex objective.
+The implementation should keep separate tolerances for:
 
-## Numerical robustness
+- integration;
+- transition/support search;
+- breakpoint refinement;
+- height-grid refinement;
+- feasibility checks.
 
-The implementation validates positive tolerances and grid-size constraints. Relative changes in the adaptive outer loop are normalized by
+A single tolerance should not be used to represent all numerical errors.
 
-```math
-\max(1,|E_N|,|E_{2N}|).
-```
+For objective comparisons, a scale such as
+\[
+\max(1,|E_N|,|E_{2N}|)
+\]
+can be used to avoid unstable relative errors when the objective is close to zero.
 
-This avoids unstable relative errors when the objective is close to zero.
+## 5. Feasibility checks
+
+A candidate transition is accepted only if its numerical constraint evaluation indicates
+\[
+q\ge T_{u,v}(p)
+\]
+within the selected numerical policy.
+
+If the numerical method provides only sampled constraints, the result is a numerical candidate rather than a certified majorant. The implementation should expose this distinction instead of reporting sampled feasibility as mathematical feasibility.
+
+## 6. Numerical error versus mathematical convergence
+
+The theorem in `theory/algorithm.md` concerns the exact finite DP followed by
+\[
+\delta_N\to0,qquad \eta_N\to0.
+\]
+
+It does not automatically cover fixed numerical tolerances. A numerical implementation intended to approximate the theorem must also make the evaluation errors tend to zero, or provide a separate error bound.
 

@@ -30,12 +30,8 @@ $E(g) = \int_a^b (g(x)-f(x))\,dx.$
 
 ## Objective
 
-The approximation error is
+The optimum value is
 
-$E(g)=\int_a^b(g(x)-f(x))\,dx.$
+$E_n^*=\min_{g\in\mathcal A_n}E(g),
 
-The goal is to determine the minimum error
-
-$E_n^*=\inf E(g)$
-
-over all admissible $n$-segment majorants $g$.
+where existence is proved in `existence.md`.

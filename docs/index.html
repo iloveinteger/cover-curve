@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cover Curve</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 24px; }
+    canvas { width: 100%; border: 1px solid #ccc; background: white; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+    label { display: flex; gap: 6px; align-items: center; }
+    button { padding: 6px 12px; cursor: pointer; }
+    #status { margin: 12px 0; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Cover Curve</h1>
+  <p>Optimal piecewise-linear upper approximation using breakpoint-grid dynamic programming.</p>
+
+  <div class="controls">
+    <label>Segments <input id="n" type="number" min="1" max="12" value="4"></label>
+    <label>Grid N <input id="N" type="number" min="4" max="300" value="40"></label>
+    <button id="run">Solve</button>
+  </div>
+
+  <canvas id="plot" width="960" height="520"></canvas>
+  <div id="status">Ready.</div>
+
+  <script type="module">
+    import { solveGridDP } from "../src/math/gridDP.js";
+
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+    const status = document.getElementById("status");
+
+    // Example function. The numerical core accepts arbitrary JavaScript f.
+    const f = x => Math.sin(x) + 0.18 * Math.cos(3 * x);
+    const a = 0;
+    const b = 2 * Math.PI;
+
+    function draw(result) {
+      const W = canvas.width;
+      const H = canvas.height;
+      const pad = 55;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const values = [];
+      for (let i = 0; i <= 800; i++) {
+        const x = a + (b - a) * i / 800;
+        values.push(f(x));
+      }
+
+      for (const s of result.segments) {
+        values.push(s.intercept + s.slope * s.x0);
+        values.push(s.intercept + s.slope * s.x1);
+      }
+
+      const ymin = Math.min(...values);
+      const ymax = Math.max(...values);
+      const yrange = Math.max(1e-9, ymax - ymin);
+
+      const X = x => pad + (x - a) / (b - a) * (W - 2 * pad);
+      const Y = y => H - pad - (y - ymin) / yrange * (H - 2 * pad);
+
+      ctx.beginPath();
+      for (let i = 0; i <= 800; i++) {
+        const x = a + (b - a) * i / 800;
+        const y = f(x);
+        if (i === 0) ctx.moveTo(X(x), Y(y));
+        else ctx.lineTo(X(x), Y(y));
+      }
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      for (const s of result.segments) {
+        ctx.beginPath();
+        ctx.moveTo(X(s.x0), Y(s.intercept + s.slope * s.x0));
+        ctx.lineTo(X(s.x1), Y(s.intercept + s.slope * s.x1));
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      for (const x of result.breakpoints) {
+        const y = result.segments.find(s => x >= s.x0 && x <= s.x1);
+        const yy = y ? y.intercept + y.slope * x : f(x);
+        ctx.beginPath();
+        ctx.arc(X(x), Y(yy), 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      status.textContent =
+        `N = ${result.N}\n` +
+        `n = ${result.n}\n` +
+        `Grid optimum E(n,N) = ${result.value.toPrecision(10)}\n` +
+        `Breakpoints = [${result.breakpoints.map(x => x.toFixed(5)).join(", ")}]`;
+    }
+
+    function run() {
+      const n = Number(document.getElementById("n").value);
+      const N = Number(document.getElementById("N").value);
+      status.textContent = "Solving...";
+      setTimeout(() => {
+        try {
+          const result = solveGridDP(f, a, b, n, {
+            N,
+            oneSegment: {
+              samples: 96,
+              slopeIterations: 42
+            }
+          });
+          draw(result);
+        } catch (error) {
+          status.textContent = error.message;
+        }
+      }, 0);
+    }
+
+    document.getElementById("run").addEventListener("click", run);
+    run();
+  </script>
+</body>
+</html>

@@ -40,8 +40,10 @@ Then the global problem is
 ```math
 E_n^*
 =
-\min_{a=x_0<\cdots<x_n=b}
-\sum_{i=0}^{n-1} C(x_i,x_{i+1})
+\min
+\sum_{i=0}^{n-1} C(x_i,x_{i+1}),
+\qquad
+a=x_0<x_1<\cdots<x_n=b
 ```
 
 ## Numerical method

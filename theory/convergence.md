@@ -58,33 +58,55 @@ Let
 $$
 d=\min_{0\le i<n}(x_{i+1}-x_i)>0.
 $$
-For sufficiently large $N$, $2\delta_N<d$. Choose, for each interior $x_i$, a grid point $z_i^{(N)}$ with
+
+For sufficiently large $N$, $2\delta_N<d$. Choose, for each interior breakpoint $x_i$, a grid point $z_i^{(N)}$ satisfying
 $$
-|z_i^{(N)}-x_i|\le\delta_N.
+|z_i^{(N)}-x_i|\le\delta_N,
 $$
-Then
+and set $z_0^{(N)}=a$, $z_n^{(N)}=b$. Then
 $$
 z_{i+1}^{(N)}-z_i^{(N)}
 \ge
-(x_{i+1}-x_i)-2\delta_N>0,
+(x_{i+1}-x_i)-2\delta_N
+>0,
 $$
-so the selected grid points are strictly ordered.
+so the selected points are strictly ordered.
 
-Since $g$ is continuous on the compact interval $[a,b]$, it is uniformly continuous. Let $\omega_g$ be its modulus of continuity:
-$$
-\omega_g(r)
-=
-\sup\{|g(s)-g(t)|:|s-t|\le r\}.
-$$
-Then $\omega_g(r)\to0$ as $r\to0$.
+Because $g$ is continuous and affine on finitely many closed intervals, it is Lipschitz on $[a,b]$. Let $K$ be a Lipschitz constant.
 
-For $x\in[z_i^{(N)},z_{i+1}^{(N)}]$, write
+For each $i$, let $L_i$ be the affine extension to $\mathbb R$ of the restriction of $g$ to $[x_i,x_{i+1}]$. For sufficiently large $N$, the interval $[z_i^{(N)},z_{i+1}^{(N)}]$ differs from $[x_i,x_{i+1}]$ only by endpoint strips of width at most $\delta_N$.
+
+At either selected endpoint,
 $$
-p_N(x)=(1-\lambda)g(z_i^{(N)})+\lambda g(z_{i+1}^{(N)})
+|g(z_i^{(N)})-L_i(z_i^{(N)})|
+\le 2K\delta_N,
 $$
-for some $\lambda\in[0,1]$. Since $g$ is affine on $[x_i,x_{i+1}]$, and the endpoints $z_i^{(N)},z_{i+1}^{(N)}$ converge to $x_i,x_{i+1}$, the two affine functions $p_N$ and $g$ converge uniformly on that interval. There are only finitely many intervals, hence
+and the analogous estimate holds at $z_{i+1}^{(N)}$. Since $p_N-L_i$ is affine on $[z_i^{(N)},z_{i+1}^{(N)}]$, its absolute value is bounded by the maximum of its absolute values at the two endpoints. Hence
 $$
-\|p_N-g\|_\infty\to0.
+|p_N(x)-L_i(x)|
+\le 2K\delta_N
+$$
+throughout $[z_i^{(N)},z_{i+1}^{(N)}]$.
+
+If $x\in[x_i,x_{i+1}]$, then $g(x)=L_i(x)$, so
+$$
+|p_N(x)-g(x)|
+\le2K\delta_N.
+$$
+
+If $x$ lies in an endpoint strip where $x$ is outside $[x_i,x_{i+1}]$, then its distance from the corresponding original breakpoint is at most $\delta_N$. Therefore
+$$
+|g(x)-L_i(x)|\le K\delta_N,
+$$
+and consequently
+$$
+|p_N(x)-g(x)|
+\le3K\delta_N.
+$$
+
+There are finitely many segments, so
+$$
+\|p_N-g\|_\infty\le3K\delta_N\longrightarrow0.
 $$
 ∎
 

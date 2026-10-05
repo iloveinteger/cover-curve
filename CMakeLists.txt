@@ -54,6 +54,7 @@ if(EMSCRIPTEN)
         "-sEXPORT_NAME=CoverCurve"
         "-sENVIRONMENT=web"
         "-sALLOW_MEMORY_GROWTH=1"
+        "--bind"
     )
 
     set_target_properties(cover_curve_web PROPERTIES

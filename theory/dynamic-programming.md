@@ -64,7 +64,7 @@ $V_n(p)=0$ if $p\ge f(b)$, and $V_n(p)=+\infty$ if $p<f(b)$.
 
 For $i=n-1,\ldots,0$, define
 
-$V_i(p)=\inf_{q\ge T_{x_i,x_{i+1}}(p)}[\frac{h_i}{2}(p+q)+V_{i+1}(q) ],&p\ge f(x_i),\\+\infty,&p<f(x_i).$
+For $p\ge f(x_i)$, define $V_i(p)=\inf_{q\ge T_{x_i,x_{i+1}}(p)}[\frac{h_i}{2}(p+q)+V_{i+1}(q)]$. For $p<f(x_i)$, define $V_i(p)=+\infty$.
 
 ## Theorem 3 — Exact Bellman recursion
 
@@ -138,7 +138,7 @@ is convex on $D_i$. Its partial infimum over $q$ is convex. Therefore $V_i$ is c
 
 Let
 
-$D_k(j) = \min_{\substack{0=i_0<\cdots<i_k=j}} \sum_{r=0}^{k-1} C_{\mathrm{ind}}(x_{i_r},x_{i_{r+1}})$
+$D_k(j) = \min_{0=i_0<\cdots<i_k=j} \sum_{r=0}^{k-1} C_{\mathrm{ind}}(x_{i_r},x_{i_{r+1}})$
 
 be the scalar dynamic program obtained by independently minimizing the affine majorant on every segment.
 

@@ -85,7 +85,8 @@ V_i(p)=
 \left[
 \frac{h_i}{2}(p+q)+V_{i+1}(q)
 \right],
-& p\ge f(x_i),\\[2ex]
+& p\ge f(x_i),\$
+2ex]
 +\infty,&p<f(x_i).
 \end{cases}
 $

@@ -76,20 +76,13 @@ so the selected points are strictly ordered.
 
 Because \(g\) is continuous and piecewise affine on finitely many intervals, it is Lipschitz. Let \(K\) be a Lipschitz constant.
 
-Fix \(i\), and let \(L_i\) denote the affine restriction of \(g\) to \([x_i,x_{i+1}]\). For sufficiently large \(N\), each \(z_i^{(N)}\) lies in \((x_{i-1},x_{i+1})\). Hence
-\[
-|g(z_i^{(N)})-L_i(z_i^{(N)})|
-\le 2K\delta_N
-\]
-whenever \(z_i^{(N)}\) lies outside \([x_i,x_{i+1}]\), while the difference is \(0\) when it lies inside. The same statement holds at \(z_{i+1}^{(N)}\).
-
 Let \(L_i\) be the affine restriction of \(g\) to \([x_i,x_{i+1}]\), extended affinely to all of \(\mathbb R\). Since \(g(x_i)=L_i(x_i)\), \(g\) and \(L_i\) are both (K)-Lipschitz, and \(|z_i^{(N)}-x_i|\le\delta_N\),
 \[
 |g(z_i^{(N)})-L_i(z_i^{(N)})|\le2K\delta_N.
 \]
 The same bound holds at (z_{i+1}^{(N)}).
 
-Hence the affine interpolant (p_N) differs from (L_i) by at most (2K\delta_N) on the whole interval ([z_i^{(N)},z_{i+1}^{(N)}]), because an affine function on an interval is bounded in absolute value by the maximum of its absolute endpoint values. If (x\in[x_i,x_{i+1}]), then (g(x)=L_i(x)), so
+Hence the affine interpolant (p_N) differs from (L_i) by at most (2Kdelta_N) on the whole interval ([z_i^{(N)},z_{i+1}^{(N)}]), because an affine function on an interval is bounded in absolute value by the maximum of its absolute endpoint values. If ($x\in[x_i,x_{i+1}]$), then ($g(x)=L_i(x)$), so
 \[
 |p_N(x)-g(x)|\le2K\delta_N.
 \]

@@ -5,8 +5,55 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <thread>
 #include <utility>
 #include <vector>
+
+namespace {
+
+template <class F>
+void parallelFor(int begin, int end, F&& fn) {
+#ifdef __EMSCRIPTEN__
+    for (int i = begin; i < end; ++i) fn(i);
+#else
+    const int count = end - begin;
+    if (count <= 1) {
+        for (int i = begin; i < end; ++i) fn(i);
+        return;
+    }
+
+    const unsigned workers = std::max(
+        1u,
+        std::thread::hardware_concurrency()
+    );
+    const int threadCount = std::min(
+        count,
+        static_cast<int>(workers)
+    );
+
+    if (threadCount <= 1) {
+        for (int i = begin; i < end; ++i) fn(i);
+        return;
+    }
+
+    std::vector<std::thread> threads;
+    threads.reserve(threadCount);
+
+    const int chunk = (count + threadCount - 1) / threadCount;
+    for (int t = 0; t < threadCount; ++t) {
+        const int first = begin + t * chunk;
+        const int last = std::min(end, first + chunk);
+        if (first >= last) break;
+        threads.emplace_back([first, last, &fn] {
+            for (int i = first; i < last; ++i) fn(i);
+        });
+    }
+
+    for (auto& thread : threads) thread.join();
+#endif
+}
+
+}
 
 namespace cover_curve::algorithms::adaptive_grid_dp {
 
@@ -63,7 +110,9 @@ Result solveGridDP(
         std::vector<Segment>(N + 1)
     );
 
-    for (int i = 0; i < N; ++i) {
+    // Every segment (i, j) is independent, so the expensive one-segment
+    // computations can be evaluated concurrently on native builds.
+    parallelFor(0, N, [&](int i) {
         for (int j = i + 1; j <= N; ++j) {
             const Segment segment =
                 oneSegmentCost(
@@ -81,7 +130,7 @@ Result solveGridDP(
             costs[i][j] = segment.cost;
             segments[i][j] = segment;
         }
-    }
+    });
 
     std::vector<std::vector<double>> dp(
         n + 1,
@@ -95,8 +144,13 @@ Result solveGridDP(
 
     dp[0][0] = 0.0;
 
+    // For a fixed layer k, each destination j reads only the previous
+    // layer and writes a distinct dp[k][j], so these states are independent.
     for (int k = 1; k <= n; ++k) {
-        for (int j = k; j <= N; ++j) {
+        parallelFor(k, N + 1, [&](int j) {
+            double best = infinity;
+            int bestParent = -1;
+
             for (int i = k - 1; i < j; ++i) {
                 if (!std::isfinite(dp[k - 1][i])) {
                     continue;
@@ -106,12 +160,15 @@ Result solveGridDP(
                     dp[k - 1][i] +
                     costs[i][j];
 
-                if (candidate < dp[k][j]) {
-                    dp[k][j] = candidate;
-                    parent[k][j] = i;
+                if (candidate < best) {
+                    best = candidate;
+                    bestParent = i;
                 }
             }
-        }
+
+            dp[k][j] = best;
+            parent[k][j] = bestParent;
+        });
     }
 
     if (!std::isfinite(dp[n][N])) {

@@ -32,3 +32,12 @@ if(MSVC)
 else()
     target_compile_options(cover_curve PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+add_executable(cover_curve_smoke
+    tests/smoke.cpp
+)
+
+target_link_libraries(cover_curve_smoke PRIVATE cover_curve)
+
+enable_testing()
+add_test(NAME cover_curve_smoke COMMAND cover_curve_smoke)

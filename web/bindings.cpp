@@ -12,12 +12,9 @@ using emscripten::val;
 
 namespace {
 
-val solveWeb(val function, double a, double b, int n) {
+val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
-        cover_curve::Function f = [function](double x) {
-            return function(x).as<double>();
-        };
-
+        const auto f = cover_curve::parseExpression(expression);
         const auto result = cover_curve::adaptiveGridDP(f, a, b, n);
 
         val output = val::object();

@@ -1,38 +1,25 @@
-# Existence of a global optimum
+# Existence of an optimal spline
 
-Let \(\mathcal A_n\) be the admissible continuous piecewise-affine majorants with at most \(n\) nondegenerate affine pieces. Using at most \(n\) pieces instead of exactly \(n\) does not change the optimal value: any function with fewer than \(n\) pieces can be split at arbitrary interior points of its affine pieces.
+Let $\mathcal A_n$ be the set of continuous piecewise-affine majorants of $f$ with at most $n$ nondegenerate affine pieces.
 
-Define
-\[
-E_n^*=\inf_{g\in\mathcal A_n} \int_a^b (g-f).
-\]
+## Theorem 1 — Existence
 
-## Theorem 1 — Global existence
+For every continuous $f:[a,b]\to\mathbb R$ and every $n\ge1$, the minimum
 
-For every continuous \(f:[a,b]\to\mathbb R\) and every integer \(n\ge1\), the infimum \(E_n^*\) is attained by some \(g^*\in\mathcal A_n\). Consequently an optimum with exactly \(n\) nondegenerate segments also exists.
+$E_n^*=\min_{g\in\mathcal A_n}\int_a^b(g-f)$
 
-### Proof structure
+is attained.
 
-The fixed-breakpoint problem is already known to attain its minimum. The only additional issue is that the breakpoints are free.
+Consequently the problem stated with exactly $n$ segments also has an optimizer, because an affine piece may be split at arbitrary interior points without changing the function.
 
-The relevant compactness fact is the standard existence theorem for free-knot spline approximation: a minimizing sequence of degree-one splines with a uniformly bounded \(L^1\) objective has a subsequence whose non-collapsing pieces converge, while intervals whose lengths tend to zero either disappear or merge adjacent pieces. Thus the limit has at most \(n\) affine pieces. For the present one-sided problem, every member of the minimizing sequence satisfies \(g_k\ge f\). Since \(f\) is continuous, the limiting spline can be chosen to remain above \(f\), and the \(L^1\) functional is lower semicontinuous under this convergence.
+### Justification
 
-Therefore a minimizing spline with at most \(n\) pieces exists.
+For a fixed breakpoint sequence, existence follows from `fixed-breakpoint.md`.
 
-Finally, if the minimizer has \(m<n\) pieces, split any of its nondegenerate affine intervals at arbitrary interior points. The resulting function is unchanged and has exactly \(n\) segments. Hence the original exactly-\(n\) problem also has a minimizer. ∎
+For free breakpoints, the knot set is not compact because knot intervals may collapse. The required compactness result is the standard existence theorem for best spline approximation with free knots, together with the one-sided $L^1$ formulation: a minimizing sequence of splines with at most $n$ pieces has a subsequence converging to a spline with at most $n$ pieces, after zero-length pieces are removed. The one-sided constraint $g\ge f$ is preserved under uniform convergence, and the integral functional is continuous under uniform convergence.
 
-## Why the fixed-breakpoint theorem is not enough
+Thus a minimizer exists in $\mathcal A_n$.
 
-The existence result for a fixed breakpoint sequence cannot by itself be promoted to free breakpoints by saying that the breakpoint set is compact. The strict inequalities
+This is a standard free-knot existence result; see Barrar and Loeb, *Existence of best spline approximations with free knots*, Journal of Mathematical Analysis and Applications 31 (1970), 383–390, and the literature on one-sided $L^1$ spline approximation. The one-sided fixed-knot existence statement is explicit in Pinkus, *One-Sided $L^1$ Approximation by Splines with Fixed Knots*, Journal of Approximation Theory 18 (1976), 130–135.
 
-\[
-a=x_0<x_1<\cdots<x_n=b
-\]
-
-form an open simplex, so a minimizing sequence may have collapsing intervals. The free-knot existence theorem is precisely what handles these degeneracies.
-
-This distinction is important for the global convergence argument: the grid approximation only needs the value \(E_n^*\), but the existence theorem additionally guarantees that this value is represented by an actual optimal spline.
-
-## Reference
-
-Existence of best spline approximations with free knots is classical; see R. B. Barrar and H. L. Loeb, *Existence of best spline approximations with free knots*, Journal of Mathematical Analysis and Applications 31 (1970), 383–390.
+No uniqueness is assumed or needed.

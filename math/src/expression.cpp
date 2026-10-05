@@ -17,8 +17,8 @@ public:
         if (source_.empty())
             throw std::invalid_argument("Enter a function expression.");
 
-        return [source = source_](double x) {
-            Parser parser(source);
+        return [parser = *this](double x) mutable {
+            parser.pos_ = 0;
             parser.currentX_ = x;
             const double value = parser.parseAdditive();
             parser.skipSpaces();

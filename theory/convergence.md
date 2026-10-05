@@ -1,165 +1,69 @@
-# Breakpoint-grid convergence
+# Convergence of breakpoint and height discretization
 
-Let $\mathcal A_n$ be the set of admissible continuous piecewise-affine majorants with exactly $n$ nondegenerate intervals, and define
+Let A_n be the admissible continuous piecewise-affine majorants with at most n nondegenerate affine pieces, and let E_n^* be the minimum from existence.md.
 
-$E_n^* = \inf_{g\in\mathcal A_n}E(g).$
+## 1. Breakpoint-grid convergence
 
-Let
+Let G_N={z_0^(N),...,z_{m_N}^(N)} contain a and b and have mesh delta_N=max_j(z_{j+1}^(N)-z_j^(N)) tending to zero. Let A_{n,N} be the admissible majorants whose breakpoints belong to G_N, and let E_{n,N}^* be their optimum.
 
-$G_N=\{z_0^{(N)},\ldots,z_{m_N}^{(N)}\}$
-
-be finite ordered grids satisfying
-
-$a=z_0^{(N)} < \cdots < z_{m_N}^{(N)}=b$
-
-and
-
-$\delta_N = \max_j ( z_{j+1}^{(N)}-z_j^{(N)} ) \longrightarrow0.$
-
-Let $\mathcal A_{n,N}\subseteq\mathcal A_n$ consist of admissible majorants whose breakpoints belong to $G_N$, and define
-
-$E_{n,N}^* = \inf_{g\in\mathcal A_{n,N}}E(g).$
-
-## Lemma 1 — Grid interpolation approximation
-
-Let $g\in\mathcal A_n$ have breakpoints
-
-$a=x_0<x_1<\cdots<x_n=b.$
-
-For every sufficiently large $N$, there exist grid points
-
-$a=z_0^{(N)} < z_1^{(N)} < \cdots < z_n^{(N)}=b$
-
-such that
-
-$|z_i^{(N)}-x_i| \le\delta_N \qquad (0\le i\le n).$
-
-If $p_N$ is the piecewise-affine interpolant satisfying
-
-$p_N(z_i^{(N)})=g(z_i^{(N)}),$
-
-then
-
-$\lVert p_N-g\rVert_\infty\longrightarrow0.$
+Then E_{n,N}^* tends to E_n^*.
 
 ### Proof
 
-Let
+Because A_{n,N} is a subset of A_n, E_n^* <= E_{n,N}^*.
 
-$d = \min_{0\le i<n}(x_{i+1}-x_i)>0.$
+Fix epsilon>0 and choose an optimal g* in A_n. If g* has fewer than n pieces, split affine pieces without changing the function. Let x_0,...,x_n be breakpoints. For all sufficiently large N, choose strictly ordered grid points z_i^(N) with |z_i^(N)-x_i|<=delta_N. Let p_N be the piecewise-affine interpolant of g* at these grid points.
 
-For sufficiently large $N$,
+Since g* is continuous and piecewise affine, it is Lipschitz. The same endpoint-strip argument as in the interpolation lemma gives ||p_N-g*||_infinity -> 0.
 
-$2\delta_N<d.$
+Put eta_N=||p_N-g*||_infinity and g_N=p_N+eta_N. Then g_N>=g*>=f, so g_N is admissible on the grid. Also 0<=g_N-g*<=2 eta_N, hence E(g_N)->E(g*). Therefore limsup E_{n,N}^*<=E_n^*. Together with the reverse inequality, convergence follows. 
 
-Choose, for each interior breakpoint $x_i$, a grid point $z_i^{(N)}$ satisfying
+## 2. A finite algorithm
 
-$|z_i^{(N)}-x_i| \le\delta_N,$
+The exact grid DP still has continuous height states. To obtain a genuinely finite algorithm, discretize heights as well.
 
-and set
+Let m=min f, M=max f, and C_0=(b-a)(M-m). For a grid with mesh delta_N>0, define
 
-$z_0^{(N)}=a, \qquad z_n^{(N)}=b.$
+B_N = m + 4 C_0 / delta_N.
 
-Then
+Let H_N be a finite height grid containing m and B_N with mesh at most eta_N, where eta_N tends to zero. Round every height upward to the next point of H_N.
 
-$z_{i+1}^{(N)}-z_i^{(N)} \ge (x_{i+1}-x_i)-2\delta_N >0,$
+### Lemma 2 — Uniform height bound
 
-so the selected points are strictly ordered.
-
-Because $g$ is continuous and affine on finitely many closed intervals, it is Lipschitz on $[a,b]$. Let $K$ be a Lipschitz constant.
-
-For each $i$, let $L_i$ be the affine extension to $\mathbb R$ of the restriction of $g$ to $[x_i,x_{i+1}]$. For sufficiently large $N$, the interval $[z_i^{(N)},z_{i+1}^{(N)}]$ differs from $[x_i,x_{i+1}]$ only by endpoint strips of width at most $\delta_N$.
-
-At either selected endpoint,
-
-$|g(z_i^{(N)})-L_i(z_i^{(N)})| \le2K\delta_N,$
-
-and the analogous estimate holds at $z_{i+1}^{(N)}$.
-
-Since $p_N-L_i$ is affine on $[z_i^{(N)},z_{i+1}^{(N)}]$, its absolute value is bounded by the maximum of its absolute values at the two endpoints. Hence
-
-$|p_N(x)-L_i(x)| \le2K\delta_N$
-
-throughout $[z_i^{(N)},z_{i+1}^{(N)}]$.
-
-If $x\in[x_i,x_{i+1}]$, then $g(x)=L_i(x)$, so
-
-$|p_N(x)-g(x)| \le2K\delta_N.$
-
-If $x$ lies in an endpoint strip where $x$ is outside $[x_i,x_{i+1}]$, then its distance from the corresponding original breakpoint is at most $\delta_N$. Therefore
-
-$|g(x)-L_i(x)| \le K\delta_N,$
-
-and consequently
-
-$|p_N(x)-g(x)| \le3K\delta_N.$
-
-Thus
-
-$\lVert p_N-g\rVert_\infty \le3K\delta_N \longrightarrow0.$
-
-∎
-
-## Theorem 2 — Grid convergence
-
-If $\delta_N\to0$, then
-
-$E_{n,N}^*\longrightarrow E_n^*.$
+Every optimum of every fixed breakpoint problem whose breakpoints belong to G_N has all vertex heights at most B_N.
 
 ### Proof
 
-Because
+The constant function M is feasible and has error C_0, so an optimum has error at most C_0. For a fixed breakpoint vector, write h_i=x_{i+1}-x_i and let c_i be the positive objective coefficient of y_i. Every vertex satisfies y_i>=m and c_i>=delta_N/2. Since
 
-$\mathcal A_{n,N}\subseteq\mathcal A_n,$
+sum_i c_i(y_i-m) = E_X(y) + integral_a^b(f-m) <= 2 C_0,
 
-we have
+we obtain y_i-m <= 2 C_0/c_i <= 4 C_0/delta_N. ∎
 
-$E_n^*\le E_{n,N}^*.$
+### Lemma 3 — Height rounding error
 
-Fix $\varepsilon>0$. Choose $g\in\mathcal A_n$ such that
+Let E_{n,N,eta}^* be the optimum when both breakpoints and vertex heights are restricted to G_N and H_N. Then
 
-$E(g)<E_n^*+\varepsilon.$
+E_{n,N}^* <= E_{n,N,eta}^* <= E_{n,N}^* + (b-a) eta_N.
 
-By Lemma 1, choose $p_N$ with
+### Proof
 
-$\lVert p_N-g\rVert_\infty\longrightarrow0.$
+Take an exact grid optimum. Round every vertex height upward by at most eta_N. Increasing either endpoint of a segment can only increase its affine function, so feasibility is preserved. The objective increase is at most eta_N times the sum of all trapezoid coefficients, and those coefficients sum to b-a. The opposite inequality is immediate because height discretization restricts the feasible set. 
 
-Put
+## Theorem 4 — Fully discrete convergence
 
-$\eta_N=\lVert p_N-g\rVert_\infty, \qquad g_N=p_N+\eta_N.$
+If delta_N tends to zero and eta_N tends to zero, then
 
-Then
+E_{n,N,eta}^* -> E_n^*.
 
-$g_N(x)\ge g(x)\ge f(x)$
+### Proof
 
-for every $x$, so $g_N\in\mathcal A_{n,N}$ for all sufficiently large $N$.
+By Lemma 3, the difference between E_{n,N,eta}^* and E_{n,N}^* is at most (b-a)eta_N. By Theorem 1, E_{n,N}^* tends to E_n^*. Therefore the fully discrete values also tend to E_n^*. ∎
 
-Moreover,
+## 3. What this proves about an implementation
 
-$0\le g_N-g\le2\eta_N,$
+A finite implementation is mathematically convergent only if its computed problem is an increasingly accurate realization of the fully discrete problem above, with breakpoint mesh tending to zero, height mesh tending to zero, and numerical errors in integrals and feasibility tests tending to zero.
 
-hence
+The current scalar one-segment-cost DP does not satisfy this condition because it removes the shared-height state before optimization. Its numerical stabilization or post-processing cannot turn it into the exact coupled algorithm.
 
-$0\le E(g_N)-E(g) \le2(b-a)\eta_N \longrightarrow0.$
-
-Therefore, for sufficiently large $N$,
-
-$E_{n,N}^* \le E(g_N) < E_n^*+2\varepsilon.$
-
-Together with $E_n^*\le E_{n,N}^*$,
-
-$E_n^* \le \liminf_{N\to\infty}E_{n,N}^* \le \limsup_{N\to\infty}E_{n,N}^* \le E_n^*+2\varepsilon.$
-
-Since $\varepsilon>0$ is arbitrary,
-
-$E_{n,N}^*\to E_n^*.$
-
-∎
-
-## Corollary 3 — Uniform grids
-
-For the uniform grid
-
-The uniform grid is $G_N=\{a+j\frac{b-a}{N}:0\le j\le N\}$.
-
-the exact coupled optimization restricted to grid breakpoints converges to the original $n$-segment problem. ∎
+Likewise, stopping when two successive objective values differ by a relative tolerance is a practical stopping rule, not an a priori error certificate. A convergence theorem must first establish convergence of the underlying optimization problems.

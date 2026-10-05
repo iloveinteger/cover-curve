@@ -40,11 +40,19 @@ function draw(result, f, a, b) {
   values.slice(0, 501).forEach(([x,y],i) => i ? ctx.lineTo(X(x),Y(y)) : ctx.moveTo(X(x),Y(y)));
   ctx.stroke();
 
+  // Breakpoints and the upper approximation are drawn in the same coordinate system.
   for (const s of result.segments) {
     ctx.beginPath();
     ctx.moveTo(X(s.x0), Y(s.slope*s.x0+s.intercept));
     ctx.lineTo(X(s.x1), Y(s.slope*s.x1+s.intercept));
     ctx.stroke();
+  }
+
+  for (const x of result.breakpoints) {
+    const y = Math.max(...[f(x), ...result.segments.map(s => s.slope * x + s.intercept)].filter(Number.isFinite));
+    ctx.beginPath();
+    ctx.arc(X(x), Y(y), 4, 0, 2 * Math.PI);
+    ctx.fill();
   }
 }
 

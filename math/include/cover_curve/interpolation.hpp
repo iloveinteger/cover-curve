@@ -2,6 +2,9 @@
 
 #include <cover_curve/types.hpp>
 
+#include <utility>
+#include <vector>
+
 namespace cover_curve {
 
 using DataPoint = std::pair<double, double>;

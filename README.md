@@ -10,15 +10,15 @@ We seek a continuous piecewise-linear function $g:[a,b]\to\mathbb R$ with exactl
 
 ```math
 g(x)\ge f(x)
-\qquad\text{for all }x\in[a,b],
+\qquad\text{for all }x\in[a,b].
 ```
 
-and minimize
+The objective is to minimize
 
 ```math
 E(g)
 =
-\int_a^b (g(x)-f(x))\,dx.
+\int_a^b(g(x)-f(x))\,dx.
 ```
 
 The function $g$ is determined by breakpoints
@@ -83,32 +83,42 @@ The function
 \beta\mapsto\max_{x\in[u,v]}(f(x)-\beta x)
 ```
 
-is convex, so the one-dimensional optimization problem is convex.
+is convex, since it is the pointwise maximum of affine functions of $\beta$. Hence the one-dimensional optimization problem is convex.
 
-For continuous $f$, the one-segment cost $C(u,v)$ is continuous for $u\le v$ when we define
+For continuous $f$, the one-segment cost $C(u,v)$ is continuous for $u<v$. It also has the continuous extension
 
 ```math
 C(u,u)=0.
 ```
 
-Consequently, the total cost as a function of the breakpoint positions is continuous.
-
 ## Global optimization
 
-The continuous breakpoint problem is
+For breakpoints
+
+```math
+a=x_0\le x_1\le\cdots\le x_n=b,
+```
+
+define the total cost
+
+```math
+J(x_1,\ldots,x_{n-1})
+=
+\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
+```
+
+The closed breakpoint region is compact, and $J$ is continuous on it. Therefore a global minimizer exists.
+
+Allowing coincident breakpoints only introduces zero-length segments with cost $C(u,u)=0$. Such segments can be removed, while any positive-length segment can be subdivided into additional nondegenerate segments without changing the piecewise-linear function or its cost. Thus the same optimal value is obtained for the original problem requiring exactly $n$ nondegenerate segments.
+
+The optimal value is therefore
 
 ```math
 E_n^*
 =
-\min
-\sum_{i=0}^{n-1}C(x_i,x_{i+1}),
-\qquad
-a=x_0\le x_1\le\cdots\le x_n=b.
+\min_{a=x_0\le x_1\le\cdots\le x_n=b}
+\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
 ```
-
-Zero-length intervals have cost $C(u,u)=0$. They may be removed, and positive-length intervals may be subdivided as necessary, so the same optimal value is obtained by requiring exactly $n$ nondegenerate segments.
-
-The resulting optimization problem has a global minimizer because the closed breakpoint region is compact and the total cost is continuous.
 
 ## Numerical method
 
@@ -126,38 +136,68 @@ j=0,\ldots,N
 \right\},
 ```
 
-the one-segment problem $C(x_i,x_j)$ is still solved over the full continuous interval $[x_i,x_j]$.
+all breakpoint positions are restricted to $G_N$, while each one-segment cost $C(x_i,x_j)$ is still optimized over the full continuous interval $[x_i,x_j]$.
 
-The finite breakpoint problem is then solved by dynamic programming:
+The finite breakpoint problem is solved by dynamic programming.
+
+Let $F[k][j]$ be the minimum cost of covering the interval from $x_0=a$ to $x_j$ using exactly $k$ segments. Initialize
+
+```math
+F[0][0]=0,
+\qquad
+F[0][j]=+\infty\quad(j>0).
+```
+
+The recurrence is
 
 ```math
 F[k][j]
 =
-\min_{i<j}
-\left(F[k-1][i]+C(x_i,x_j)\right),
+\min_{i=k-1,\ldots,j-1}
+\left\{
+F[k-1][i]+C(x_i,x_j)
+\right\}.
 ```
 
-with the usual feasibility restriction that enough grid points remain for the remaining segments.
-
-Thus the optimal value of the finite-grid problem is
+Thus
 
 ```math
 E_{n,N}=F[n][N].
 ```
 
-The dynamic program is exact for the given one-segment cost values $C(x_i,x_j). In the reference implementation, these costs are computed numerically, so the practical result is a numerical approximation to the mathematical optimum.
+The predecessor index can be stored to recover the optimal breakpoint positions.
+
+The dynamic program is exact for the supplied one-segment costs $C(x_i,x_j)$. The reference implementation computes these costs numerically using a one-dimensional search, so the practical result is a numerical approximation to the mathematical optimum.
 
 ## Grid refinement and convergence
 
-Because every grid-feasible breakpoint configuration is also feasible for the continuous problem,
+Every grid-feasible breakpoint configuration is also feasible for the continuous problem, so
 
 ```math
 E_n^*\le E_{n,N}.
 ```
 
-For every continuous feasible breakpoint configuration, its breakpoints can be approximated arbitrarily closely by grid points while preserving their strict ordering. Since the total cost is continuous, the corresponding grid cost converges to the original cost.
+Conversely, take any feasible continuous breakpoint configuration
 
-Therefore, for every continuous $f$,
+```math
+a<x_1<\cdots<x_{n-1}<b.
+```
+
+Its breakpoints can be approximated arbitrarily closely by grid points while preserving their strict ordering. Since $C$ is continuous, the corresponding total cost converges to the original cost.
+
+Therefore, for every $\varepsilon>0$, a sufficiently fine grid contains a feasible breakpoint configuration whose cost is less than $E_n^*+\varepsilon$. Hence
+
+```math
+E_n^*
+\le
+E_{n,N}
+<
+E_n^*+\varepsilon
+```
+
+for all sufficiently large $N$.
+
+It follows that
 
 ```math
 \boxed{E_{n,N}\longrightarrow E_n^*}
@@ -188,4 +228,4 @@ Then open:
 
 ## License
 
-MIT License.
+MIT License

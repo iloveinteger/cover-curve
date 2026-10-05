@@ -54,7 +54,7 @@ $V_i(p)=+\infty$
 
 when $p<f(x_i)$, and otherwise set
 
-$V_i(p)=\inf_{q\ge T_{x_i,x_{i+1}}(p)}\left[\frac{h_i}{2}(p+q)+V_{i+1}(q)\right]$.
+$V_i(p)=\inf_{q\ge T_{x_i,x_{i+1}}(p)}[\frac{h_i}{2}(p+q)+V_{i+1}(q)]$.
 
 ## Theorem 3 — Exact Bellman principle
 

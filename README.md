@@ -8,7 +8,7 @@ Given a continuous function $f:[a,b]\to\mathbb R$, the problem is to find a cont
 E(g)=\int_a^b(g(x)-f(x))\,dx.
 ```
 
-The repository currently contains the C++ numerical implementation and mathematical documentation. A browser interface will be added separately.
+The repository contains the C++ numerical implementation and separate documentation for the mathematical theory and implementation details. A browser interface will be added separately.
 
 ## Mathematical formulation
 
@@ -29,9 +29,7 @@ On each interval $[x_i,x_{i+1}]$, $g$ is affine and lies above $f$.
 
 No differentiability of $f$ is required for the mathematical problem; continuity on $[a,b]$ is sufficient.
 
-## One-segment cost
-
-For an interval $[u,v]$, define
+For the one-segment problem on $[u,v]$,
 
 ```math
 C(u,v)
@@ -41,13 +39,13 @@ L(x)\ge f(x)\ \forall x\in[u,v]}}
 \int_u^v(L(x)-f(x))\,dx.
 ```
 
-Writing $L(x)=\alpha+\beta x$, the smallest feasible intercept for a fixed slope $\beta$ is
+Writing $L(x)=\alpha+\beta x$, the smallest feasible intercept for a fixed slope is
 
 ```math
 \alpha(\beta)=\max_{x\in[u,v]}(f(x)-\beta x).
 ```
 
-Therefore
+Thus
 
 ```math
 C(u,v)
@@ -61,51 +59,39 @@ C(u,v)
 
 The support function $\beta\mapsto\max_x(f(x)-\beta x)$ is convex, so the resulting one-dimensional slope optimization is convex.
 
-## Global optimization
-
-For breakpoints $a=x_0\le x_1\le\cdots\le x_n=b$, define
+For global optimization, the breakpoint objective is
 
 ```math
-J(x_1,\ldots,x_{n-1})=\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
+J(x_1,\ldots,x_{n-1})
+=
+\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
 ```
 
-The continuous extension $C(u,u)=0$ makes the relaxed breakpoint domain compact, and the objective is continuous. This gives existence of an optimum. Zero-length segments can be removed or positive-length segments subdivided without changing the represented piecewise-linear function or its cost, so the optimal value agrees with the formulation using exactly $n$ nondegenerate segments.
+A uniform breakpoint grid reduces this continuous problem to a finite dynamic program, and the grid is refined adaptively.
 
-## Numerical method
+For the detailed mathematical derivations and convergence discussion, see the [theory documentation](theory/).
 
-Only the **breakpoint positions** are discretized.
+## Numerical implementation
 
-For the uniform grid
+The solver uses:
 
-```math
-G_N=\left\{a+\frac{j(b-a)}{N}\;\middle|\;j=0,\ldots,N\right\},
-```
+- adaptive numerical integration;
+- numerical support maximization;
+- one-dimensional convex slope minimization;
+- dynamic programming over breakpoint grids;
+- adaptive breakpoint-grid refinement.
 
-breakpoints are restricted to $G_N$, while each one-segment cost is still optimized over the continuous interval between the selected grid points.
+The implementation details are documented separately so that the README remains focused on the library's purpose and public behavior.
 
-The finite problem is solved by dynamic programming:
+See:
 
-```math
-F[0][0]=0,\qquad F[0][j]=+\infty\quad(j>0),
-```
+- [Numerical methods](implementation/numerical-methods.md)
+- [Support maximization](implementation/support-maximization.md)
+- [Slope minimization](implementation/slope-minimization.md)
+- [Adaptive-grid DP](implementation/adaptive-grid-dp.md)
+- [Interpolation](implementation/interpolation.md)
 
-and
-
-```math
-F[k][j]=\min_{i=k-1,\ldots,j-1}\{F[k-1][i]+C(x_i,x_j)\}.
-```
-
-The predecessor indices recover the selected breakpoints.
-
-The implementation uses:
-
-- adaptive Simpson integration;
-- adaptive support maximization for $\max_x(f(x)-\beta x)$;
-- convex one-dimensional slope minimization;
-- dynamic programming over the breakpoint grid;
-- adaptive grid refinement $N\to2N$ until the computed objective stabilizes.
-
-The support maximization is a numerical global-search heuristic for a general continuous black-box function; finite sampling alone cannot certify a global maximum without additional assumptions on $f$.
+The support maximization is a numerical global-search heuristic for a general continuous black-box function. Finite sampling alone cannot certify a global maximum without additional assumptions on $f$.
 
 ## Interpolation
 
@@ -144,11 +130,17 @@ cover-curve/
 │       │   └── adaptive_grid_dp/
 │       ├── interpolation/
 │       └── numerical/
-└── theory/
-    ├── convergence.md
-    ├── dynamic-programming.md
-    ├── one-segment-cost.md
-    └── problem.md
+├── theory/
+│   ├── convergence.md
+│   ├── dynamic-programming.md
+│   ├── one-segment-cost.md
+│   └── problem.md
+└── implementation/
+    ├── adaptive-grid-dp.md
+    ├── interpolation.md
+    ├── numerical-methods.md
+    ├── slope-minimization.md
+    └── support-maximization.md
 ```
 
 ## Status

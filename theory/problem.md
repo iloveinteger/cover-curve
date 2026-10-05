@@ -66,7 +66,7 @@ $$
 $$
 \left.
 \hspace{7em}
-\forall i\in\{0,\ldots,n-1\},\
+\forall i\in\{0,\ldots,n-1\},\\
 \forall x\in[x_i,x_{i+1}]
 \right\}.
 $$

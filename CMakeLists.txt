@@ -41,3 +41,23 @@ target_link_libraries(cover_curve_smoke PRIVATE cover_curve)
 
 enable_testing()
 add_test(NAME cover_curve_smoke COMMAND cover_curve_smoke)
+
+if(EMSCRIPTEN)
+    add_executable(cover_curve_web
+        web/bindings.cpp
+    )
+
+    target_link_libraries(cover_curve_web PRIVATE cover_curve)
+
+    target_link_options(cover_curve_web PRIVATE
+        "-sMODULARIZE=1"
+        "-sEXPORT_NAME=CoverCurve"
+        "-sENVIRONMENT=web"
+        "-sALLOW_MEMORY_GROWTH=1"
+    )
+
+    set_target_properties(cover_curve_web PROPERTIES
+        OUTPUT_NAME "cover_curve"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/web"
+    )
+endif()

@@ -2,6 +2,11 @@ import { oneSegmentCost } from "./oneSegmentCost.js";
 
 export function solveGridDP(f, a, b, n, options = {}) {
   const N = options.N ?? 80;
+  const oneSegmentOptions = options.oneSegment ?? {};
+
+  if (typeof f !== "function") {
+    throw new Error("f must be a function.");
+  }
 
   if (!Number.isInteger(n) || n < 1) {
     throw new Error("n must be a positive integer.");
@@ -11,7 +16,11 @@ export function solveGridDP(f, a, b, n, options = {}) {
     throw new Error("N must be an integer with N >= n.");
   }
 
-  if (!Number.isFinite(a) || !Number.isFinite(b) || a >= b) {
+  if (
+    !Number.isFinite(a) ||
+    !Number.isFinite(b) ||
+    a >= b
+  ) {
     throw new Error("Require finite a < b.");
   }
 
@@ -20,12 +29,14 @@ export function solveGridDP(f, a, b, n, options = {}) {
     (_, i) => a + (b - a) * i / N
   );
 
-  const costs = Array.from({ length: N + 1 }, () =>
-    Array(N + 1).fill(Infinity)
+  const costs = Array.from(
+    { length: N + 1 },
+    () => Array(N + 1).fill(Infinity)
   );
 
-  const segmentData = Array.from({ length: N + 1 }, () =>
-    Array(N + 1).fill(null)
+  const segmentData = Array.from(
+    { length: N + 1 },
+    () => Array(N + 1).fill(null)
   );
 
   for (let i = 0; i < N; i++) {
@@ -34,20 +45,28 @@ export function solveGridDP(f, a, b, n, options = {}) {
         f,
         points[i],
         points[j],
-        options.oneSegment
+        oneSegmentOptions
       );
+
+      if (!Number.isFinite(result.cost)) {
+        throw new Error(
+          `Failed to compute segment cost for [${points[i]}, ${points[j]}].`
+        );
+      }
 
       costs[i][j] = result.cost;
       segmentData[i][j] = result;
     }
   }
 
-  const dp = Array.from({ length: n + 1 }, () =>
-    Array(N + 1).fill(Infinity)
+  const dp = Array.from(
+    { length: n + 1 },
+    () => Array(N + 1).fill(Infinity)
   );
 
-  const parent = Array.from({ length: n + 1 }, () =>
-    Array(N + 1).fill(-1)
+  const parent = Array.from(
+    { length: n + 1 },
+    () => Array(N + 1).fill(-1)
   );
 
   dp[0][0] = 0;
@@ -55,7 +74,12 @@ export function solveGridDP(f, a, b, n, options = {}) {
   for (let k = 1; k <= n; k++) {
     for (let j = k; j <= N; j++) {
       for (let i = k - 1; i < j; i++) {
-        const candidate = dp[k - 1][i] + costs[i][j];
+        if (!Number.isFinite(dp[k - 1][i])) {
+          continue;
+        }
+
+        const candidate =
+          dp[k - 1][i] + costs[i][j];
 
         if (candidate < dp[k][j]) {
           dp[k][j] = candidate;
@@ -69,10 +93,10 @@ export function solveGridDP(f, a, b, n, options = {}) {
     throw new Error("No feasible DP solution was found.");
   }
 
-  const breakpointIndices = Array(n + 1);
-  let j = N;
-
+  const breakpointIndices = new Array(n + 1);
   breakpointIndices[n] = N;
+
+  let j = N;
 
   for (let k = n; k >= 1; k--) {
     const i = parent[k][j];
@@ -85,18 +109,28 @@ export function solveGridDP(f, a, b, n, options = {}) {
     j = i;
   }
 
-  const breakpoints = breakpointIndices.map(i => points[i]);
+  if (breakpointIndices[0] !== 0) {
+    throw new Error("Invalid reconstructed breakpoint path.");
+  }
+
+  const breakpoints =
+    breakpointIndices.map(i => points[i]);
 
   const segments = [];
 
   for (let k = 0; k < n; k++) {
     const i = breakpointIndices[k];
     const j2 = breakpointIndices[k + 1];
+    const data = segmentData[i][j2];
+
+    if (data === null) {
+      throw new Error("Missing segment data.");
+    }
 
     segments.push({
       x0: points[i],
       x1: points[j2],
-      ...segmentData[i][j2]
+      ...data
     });
   }
 

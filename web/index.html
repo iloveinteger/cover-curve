@@ -8,27 +8,42 @@
 </head>
 <body>
   <main class="container">
-    <header>
+    <header class="hero">
+      <div class="eyebrow">NUMERICAL OPTIMIZATION</div>
       <h1>Cover Curve</h1>
-      <p>Optimal piecewise-linear upper approximation of a continuous curve.</p>
+      <p>Find the minimum-area piecewise-linear curve that stays above <em>f(x)</em>.</p>
     </header>
 
-    <section class="panel">
-      <label>Function f(x)
-        <input id="expression" value="x*x" spellcheck="false">
+    <section class="panel controls">
+      <div class="section-heading">
+        <div>
+          <h2>Define your curve</h2>
+          <p>Enter a supported mathematical expression in <em>x</em>.</p>
+        </div>
+      </div>
+      <label class="function-field">Function <span>f(x)</span>
+        <input id="expression" value="x^2" spellcheck="false" autocomplete="off">
       </label>
       <div class="grid">
-        <label>a <input id="a" type="number" value="0" step="any"></label>
-        <label>b <input id="b" type="number" value="1" step="any"></label>
-        <label>Segments n <input id="n" type="number" value="2" min="1" step="1"></label>
+        <label>Start <span>a</span><input id="a" type="number" value="0" step="any"></label>
+        <label>End <span>b</span><input id="b" type="number" value="1" step="any"></label>
+        <label>Segments <span>n</span><input id="n" type="number" value="2" min="1" step="1"></label>
       </div>
-      <button id="solve">Solve</button>
-      <p id="status" aria-live="polite"></p>
+      <button id="solve" disabled>Solve curve</button>
+      <p id="status" aria-live="polite">Loading solver...</p>
     </section>
 
-    <section class="panel">
-      <h2>Result</h2>
-      <p>Minimum area: <strong id="value">—</strong></p>
+    <section class="panel result-panel">
+      <div class="result-header">
+        <div>
+          <div class="eyebrow">RESULT</div>
+          <h2>Optimal cover</h2>
+        </div>
+        <div class="metric">
+          <span>Minimum area</span>
+          <strong id="value">—</strong>
+        </div>
+      </div>
       <canvas id="plot" width="900" height="500" aria-label="Function and upper approximation plot"></canvas>
       <pre id="details"></pre>
     </section>

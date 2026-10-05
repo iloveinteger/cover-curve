@@ -24,7 +24,7 @@ The function $x\mapsto f(x)-\beta x$ is continuous on the compact interval $[u,v
 
 ## Corollary 2 — Reduction to one variable
 
-$C_{\mathrm{ind}}(u,v) = \min_{\beta\in\mathbb R} \left[ (v-u)\max_{x\in[u,v]}(f(x)-\beta x) + \beta\frac{v^2-u^2}{2} - \int_u^v f(x)\,dx \right].$
+$C_{\mathrm{ind}}(u,v) = \min_{\beta\in\mathbb R} [ (v-u)\max_{x\in[u,v]}(f(x)-\beta x) + \beta\frac{v^2-u^2}{2} - \int_u^v f(x)\,dx  ].$
 
 ### Proof
 

@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <exception>
+#include <stdexcept>
 #include <string>
 
 using emscripten::val;

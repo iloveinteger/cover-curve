@@ -28,12 +28,6 @@ The error is
 
 $E(g) = \int_a^b (g(x)-f(x))\,dx.$
 
-## Vertex representation
-
-Put $y_i=g(x_i)$. Then the restriction of $g$ to $[x_i,x_{i+1}]$ is uniquely determined as
-
-$L_i(x)=\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.$
-
 ## Objective
 
 The approximation error is

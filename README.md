@@ -67,10 +67,11 @@ The finite breakpoint problem is then solved exactly by dynamic programming:
 ```math
 F[k][j]
 =
-\min_{i<j}
+\min
 \left(
 F[k-1][i]+C(x_i,x_j)
-\right)
+\right),
+\quad i<j
 ```
 
 Thus

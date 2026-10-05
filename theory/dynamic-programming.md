@@ -154,3 +154,28 @@ $$
 \frac{h_i}{2}(p+q)+V_{i+1}(q)
 $$
 is convex on $D_i$. Its partial infimum over $q$ is convex. Therefore $V_i$ is convex. ∎
+
+
+## Corollary 5 — The independent segment-cost DP is not the continuous problem
+
+Let
+$$
+D_k(j)
+=
+min_{0=i_0<cdots<i_k=j}
+sum_{r=0}^{k-1} C_{\mathrm{ind}}(x_{i_r},x_{i_{r+1}})
+$$
+be the scalar dynamic program obtained by independently minimizing the affine majorant on every segment.
+
+In general, $D_n(n)$ is not equal to the fixed-breakpoint value $V(X)$.
+
+### Proof
+
+For a continuous piecewise-affine majorant, the value at every shared breakpoint is a single common variable $y_i$. The exact Bellman recursion therefore carries the current shared height $p$ as a state and imposes
+$$
+q\ge T_{x_i,x_{i+1}}(p).
+$$
+
+By contrast, $C_{\mathrm{ind}}(x_i,x_{i+1})$ minimizes over both endpoint heights independently for that segment. Adjacent segments in the scalar recursion consequently need not assign the same value to their common breakpoint.
+
+Thus the scalar recursion optimizes over a relaxation containing functions that are not continuous at internal breakpoints. It therefore cannot, in general, be identified with the continuous fixed-breakpoint problem. The exact recursion is the state-dependent Bellman recursion of Theorem 3. ∎

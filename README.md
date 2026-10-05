@@ -2,46 +2,80 @@
 
 **Numerical library for optimal continuous piecewise-linear upper approximation of a curve.**
 
-Given a continuous function $f:[a,b]\to\mathbb R$, the target problem is to find a continuous piecewise-linear function $g\ge f$ with exactly $n$ nondegenerate line segments while minimizing
-\[ E(g)=\int_a^b(g(x)-f(x))\,dx. \]
+Given a continuous function $f:[a,b]\to\mathbb R$, the target problem is to find a continuous piecewise-linear function $g\ge f$ with exactly $n$ line segments while minimizing
+
+\[
+E(g)=\int_a^b(g(x)-f(x))\,dx.
+\]
 
 ## Mathematical formulation
 
-The breakpoints are $a=x_0<x_1<\cdots<x_n=b$, with shared vertex heights $y_i=g(x_i)$. Each segment is
-\[ L_i(x)=y_i+\frac{y_{i+1}-y_i}{x_{i+1}-x_i}(x-x_i). \]
-This representation enforces continuity automatically: $L_i(x_i)=y_i=L_{i-1}(x_i)$.
+Choose breakpoints
 
-Every segment must satisfy $L_i(x)\ge f(x)$ throughout its interval. For fixed breakpoints, minimizing the total area over the shared heights is a linear semi-infinite program.
+\[
+a=x_0<x_1<\cdots<x_n=b
+\]
 
-## Independent one-segment relaxation
+and shared vertex heights $y_i=g(x_i)$. Each segment is
 
-The repository also contains the `oneSegmentCost()` routine. It computes
-\[ C_{\mathrm{ind}}(u,v)=\min_{L\text{ affine},\ L\ge f}\int_u^v(L-f). \]
-This is the exact independent one-segment relaxation. It is useful as a reference and lower bound, but summing these costs does not enforce continuity between neighboring segments.
+\[
+L_i(x)
+=
+\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i
++
+\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.
+\]
 
-The old scalar DP based on $\sum_i C_{\mathrm{ind}}(x_i,x_{i+1})$ therefore is not an exact solver for the continuous target problem.
+The shared vertex heights enforce continuity automatically. The constraint is
+
+\[
+L_i(x)\ge f(x)
+\qquad
+(x\in[x_i,x_{i+1}]).
+\]
+
+For fixed breakpoints, the problem is a linear semi-infinite program in the shared heights. The exact Bellman formulation uses the current breakpoint height as its state, so continuity is enforced inside the optimization rather than by post-processing.
 
 ## Theory
 
-The theory documents distinguish the continuous shared-height formulation, the independent relaxation, finite-grid optimization with continuity, convergence of the coupled problem, and curvature-based candidate-grid heuristics.
+The theory is organized as one logical chain:
 
-See the [theory documentation](theory/).
+1. `theory/problem.md` — precise definition of the free-breakpoint majorant problem.
+2. `theory/existence.md` — existence of an optimal spline.
+3. `theory/fixed-breakpoint.md` — exact fixed-breakpoint formulation and existence.
+4. `theory/dynamic-programming.md` — exact shared-height Bellman formulation.
+5. `theory/algorithm.md` — finite breakpoint/height discretization, exact finite DP, and convergence to the original optimum.
+
+The main convergence statement is
+
+\[
+E_{n,N,\eta}^*\longrightarrow E_n^*
+\]
+
+when the breakpoint-grid mesh and height-grid mesh both tend to zero.
+
+The free-breakpoint existence theorem uses standard spline approximation results; the fixed-breakpoint and discretization arguments are proved directly in the repository.
 
 ## Numerical implementation
 
-The numerical components include adaptive integration, support maximization, slope minimization for the independent relaxation, breakpoint candidate generation, and the shared-height coupled optimization under development.
+The implementation is separate from the mathematical convergence theorem. In particular, numerical evaluation of $f$, the support function
 
-Finite support sampling and numerical optimization are separate numerical approximations from the mathematical grid-discretization problem.
+\[
+T_{u,v}(p)
+=
+\sup_{u<x\le v}
+\frac{(v-u)f(x)-(v-x)p}{x-u},
+\]
 
-## Curvature-adaptive grids
+and the integral must eventually be controlled so that their numerical errors vanish under refinement.
 
-The experimental curvature strategy uses $\rho(x)\propto\sqrt{|f''(x)|}$ as a candidate-grid heuristic derived from a local quadratic model.
-
-This density is not currently claimed to be the exact optimal allocation for the coupled continuous problem. A rigorous curvature theorem must be derived from the shared-height formulation itself.
+The implementation should therefore be regarded as an approximation of the finite mathematical DP, not as a substitute for the shared-height formulation.
 
 ## Status
 
-The repository is being migrated from the old independent-segment DP to the mathematically correct continuous formulation. The `fix/continuous-segments` branch contains the transition work; post-processing that merely lifts breakpoint heights is not considered a final solution.
+The theory has been reorganized around the exact continuous shared-height problem. The old independent one-segment-cost DP is not part of the mathematical solution, because independently optimized segments do not enforce continuity.
+
+Curvature-based breakpoint heuristics are also not part of the current correctness theorem. They may be investigated later as numerical acceleration or grid-design heuristics, but they are not needed for the convergence result above.
 
 ## Build
 

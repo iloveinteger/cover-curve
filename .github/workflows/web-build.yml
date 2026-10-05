@@ -20,4 +20,4 @@ jobs:
       - name: Build WebAssembly
         run: cmake --build build-web --parallel
       - name: Verify web output
-        run: test -f web/cover_curve.js && test -f web/cover_curve.wasm && test -f web/solver-worker.js
+        run: test -f web/cover_curve.js && test -f web/cover_curve.wasm && test -f web/solver-worker.js && test -f web/expression.js

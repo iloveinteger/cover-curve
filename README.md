@@ -36,9 +36,10 @@ $$
 Then the global problem is
 
 $$
-E_n^*=
+E_n^*
+=
 \min_{a=x_0<\cdots<x_n=b}
-\sum_{i=0}^{n-1}C(x_i,x_{i+1}).
+\sum_{i=0}^{n-1} C(x_i,x_{i+1}).
 $$
 
 ## Numerical method
@@ -48,10 +49,11 @@ Only the **breakpoint positions** are discretized.
 For
 
 $$
-G_N=
+G_N
+=
 \left\{
 a+\frac{j(b-a)}{N}
-:
+\mid
 j=0,\ldots,N
 \right\},
 $$
@@ -84,9 +86,7 @@ $$
 and, under standard regularity assumptions,
 
 $$
-\boxed{
-E_{n,N}\longrightarrow E_n^*
-}.
+E_{n,N}\longrightarrow E_n^*.
 $$
 
 This gives a principled grid-refinement method rather than a greedy search.

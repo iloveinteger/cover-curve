@@ -1,53 +1,46 @@
-# Curvature-adaptive solver implementation
+# Optional Candidate-Grid Heuristics
 
-## 1. Solver role
+This document describes optional breakpoint-grid heuristics. These heuristics are not part of the mathematical correctness theorem.
 
-The curvature-adaptive solver is a candidate-grid strategy for the continuous piecewise-linear majorant problem. It must ultimately feed the same shared-height optimization as the baseline.
+## 1. Role
 
-Pipeline:
+The correctness-oriented solver is defined by the breakpoint grid, height grid, and shared-height DP in `adaptive-grid-dp.md`.
 
-    f
-    ↓
-    numerical estimate of f''
-    ↓
-    w(x)=sqrt(|f''(x)|)
-    ↓
-    cumulative density
-    ↓
-    curvature-adaptive candidate grid
-    ↓
-    shared-height coupled optimization
+A heuristic may be used to choose a nonuniform candidate breakpoint grid before that DP is run. It must not change the shared-height optimization itself.
 
-The curvature stage selects candidate breakpoint locations; it does not remove the continuity constraint.
+## 2. Curvature-based candidate grid
 
-## 2. Grid construction
+If additional smoothness information is available, one possible heuristic is based on
+\[
+w(x)=\sqrt{|f''(x)|}.
+\]
 
-The theoretical heuristic is $w(x)=\sqrt{|f''(x)|}$. The implementation samples this quantity, integrates it numerically, and places candidate breakpoints at approximately equal cumulative-density increments.
+The implementation may estimate this quantity numerically, form an approximate cumulative density, and place candidate breakpoints at approximately equal density increments.
 
-A positive floor and upper cap are implementation safeguards, not theoretical constants.
+This is only a candidate-generation heuristic. No claim is made here that this density is optimal for the coupled majorant problem.
 
-## 3. Numerical second derivative
+## 3. Numerical safeguards
 
-For a black-box callable, interior samples may use $D_2f(x)=[f(x+h)-2f(x)+f(x-h)]/h^2$, with suitable one-sided formulas near the endpoints.
+A numerical implementation may use:
 
-## 4. Coupled finite-grid optimization
+- a positive floor for the estimated density;
+- an upper cap;
+- endpoint-specific finite-difference formulas;
+- smoothing of noisy second-derivative estimates.
 
-For a selected sequence $z_{j_0}=a<\cdots<z_{j_n}=b$, introduce shared heights $y_0,\ldots,y_n$. The segments are determined by these heights and must satisfy all majorant constraints simultaneously.
+These are implementation choices, not theoretical constants.
 
-For fixed breakpoints this is a linear semi-infinite program. A finite-constraint implementation may use support samples together with exchange/refinement.
+## 4. Interaction with the exact architecture
 
-The old scalar recurrence using independent $C_{\mathrm{ind}}$ is not the exact coupled solver.
+After a candidate grid is generated, the solver must still:
 
-## 5. Refinement
+1. construct the finite height grid;
+2. optimize shared vertex heights;
+3. enforce segment majorant constraints;
+4. reconstruct one continuous piecewise-affine function.
 
-Grid refinement may still use $N\to2N\to4N\to\cdots$, but objective stabilization is meaningful only when each grid solves the same shared-height problem.
+The curvature heuristic must never replace the shared-height DP with independent segment optimization.
 
-## 6. Numerical status
+## 5. Status
 
-The curvature density is a heuristic candidate-grid rule. It does not establish global optimality or the exact asymptotic density for the continuous coupled problem.
-
-A rigorous curvature result must first derive the local asymptotic error of the shared-height formulation.
-
-## 7. Separation of concerns
-
-The implementation should keep curvature estimation, candidate breakpoint generation, shared-height feasibility/optimization, numerical constraint refinement, and grid refinement/convergence diagnostics as separate stages.
+This module is optional and heuristic. It does not establish global optimality, convergence, or a curvature-based asymptotic law. Any future theorem about curvature-adaptive grids must be proved separately before being incorporated into the correctness theory.

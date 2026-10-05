@@ -40,7 +40,7 @@ $E_X(y) = \sum_{i=0}^{n-1} \left[ \frac{x_{i+1}-x_i}{2}(y_i+y_{i+1}) - \int_{x_i
 
 Define
 
-$\mathcal F_X = \left\{ y\in\mathbb R^{n+1}: \begin{array}{l} \displaystyle \frac{x_{i+1}-x}{x_{i+1}-x_i}y_i + \frac{x-x_i}{x_{i+1}-x_i}y_{i+1} \ge f(x),\\[0.75em] \displaystyle i\in\{0,\ldots,n-1\},\quad x\in[x_i,x_{i+1}] \end{array} \right\}.$
+$\mathcal F_X$ is the set of all $y\in\mathbb R^{n+1}$ such that, for every $i\in\{0,\ldots,n-1\}$ and every $x\in[x_i,x_{i+1}]$, we have $\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}\ge f(x)$.
 
 The fixed-breakpoint value is
 

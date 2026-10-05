@@ -6,20 +6,31 @@ Let $\mathcal A_n$ be the set of continuous piecewise-affine majorants of $f$ wi
 
 For every continuous $f:[a,b]\to\mathbb R$ and every $n\ge1$, the minimum
 
-$E_n^*=\min_{g\in\mathcal A_n}\int_a^b(g-f)$
+\[
+E_n^*=\min_{g\in\mathcal A_n}\int_a^b(g-f)
+\]
 
 is attained.
 
-Consequently the problem stated with exactly $n$ segments also has an optimizer, because an affine piece may be split at arbitrary interior points without changing the function.
+Consequently the problem stated with exactly $n$ segments also has an optimizer, because any affine piece may be split at an arbitrary interior point without changing the function.
 
-### Justification
+### Proof status
 
-For a fixed breakpoint sequence, existence follows from `fixed-breakpoint.md`.
+For fixed breakpoints, existence is proved directly in `fixed-breakpoint.md`.
 
-For free breakpoints, the knot set is not compact because knot intervals may collapse. The required compactness result is the standard existence theorem for best spline approximation with free knots, together with the one-sided $L^1$ formulation: a minimizing sequence of splines with at most $n$ pieces has a subsequence converging to a spline with at most $n$ pieces, after zero-length pieces are removed. The one-sided constraint $g\ge f$ is preserved under uniform convergence, and the integral functional is continuous under uniform convergence.
+For free breakpoints, the knot set is not compact because knot intervals may collapse. We invoke the standard existence theory for best spline approximation with free knots, together with the established theory of one-sided $L^1$ spline approximation.
 
-Thus a minimizer exists in $\mathcal A_n$.
+The free-knot existence reference is:
 
-This is a standard free-knot existence result; see Barrar and Loeb, *Existence of best spline approximations with free knots*, Journal of Mathematical Analysis and Applications 31 (1970), 383–390, and the literature on one-sided $L^1$ spline approximation. The one-sided fixed-knot existence statement is explicit in Pinkus, *One-Sided $L^1$ Approximation by Splines with Fixed Knots*, Journal of Approximation Theory 18 (1976), 130–135.
+- R. B. Barrar and H. L. Loeb, “Existence of best spline approximations with free knots,” *Journal of Mathematical Analysis and Applications* 31 (1970), 383–390, DOI 10.1016/0022-247X(70)90032-6.
+
+For the one-sided $L^1$ setting, see:
+
+- A. Pinkus, “One-Sided $L^1$-Approximation by Splines with Fixed Knots,” *Journal of Approximation Theory* 18 (1976), 130–135.
+- C. A. Micchelli and A. Pinkus, “Moment Theory for Weak Chebyshev Systems with Applications to Monosplines, Quadrature Formulae and Best One-Sided $L^1$-Approximation by Spline Functions with Fixed Knots,” *SIAM Journal on Mathematical Analysis* 8 (1977), 206–230.
+
+These references are used for the free-knot/one-sided existence input. The fixed-breakpoint existence proof and all discretization and convergence arguments needed by this project are proved directly in the other theory documents.
+
+The constraint $g\ge f$ is closed under uniform convergence, and the functional $g\mapsto\int_a^b(g-f)$ is continuous in the uniform norm. Thus the standard free-knot one-sided existence theorem applies.
 
 No uniqueness is assumed or needed.

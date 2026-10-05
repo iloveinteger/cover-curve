@@ -1,125 +1,125 @@
-# Grid refinement and convergence
+# Breakpoint-grid convergence
 
-The convergence statement must refer to the **continuous, coupled problem**, not to the independent one-segment relaxation.
+Let (mathcal A_n) be the set of admissible continuous piecewise-linear majorants with exactly (n) nondegenerate segments, and let
+[
+E_n^*=inf_{ginmathcal A_n}E(g).
+]
 
-Let
-\[
-E_n^*
+Let (G_Nsubset[a,b]) be finite grids containing (a,b), and let
+[
+delta_N=max_j(z_{j+1}-z_j)
+]
+be the mesh of the ordered grid points. Assume
+[
+delta_N	o0.
+]
+
+Let (mathcal A_{n,N}subsetmathcal A_n) consist of functions whose (n+1) breakpoints all belong to (G_N), and define
+[
+E_{n,N}^*
 =
-\inf
-\left\{
-\int_a^b(g-f):
-g\text{ is a continuous PL majorant with }n\text{ nondegenerate segments}
-\right\}.
-\]
+inf_{ginmathcal A_{n,N}}E(g).
+]
 
-For a fixed breakpoint grid $G_N$, let $E_{n,N}^*$ denote the optimum of the **same continuous problem restricted to breakpoint locations in $G_N$**, with shared vertex heights optimized jointly.
+## Theorem 1 — Grid convergence
 
-The old quantity obtained from
-\[
-\sum_i C_{\mathrm{ind}}(x_i,x_{i+1})
-\]
-must not be identified with $E_{n,N}^*$.
+If (delta_N	o0), then
+[
+oxed{E_{n,N}^*longrightarrow E_n^*.}
+]
 
-## Fixed-breakpoint value
+### Proof
 
-For
-\[
-X=(x_0,\ldots,x_n),
-\qquad
-a=x_0\le\cdots\le x_n=b,
-\]
-define $V(X)$ as the optimal value of the shared-height problem
-\[
-\min_y
-\sum_{i=0}^{n-1}
-\left[
-\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
--
-\int_{x_i}^{x_{i+1}}f
-\right]
-\]
-subject to the affine interpolation of $(x_i,y_i)$ and $(x_{i+1},y_{i+1})$ majorizing $f$ on each interval.
+Since
+[
+mathcal A_{n,N}subseteqmathcal A_n,
+]
+we have
+[
+E_n^*le E_{n,N}^*.
+]
 
-For positive-length intervals, feasibility is a semi-infinite linear constraint. If an interval has zero length, its contribution is interpreted as zero.
+Fix (arepsilon>0). By the definition of (E_n^*), choose
+[
+ginmathcal A_n
+]
+such that
+[
+E(g)<E_n^*+arepsilon.
+]
+Let its breakpoints be
+[
+a=x_0<x_1<cdots<x_n=b.
+]
 
-The continuous problem is therefore
-\[
-E_n^*=\min_X V(X)
-\]
-over admissible breakpoint vectors, with the usual interpretation of degenerate breakpoint limits.
+Because the set of breakpoints is finite and strictly ordered, for all sufficiently large (N) there exist grid points
+[
+a=z_0^{(N)}<z_1^{(N)}<cdots<z_n^{(N)}=b
+]
+such that
+[
+max_i|z_i^{(N)}-x_i|ledelta_N.
+]
 
-## What must be proved for grid convergence
+Let (p_N) be the piecewise-linear interpolant of the values
+[
+g(z_i^{(N)})
+]
+at these grid breakpoints. Since (g) is continuous and piecewise linear, its uniform modulus of continuity tends to zero, and the perturbation of finitely many breakpoints implies
+[
+|p_N-g|_inftylongrightarrow0.
+]
 
-A valid grid-refinement theorem now requires three ingredients.
+Set
+[
+eta_N=|p_N-g|_infty
+]
+and define
+[
+g_N=p_N+eta_N.
+]
+Then
+[
+g_Nge gge f
+]
+on ([a,b]). Moreover (g_N) has the same (n) nondegenerate breakpoint intervals for all sufficiently large (N), so
+[
+g_Ninmathcal A_{n,N}.
+]
 
-### 1. Feasibility preservation under breakpoint perturbation
-
-Given a feasible continuous piecewise-linear majorant with breakpoints $X$, one must construct nearby grid breakpoints $X_N$ and corresponding shared heights $y_N$ that remain feasible.
-
-It is not sufficient to round breakpoints while keeping independently optimized segment lines. The heights must be perturbed jointly so that the resulting adjacent segments still meet.
-
-### 2. Cost continuity
-
-One must establish continuity, or an appropriate upper-semicontinuity/approximation property, of the fixed-breakpoint value $V(X)$ under admissible perturbations.
-
-The previous proof based only on continuity of $C_{\mathrm{ind}}(u,v)$ no longer proves this statement, because $V$ contains shared-height coupling.
-
-### 3. Squeeze argument
-
-Once the two properties above are established,
-\[
-E_n^*\le E_{n,N}^*
-\]
-because the grid-restricted feasible set is smaller.
-
-If for every continuous optimum (or arbitrarily good feasible approximation) there exist grid-feasible continuous majorants with
-\[
-E(g_N)\to E_n^*,
-\]
-then
-\[
-E_n^*\le E_{n,N}^*\le E(g_N),
-\]
-and hence
-\[
-\boxed{E_{n,N}^*\to E_n^*.}
-\]
-
-This is the convergence theorem that the new implementation must satisfy.
-
-## Numerical constraint refinement
-
-If the implementation uses sampled support constraints and an exchange procedure, there is a second error source:
-\[
-\text{finite constraint approximation}
-\ne
-\text{exact semi-infinite constraint}.
-\]
-
-Therefore the proof of mathematical grid convergence must be kept separate from numerical support-search error.
-
-A complete numerical analysis will need explicit assumptions and error bounds for:
-
-- numerical integration;
-- support maximization;
-- finite constraint sampling;
-- LP solution tolerance;
-- breakpoint-grid refinement.
-
-Until those bounds are established, the implementation should report numerical convergence empirically rather than claiming a rigorous global error bound.
-
-## Independent relaxation
-
-The independent value
-\[
-R_n^*
+Finally,
+[
+|E(g_N)-E(g)|
 =
-\min_X\sum_i C_{\mathrm{ind}}(x_i,x_{i+1})
-\]
-is a lower bound on the continuous coupled problem:
-\[
-R_n^*\le E_n^*.
-\]
+left|int_a^b(g_N-g),dxight|
+le
+(b-a)|g_N-g|_infty
+le
+2(b-a)eta_N
+longrightarrow0.
+]
+Hence, for all sufficiently large (N),
+[
+E_{n,N}^*
+le E(g_N)
+< E_n^*+2arepsilon.
+]
+Together with (E_n^*le E_{n,N}^*),
+[
+E_n^*leliminf_{N	oinfty}E_{n,N}^*
+lelimsup_{N	oinfty}E_{n,N}^*
+le E_n^*+2arepsilon.
+]
+Since (arepsilon>0) is arbitrary,
+[
+E_{n,N}^*	o E_n^*.
+]
+∎
 
-It remains useful as a diagnostic and baseline, but convergence of $R_{n,N}$ proves convergence only to the relaxation, not to the original continuous-cover problem.
+## Corollary 2
+
+For uniform grids,
+[
+G_N=left{a+jrac{b-a}{N}:0le jle Night},
+]
+the exact coupled optimization restricted to the grid converges to the original (n)-segment problem as (N	oinfty). ∎

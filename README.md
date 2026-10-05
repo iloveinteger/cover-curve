@@ -83,8 +83,11 @@ The solver uses:
 
 The implementation details are documented separately so that the README remains focused on the library's purpose and public behavior.
 
+The experimental **curvature-adaptive solver** uses a separate candidate-grid strategy based on local curvature while keeping the finite-grid DP structure.
+
 See:
 
+- [Curvature-adaptive solver](implementation/curvature-adaptive.md)
 - [Numerical methods](implementation/numerical-methods.md)
 - [Support maximization](implementation/support-maximization.md)
 - [Slope minimization](implementation/slope-minimization.md)
@@ -137,10 +140,12 @@ cover-curve/
 │   └── problem.md
 └── implementation/
     ├── adaptive-grid-dp.md
+    └── curvature-adaptive.md
     ├── interpolation.md
     ├── numerical-methods.md
     ├── slope-minimization.md
-    └── support-maximization.md
+    ├── support-maximization.md
+    └── curvature-adaptive.md
 ```
 
 ## Status

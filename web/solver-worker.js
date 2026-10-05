@@ -1,6 +1,5 @@
 importScripts("cover_curve.js");
 
-importScripts("expression.js");
 let wasmModule=null;
 CoverCurve().then(module=>{wasmModule=module;postMessage({type:"ready"});}).catch(error=>postMessage({type:"load-error",error:String(error)}));
 

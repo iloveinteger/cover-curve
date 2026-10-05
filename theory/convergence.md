@@ -160,6 +160,6 @@ $E_{n,N}^*\to E_n^*.$
 
 For the uniform grid
 
-$G_N = { a+j\frac{b-a}{N}:0\le j\le N },$
+The uniform grid is $G_N=\{a+j\frac{b-a}{N}:0\le j\le N\}$.
 
 the exact coupled optimization restricted to grid breakpoints converges to the original $n$-segment problem. ∎

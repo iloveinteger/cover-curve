@@ -1,75 +1,94 @@
-# One-segment cost
+# One-segment problem
 
-For an interval $[u,v]$, define the **independent one-segment relaxation**
-\[
-C_{\mathrm{ind}}(u,v)=
-\min_{\substack{L\text{ affine}\\L(x)\ge f(x)\ \forall x\in[u,v]}}
-\int_u^v(L(x)-f(x))\,dx.
-\]
-
-Writing
-\[
-L(x)=\alpha+\beta x,
-\]
-the smallest feasible intercept for a fixed slope is
-\[
-\alpha(\beta)
+Let (ale u<vle b). The independent one-segment problem is
+[
+C_{mathrm{ind}}(u,v)
 =
-\max_{x\in[u,v]}(f(x)-\beta x).
-\]
+min_{substack{L mathrm{affine}\Lge f	ext{ on }[u,v]}}
+int_u^v(L-f),dx.
+]
 
-Therefore
-\[
-C_{\mathrm{ind}}(u,v)
+Write
+[
+L(x)=alpha+eta x.
+]
+
+## Lemma 1 — Elimination of the intercept
+
+For fixed (eta), the least feasible intercept is
+[
+alpha(eta)
 =
-\min_{\beta\in\mathbb R}
-\left[
-(v-u)\max_{x\in[u,v]}(f(x)-\beta x)
+max_{xin[u,v]}(f(x)-eta x).
+]
+
+### Proof
+
+The inequality
+[
+alpha+eta xge f(x)
+]
+is equivalent to
+[
+alphage f(x)-eta x
+]
+for every (xin[u,v]). Since (f) is continuous, the maximum on the compact interval exists. The smallest admissible (alpha) is therefore the stated maximum. ∎
+
+## Corollary 2
+
+[
+C_{mathrm{ind}}(u,v)
+=
+min_{etainmathbb R}
+left[
+(v-u)max_{xin[u,v]}(f(x)-eta x)
 +
-\beta\frac{v^2-u^2}{2}
+etarac{v^2-u^2}{2}
 -
-\int_u^v f(x)\,dx
-\right].
-\]
+int_u^v f(x),dx
+ight].
+]
 
-The map
-\[
-\beta\mapsto\max_{x\in[u,v]}(f(x)-\beta x)
-\]
-is convex, so the one-dimensional objective is convex.
+### Proof
 
-Every optimal independent majorant touches $f$ somewhere; otherwise its intercept could be lowered.
+Substitute the minimizing intercept from Lemma 1 into
+[
+int_u^v(alpha+eta x-f(x)),dx.
+]
+∎
 
-## Role in the continuous problem
+## Lemma 3 — Convexity
 
-$C_{\mathrm{ind}}(u,v)$ is **not** the exact contribution of an interval in the original continuous piecewise-linear problem.
+The objective in Corollary 2 is a convex function of (eta).
 
-In the original problem, the endpoint heights are shared with neighboring segments. If
-\[
-y_u=g(u),\qquad y_v=g(v),
-\]
-then the segment is fixed as
-\[
-L_{u,v;y_u,y_v}(x)
+### Proof
+
+For each fixed (x), the function
+[
+etamapsto f(x)-eta x
+]
+is affine. The pointwise maximum of affine functions is convex. Adding the affine term
+[
+etarac{v^2-u^2}{2}
+]
+and the constant (-int_u^v f) preserves convexity. ∎
+
+## Proposition 4 — Relation to the continuous problem
+
+The quantity (C_{mathrm{ind}}(u,v)) is not, in general, the contribution of an interval in the continuous piecewise-linear problem.
+
+For prescribed endpoint heights (p,q), the unique continuous segment is
+[
+L_{u,v;p,q}(x)
 =
-y_u+
-\frac{y_v-y_u}{v-u}(x-u),
-\]
-and its cost is
-\[
-C(u,v;y_u,y_v)
+rac{v-x}{v-u}p+rac{x-u}{v-u}q,
+]
+and its conditional cost is
+[
+C(u,v;p,q)
 =
-\frac{v-u}{2}(y_u+y_v)
--
-\int_u^v f(x)\,dx,
-\]
-provided
-\[
-L_{u,v;y_u,y_v}(x)\ge f(x)
-\quad\forall x\in[u,v].
-\]
-Otherwise the conditional cost is $+\infty$.
+rac{v-u}{2}(p+q)-int_u^v f(x),dx
+]
+if (L_{u,v;p,q}ge f) on ([u,v]), and (+infty) otherwise.
 
-Thus the exact fixed-breakpoint problem is a coupled optimization over shared endpoint heights, not a sum of independent $C_{\mathrm{ind}}$ values.
-
-The existing numerical support/slope routine remains useful as a solver for the independent relaxation and as a diagnostic/reference calculation. It must not be treated as the global segment cost of the continuous problem.
+Thus independent minimization removes the shared-height constraint and is a relaxation of the continuous problem. ∎

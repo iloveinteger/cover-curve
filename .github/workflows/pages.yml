@@ -31,7 +31,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          cp web/index.html web/style.css web/app.js web/solver-worker.js web/cover_curve.js web/cover_curve.wasm site/
+          cp web/index.html web/style.css web/app.js web/expression.js web/solver-worker.js web/cover_curve.js web/cover_curve.wasm site/
           touch site/.nojekyll
       - name: Configure Pages
         uses: actions/configure-pages@v5

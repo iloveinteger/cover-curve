@@ -3,7 +3,9 @@
 #include "one_segment_cost.hpp"
 
 #include <cmath>
+#include <exception>
 #include <limits>
+#include <mutex>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -38,18 +40,29 @@ void parallelFor(int begin, int end, F&& fn) {
 
     std::vector<std::thread> threads;
     threads.reserve(threadCount);
+    std::exception_ptr firstException;
+    std::mutex exceptionMutex;
 
     const int chunk = (count + threadCount - 1) / threadCount;
     for (int t = 0; t < threadCount; ++t) {
         const int first = begin + t * chunk;
         const int last = std::min(end, first + chunk);
         if (first >= last) break;
-        threads.emplace_back([first, last, &fn] {
-            for (int i = first; i < last; ++i) fn(i);
+        threads.emplace_back([first, last, &fn, &firstException, &exceptionMutex] {
+            try {
+                for (int i = first; i < last; ++i) fn(i);
+            } catch (...) {
+                std::lock_guard lock(exceptionMutex);
+                if (!firstException)
+                    firstException = std::current_exception();
+            }
         });
     }
 
     for (auto& thread : threads) thread.join();
+
+    if (firstException)
+        std::rethrow_exception(firstException);
 #endif
 }
 

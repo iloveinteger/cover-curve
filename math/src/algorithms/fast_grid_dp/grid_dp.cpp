@@ -28,6 +28,9 @@ constexpr int kTransitionGoldenIterations = 30;
 constexpr int kTransitionSamples = 8;
 constexpr int kTransitionDepth = 2;
 constexpr int kTransitionRefinements = 2;
+constexpr int kRequiredLeftSamples = 16;
+constexpr int kRequiredLeftDepth = 5;
+constexpr int kRequiredLeftRefinements = 5;
 
 struct Transition {
     double threshold = std::numeric_limits<double>::infinity();
@@ -437,9 +440,9 @@ private:
                 u,
                 right,
                 0.0,
-                kTransitionSamples,
-                kTransitionDepth,
-                kTransitionRefinements
+                kRequiredLeftSamples,
+                kRequiredLeftDepth,
+                kRequiredLeftRefinements
             );
 
         double result = fValue(u);

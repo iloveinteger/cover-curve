@@ -57,7 +57,7 @@ E_I=\frac{f''(x_0)}{12}h^3+o(h^3).
 For \(q=-\kappa<0\), the optimal affine majorant is the tangent at
 \(t=1/2\):
 \[
-\ell(t)=-\frac\kappa2t+\frac\kappa4.
+\ell(t)=-\frac\kappa2t+\frac\kappa8.
 \]
 Consequently
 \[

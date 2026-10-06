@@ -8,11 +8,21 @@
 
 using Clock = std::chrono::steady_clock;
 
+
 template <class Solver>
 double measure(Solver solver, const cover_curve::Function& f,
                double a, double b, int n, double& value) {
     const auto begin = Clock::now();
     value = solver(f, a, b, n).value;
+    const auto end = Clock::now();
+    return std::chrono::duration<double, std::milli>(end - begin).count();
+}
+
+template <class Solver>
+double measureFixed(Solver solver, const cover_curve::Function& f,
+                    const std::vector<double>& points, int n, double& value) {
+    const auto begin = Clock::now();
+    value = solver(f, points, n).value;
     const auto end = Clock::now();
     return std::chrono::duration<double, std::milli>(end - begin).count();
 }
@@ -67,22 +77,19 @@ int main() {
     const auto fixedFunction = [](double x) { return std::sin(x); };
     double fixedFast = 0.0;
     double fixedDirect = 0.0;
-    const double fixedFastMs = measure(
-        [](const auto& f, double a, double b, int n) {
-            return cover_curve::fastGridDPOnGrid(
-                f, a, b, n
-            );
+    const double fixedFastMs = measureFixed(
+        [](const auto& f, const auto& points, int n) {
+            return cover_curve::fastGridDPOnGrid(f, points, n);
         },
-        fixedFunction, fixedPoints.front(), fixedPoints.back(), 2, fixedFast
+        fixedFunction, fixedPoints, 2, fixedFast
     );
-    const double fixedDirectMs = measure(
-        [](const auto& f, double a, double b, int n) {
-            std::vector<double> p{a, b / 2.0, b};
-            return cover_curve::directHeightSolve(f, p, {});
+    const double fixedDirectMs = measureFixed(
+        [](const auto& f, const auto& points, int) {
+            return cover_curve::directHeightSolve(f, points, {});
         },
-        fixedFunction, fixedPoints.front(), fixedPoints.back(), 2, fixedDirect
+        fixedFunction, fixedPoints, 2, fixedDirect
     );
     std::cout << "fixed_sin_2_uniform," << fixedFastMs << ','
               << fixedDirectMs << ','
-              << std::abs(fixedFast - fixedDirect) << '\\n';
+              << std::abs(fixedFast - fixedDirect) << '\n';
 }

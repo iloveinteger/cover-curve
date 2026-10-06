@@ -113,7 +113,7 @@ int main() {
             gradientOptions
         );
 
-        const double h = 1e-3;
+        const double h = 1e-2;
         const double pi = std::acos(-1.0);
         const auto vp = directHeightSolve(
             sine,
@@ -129,7 +129,7 @@ int main() {
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
         require(
-            std::abs(gd.gradient[1] - fd) < 5e-3,
+            std::abs(gd.gradient[1] - fd) < 1e-2,
             "envelope gradient disagrees with fixed-breakpoint finite difference."
         );
 

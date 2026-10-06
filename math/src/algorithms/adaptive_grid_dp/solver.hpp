@@ -10,8 +10,8 @@ Result solve(
     double b,
     int n,
     double tolerance = 1e-6,
-    int initialN = 16,
-    int maxN = 64
+    int initialN = 8,
+    int maxN = 32
 );
 
 }

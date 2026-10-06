@@ -68,3 +68,10 @@ if(EMSCRIPTEN)
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/web"
     )
 endif()
+
+
+add_executable(cover_curve_benchmark
+    tests/benchmark.cpp
+)
+
+target_link_libraries(cover_curve_benchmark PRIVATE cover_curve)

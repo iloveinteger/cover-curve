@@ -70,7 +70,7 @@ V_i(p)=
 \inf_{q\ge T_{x_i,x_{i+1}}(p)}
 \left[
 \frac{h_i}{2}(p+q)+V_{i+1}(q)
-\r\right].
+\right].
 $$
 
 These are continuous-height value functions: $p$ and $q$ range over real numbers, not a finite height set.

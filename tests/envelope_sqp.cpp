@@ -121,8 +121,7 @@ int main() {
         }
 
         const auto t0 = std::chrono::steady_clock::now();
-        // Validate the analytic envelope derivative against a finite
-        // difference of the complete fixed-breakpoint value function.
+        // Check the envelope gradient against finite differences.
         EnvelopeSQPOptions gradientOptions = options;
         gradientOptions.maxIterations = 1;
         gradientOptions.lineSearchSteps = 1;

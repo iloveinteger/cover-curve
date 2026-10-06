@@ -6,7 +6,9 @@
 namespace cover_curve {
 
 struct DirectHeightOptions {
-    // Maximum cutting-plane rounds are maxSweeps * number of heights.
+    // Each cutting-plane round solves one LP and then separates every
+    // segment. maxSweeps bounds the outer-round budget up to the
+    // implementation's internal safety multiplier.
     int maxSweeps = 100;
     double tolerance = 1e-8;
 };
@@ -23,10 +25,13 @@ struct DirectHeightDetailedResult {
     std::vector<DirectHeightContact> contacts;
 };
 
-// Solve the fixed-breakpoint continuous-height problem without breakpoint
-// DP. The implementation uses a cutting-plane LP: solve a finite LP,
-// separate the resulting piecewise-linear majorant against f on every
-// segment, add violated contact constraints, and repeat.
+// Solve the fixed-breakpoint continuous-height problem numerically.
+//
+// The method starts from finitely many constraints, solves the resulting LP,
+// searches each segment for a violated continuous constraint, adds violating
+// contacts, and repeats. Feasibility is guaranteed only to the configured
+// separation tolerance unless the separation search is independently
+// certified.
 Result directHeightSolve(
     const Function& f,
     const std::vector<double>& points,

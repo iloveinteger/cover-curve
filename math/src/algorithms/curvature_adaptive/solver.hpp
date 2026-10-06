@@ -12,7 +12,7 @@ Result solve(
     double tolerance = 1e-6,
     int initialN = 16,
     int maxN = 64,
-        int curvatureSamples = 128
+    int curvatureSamples = 128
 );
 
 }

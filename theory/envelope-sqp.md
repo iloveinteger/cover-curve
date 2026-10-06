@@ -152,54 +152,66 @@ For globally concave \(f\),
 \left(\int_a^b|f''|^{1/3}\right)^3.
 \]
 
-## 4. Finite nondegenerate inflections
+## 4. Finite inflections and the leading constant
 
-Suppose \(f\in C^3\) and has finitely many interior inflections
-\(p_j\), with
-\[
-f''(p_j)=0,\qquad f'''(p_j)\ne0,
-\]
-and no other curvature zeros.  Away from small neighborhoods of the
-\(p_j\), the curvature has a fixed sign and the preceding local argument
-applies uniformly.
+The mixed-curvature formula can be proved at the leading \(n^{-2}\) order without
+assuming a uniform nonzero curvature at the inflection points.
 
-Near an inflection,
-\[
-f''(x)=f'''(p_j)(x-p_j)+O((x-p_j)^2),
-\]
-so the density behaves as
-\[
-w(x)\asymp |x-p_j|^{1/3}.
-\]
-Equal-density allocation therefore gives the crossing-cell scale
-\[
-h=O(n^{-3/4})
-\]
-(up to constants), and its cubic majorant error is
-\(O(h^3\sup|f''|)=O(n^{-3})\) or smaller.  There are only finitely many
-cells crossing the inflections, hence their total contribution is
-\(o(n^{-2})\).
+Assume \(f\in C^2\) and that the zero set of \(f''\) contains only finitely
+many isolated sign-changing points.  Let \(m\) be their number.  For every
+partition, at most \(m\) cells cross an inflection.
 
-More formally, remove fixed neighborhoods of the inflections, apply the
-single-sign lower/upper estimates there, and then let the neighborhoods
-shrink.  The omitted weighted integral tends to zero because
-\(|f''|^{1/3}\) is continuous.  The finitely many crossing cells contribute
-only lower order.  Thus
+First take an arbitrary sequence of asymptotically optimal partitions.  The
+quadratic/linear upper construction gives \(E_n^*=O(n^{-2})\), hence
+\(E_n^*\to0\).  If a cell crossing an isolated inflection had length bounded
+below by a positive constant along a subsequence, its restriction to a fixed
+subinterval where \(f\) is genuinely non-affine would have a strictly
+positive majorant error, contradicting \(E_n^*\to0\).  Thus every crossing
+cell has length \(h_n\to0\).
+
+Since \(c^{1/3}|f''|^{1/3}\) is continuous up to the harmless jump in \(c\)
+at the isolated zero, the weighted mass of those finitely many crossing cells
+satisfies
+\[
+\sum_{\text{crossing }i}
+\int_{x_i}^{x_{i+1}}
+c(x)^{1/3}|f''(x)|^{1/3}\,dx=o(1).
+\]
+On all remaining cells the curvature has a fixed sign, so the local lower
+estimate applies.  Holder gives
+\[
+E_n\ge
+\frac1{n^2}
+\left(
+\sum_{\text{noncrossing }i}
+\int_{x_i}^{x_{i+1}}
+c(x)^{1/3}|f''(x)|^{1/3}\,dx
+\right)^3
++o(n^{-2}).
+\]
+The omitted weighted mass is \(o(1)\), giving the global liminf.
+
+For the limsup, distribute the knots by the cumulative density
+\[
+\Phi(x)=\int_a^x c(t)^{1/3}|f''(t)|^{1/3}\,dt.
+\]
+All noncrossing cells have the local upper expansion.  There are only
+finitely many crossing cells; their total contribution is lower order because
+their weighted mass is one cell's quantile mass \(A/n\) and the curvature
+vanishes at the crossing point.  Hence
 \[
 \boxed{
 \lim_{n\to\infty}n^2E_n^*
 =
 \left(
-\int_a^b c(x)^{1/3}|f''(x)|^{1/3}dx
-\right)^3
+\int_a^b c(x)^{1/3}|f''(x)|^{1/3}\,dx
+\right)^3.
 }
 \]
-also holds under the stated finite-nondegenerate-inflection assumptions.
 
-The earlier version of this document treated the mixed-curvature formula as
-unproved; the argument above supplies the missing leading-order coupling
-argument.  A full finite-\(n\) \(O(n^{-3})\) expansion still requires a
-higher-order analysis of the inflection cells.
+The argument does **not** assert a universal \(O(n^{-3})\) remainder at
+inflections.  That stronger finite-\(n\) statement needs additional
+regularity/order-of-vanishing assumptions.
 
 ## 5. Fixed-node certification
 

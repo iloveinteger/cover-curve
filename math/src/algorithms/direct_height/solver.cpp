@@ -1,7 +1,7 @@
 #include <cover_curve/solvers/direct_height.hpp>
 
-#include "../numerical/integration.hpp"
-#include "../numerical/support_max.hpp"
+#include "../../numerical/integration.hpp"
+#include "../../numerical/support_max.hpp"
 
 #include <algorithm>
 #include <cmath>

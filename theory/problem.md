@@ -6,7 +6,7 @@ Find a continuous piecewise-affine function $g:[a,b]\to\mathbb R$ with at most $
 
 $$
 g(x)\ge f(x)
-\qquad\text{for all }x\in[a,b],
+\qquad\text{for all }x\in[a,b]
 $$
 
 while minimizing

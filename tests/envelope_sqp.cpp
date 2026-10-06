@@ -97,6 +97,42 @@ int main() {
                 "dual contact set is unexpectedly empty.");
 
         const auto t0 = std::chrono::steady_clock::now();
+        // Validate the analytic envelope derivative against a finite
+        // difference of the complete fixed-breakpoint value function.
+        EnvelopeSQPOptions gradientOptions = options;
+        gradientOptions.maxIterations = 1;
+        gradientOptions.lineSearchSteps = 1;
+        gradientOptions.sufficientDecrease = 1e6;
+        gradientOptions.gradientTolerance = 1e-12;
+
+        const auto gd = envelopeSQPSolveDetailed(
+            sine,
+            0.0,
+            2.0 * std::acos(-1.0),
+            2,
+            gradientOptions
+        );
+
+        const double h = 1e-3;
+        const double pi = std::acos(-1.0);
+        const auto vp = directHeightSolve(
+            sine,
+            std::vector<double>{0.0, pi + h, 2.0 * pi},
+            options.innerOptions
+        ).value;
+        const auto vm = directHeightSolve(
+            sine,
+            std::vector<double>{0.0, pi - h, 2.0 * pi},
+            options.innerOptions
+        ).value;
+        const double fd = (vp - vm) / (2.0 * h);
+        require(gd.gradient.size() == 3,
+                "envelope gradient has invalid dimension.");
+        require(
+            std::abs(gd.gradient[1] - fd) < 5e-3,
+            "envelope gradient disagrees with fixed-breakpoint finite difference."
+        );
+
         const Result sin =
             envelopeSQPSolve(
                 sine,

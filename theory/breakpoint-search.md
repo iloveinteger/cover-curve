@@ -12,12 +12,12 @@ The method is deliberately different from the breakpoint-grid dynamic program: i
 
 For
 $$
-X=(x_1,\ldots,x_{n-1}),\\\qquad
+X=(x_1,\ldots,x_{n-1}),\qquad
 a<x_1<\cdots<x_{n-1}<b,
 $$
 put
 $$
-x_0=a,\\\qquad x_n=b
+x_0=a,\qquad x_n=b
 $$
 and define
 $$
@@ -27,11 +27,11 @@ where the minimum is the fixed-breakpoint shared-height majorant problem from `f
 
 The free-breakpoint optimum is
 $$
-E_n^*=\inf_{X\in\\\mathcal X}V(X),
+E_n^*=\inf_{X\in\mathcal X}V(X),
 $$
 with
 $$
-\\\mathcal X=\{a<x_1<\cdots<x_{n-1}<b\}.
+\mathcal X=\{a<x_1<\cdots<x_{n-1}<b\}.
 $$
 
 An optimizer exists by the free-knot existence theorem used in `existence.md`.
@@ -56,7 +56,7 @@ Let g* be an optimal spline for X*. It is piecewise affine and therefore Lipschi
 
 For a sequence X_r -> X*, construct p_r by interpolating g* at the perturbed breakpoints. The perturbed segments can cross an old knot only inside an interval whose length tends to zero. The Lipschitz property gives
 $$
-\|p_r-g^*\|_\infty\\\le C K\|X_r-X^*\|_\infty
+\|p_r-g^*\|_\infty\le C K\|X_r-X^*\|_\infty
 $$
 for a fixed local constant C. Therefore
 $$
@@ -68,12 +68,12 @@ E(\widetilde p_r)\to E(g^*)=V(X^*).
 $$
 Hence
 $$
-\limsup_{r\to\infty}V(X_r)\\\le V(X^*).
+\limsup_{r\to\infty}V(X_r)\le V(X^*).
 $$
 
 For the reverse inequality, take optimal splines g_r for X_r. In a sufficiently small neighborhood U the breakpoint spacings are bounded below by a positive number. The vertex values are bounded on every sublevel set because the fixed-breakpoint objective has strictly positive coefficients. Thus the corresponding piecewise-affine functions have uniformly bounded heights and slopes. A subsequence converges uniformly to a feasible spline for X*. The objective is continuous under uniform convergence, so
 $$
-V(X^*)\\\le\liminf_{r\to\infty}V(X_r).
+V(X^*)\le\liminf_{r\to\infty}V(X_r).
 $$
 Combining the two inequalities proves
 $$
@@ -101,7 +101,7 @@ Both children are retained. Therefore the union of nodes after every subdivision
 
 After d complete levels of bisection,
 $$
-\max_i(r_i-\ell_i)\\\le\frac{b-a}{2^d}.
+\max_i(r_i-\ell_i)\le\frac{b-a}{2^d}.
 $$
 
 Thus the subdivision is exhaustive.
@@ -114,11 +114,11 @@ Assume the fixed-breakpoint oracle returns V(X) exactly. Let U_d be the smallest
 
 Then
 $$
-U_d\\\ge E_n^*
+U_d\ge E_n^*
 $$
 for every d and
 $$
-\\\boxed{U_d\longrightarrow E_n^*.}
+\boxed{U_d\longrightarrow E_n^*.}
 $$
 
 ### Proof
@@ -135,7 +135,7 @@ V(X)<E_n^*+\epsilon.
 $$
 Therefore
 $$
-\limsup_d U_d\\\le E_n^*+\epsilon.
+\limsup_d U_d\le E_n^*+\epsilon.
 $$
 Since epsilon is arbitrary and U_d >= E_n*, the result follows.
 ∎
@@ -146,7 +146,7 @@ This is a deterministic global-convergence theorem. It does **not** require conv
 
 For an interval [u,v], let C(u,v) be the independently optimized one-segment majorant cost. Then
 $$
-\sum_i C(x_i,x_{i+1})\\\le V(X)
+\sum_i C(x_i,x_{i+1})\le V(X)
 $$
 is a valid relaxation.
 

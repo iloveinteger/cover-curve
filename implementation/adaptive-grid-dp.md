@@ -80,3 +80,19 @@ The theory proves convergence of the exact continuous-height breakpoint-grid opt
 \]
 
 The current C++ implementation additionally has numerical errors from transition evaluation, continuous-height global search, numerical integration, and numerical estimation of the function range. Those errors are not yet covered by a full numerical convergence theorem.
+
+
+## 8. Numerical performance optimizations
+
+The implementation keeps the height state continuous, but avoids several sources of redundant work.
+
+- Transition evaluations are memoized by the pair of breakpoint indices and the continuous left height (p).
+- Feasible lower-height searches are memoized by the pair of breakpoint indices and the continuous terminal height (q).
+- Repeated evaluations of the same objective point during one global one-dimensional search are cached.
+- The numerical support search used inside a transition uses a smaller initial sample and refinement budget than the generic support routine.
+- Continuous-height global searches use a small coarse sample followed by local golden-section refinement. This is still a heuristic numerical search; it is not a height grid.
+- The binary search used to locate the feasible lower endpoint uses fewer iterations because the result is only a numerical starting point for the subsequent continuous search.
+
+These changes reduce repeated function evaluations without changing the mathematical state space. They do not turn the numerical implementation into a certified global optimizer.
+
+The exact mathematical recurrence and its (O(nm^2)) oracle-level predecessor complexity remain the same; the constants above affect only the cost of the numerical realization.

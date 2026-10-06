@@ -15,12 +15,12 @@ Adaptive Simpson quadrature is the current integration method. Integration error
 
 The shared-height DP needs
 $$
-T_{u,v}(p)=\sup_{u<x\\\le v}\\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
+T_{u,v}(p)=\sup_{u<x\\\le v}\left[p+\frac{v-u}{x-u}(f(x)-p)\r\right].
 $$
 
 For sampled constraint points $S\subset(u,v]$, evaluate
 $$
-T_S(u,v;p)=\max_{x\in S}\\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
+T_S(u,v;p)=\max_{x\in S}\left[p+\frac{v-u}{x-u}(f(x)-p)\r\right].
 $$
 
 The sampled maximum is a lower approximation to the exact supremum. The current baseline samples every breakpoint and every cell midpoint. It must not be treated as a proof of feasibility.

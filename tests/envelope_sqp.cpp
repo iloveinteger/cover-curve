@@ -106,18 +106,7 @@ int main() {
                     ((2.0 * pi - contact.x) /
                      (2.0 * pi - 2.8));
         }
-        std::cerr
-            << "fixed y1=" << detailed.heights[1]
-            << " f1=" << sine(2.8)
-            << " objectiveCoeff=" << pi
-            << " dualWeight=" << dualAt1
-            << std::endl;
-        for (const auto& contact : detailed.contacts)
-            std::cerr
-                << "contact segment=" << contact.segment
-                << " x=" << contact.x
-                << " lambda=" << contact.multiplier
-                << std::endl;
+
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite
         // difference of the complete fixed-breakpoint value function.
@@ -153,14 +142,10 @@ int main() {
         const double fd = (vp - vm) / (2.0 * h);
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
-        if (std::abs(gd.gradient[1] - fd) >= 1e-2) {
-            std::cerr
-                << "gradient=" << gd.gradient[1]
-                << " finite_difference=" << fd << std::endl;
-            throw std::runtime_error(
-                "envelope gradient disagrees with fixed-breakpoint finite difference."
-            );
-        }
+        require(
+            std::abs(gd.gradient[1] - fd) < 1e-2,
+            "envelope gradient disagrees with fixed-breakpoint finite difference."
+        );
 
         const Result sin =
             envelopeSQPSolve(
@@ -194,6 +179,10 @@ int main() {
         require(
             denseViolation(sin, sine) <= 2e-5,
             "sin envelope is not a majorant."
+        );
+        require(
+            sin.value < 2.6,
+            "sin envelope quality regressed."
         );
 
         std::cout

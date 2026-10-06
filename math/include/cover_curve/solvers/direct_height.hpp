@@ -19,6 +19,7 @@ struct DirectHeightContact {
 
 struct DirectHeightDetailedResult {
     Result result;
+    std::vector<double> heights;
     std::vector<DirectHeightContact> contacts;
 };
 

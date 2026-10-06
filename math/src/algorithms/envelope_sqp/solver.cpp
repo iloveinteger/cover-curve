@@ -397,8 +397,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         ));
     }
 
-    // If more seeds are explicitly requested, retain cheap deterministic
-    // alternatives rather than invoking the expensive global grid solver.
+    // Additional seeds are cheap deterministic alternatives.
     for (int s = 1;
          static_cast<int>(seeds.size()) < options.seeds;
          ++s) {

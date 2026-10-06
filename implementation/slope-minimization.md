@@ -10,7 +10,7 @@ L(x)=\alpha+\beta x
 $$
 is feasible when
 $$
-\alpha\\\ge\max_{x\in[u,v]}(f(x)-\beta x).
+\alpha\ge\max_{x\in[u,v]}(f(x)-\beta x).
 $$
 
 For fixed (\eta), the smallest feasible intercept is

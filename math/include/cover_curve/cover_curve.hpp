@@ -7,3 +7,4 @@
 #include <cover_curve/solvers/fast_grid_dp.hpp>
 #include <cover_curve/solvers/curvature_adaptive.hpp>
 #include <cover_curve/solvers/breakpoint_search.hpp>
+#include <cover_curve/solvers/coordinate_search.hpp>

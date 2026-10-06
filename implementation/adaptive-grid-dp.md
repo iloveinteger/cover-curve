@@ -23,12 +23,12 @@ The implementation memoizes values at the real heights actually requested by the
 
 ## 2. Continuous height bound
 
-The mathematical optimum can be searched inside
+The theory gives a sufficient bound inside
 $$
 [m_f,B_N],\qquad B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
 $$
 
-The implementation estimates m_f and M_f numerically and uses this bound. This bound controls the search domain; it does not discretize that domain.
+The implementation estimates $m_f$ and $M_f$ numerically and uses a conservative factor-two inflation of the theoretical bound. This controls the continuous search domain; it does not discretize that domain.
 
 ## 3. Transition evaluation
 

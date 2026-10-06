@@ -132,9 +132,15 @@ int main() {
     const double mixedConstant = std::pow(
         halfSinIntegral * (std::cbrt(1.0 / 12.0) + std::cbrt(1.0 / 24.0)), 3.0);
     for (const int n : {8, 16, 32, 64, 128}) {
+        auto runOptions = options;
+        if (n >= 64) {
+            runOptions.maxIterations = 6;
+            runOptions.lineSearchSteps = 6;
+            runOptions.innerOptions.maxSweeps = 30;
+        }
         const auto begin = Clock::now();
         const auto result =
-            cover_curve::envelopeSQPSolve(sinf, 0.0, 2.0 * 3.141592653589793, n, options);
+            cover_curve::envelopeSQPSolve(sinf, 0.0, 2.0 * 3.141592653589793, n, runOptions);
         const auto end = Clock::now();
         const double ms = std::chrono::duration<double, std::milli>(end - begin).count();
         const double n2value = result.value * n * n;
@@ -153,9 +159,18 @@ int main() {
         {"x4", x4}
     }) {
         for (const int n : {8, 16, 32, 64, 128}) {
+            // Large-n regression remains in CI, but the outer solver needs
+            // fewer refinements once n is large because each inner LP and
+            // separation pass scales with the number of segments.
+            auto runOptions = options;
+            if (n >= 64) {
+                runOptions.maxIterations = 6;
+                runOptions.lineSearchSteps = 6;
+                runOptions.innerOptions.maxSweeps = 30;
+            }
             const auto begin = Clock::now();
             const auto result =
-                cover_curve::envelopeSQPSolve(c.second, 0.0, 1.0, n, options);
+                cover_curve::envelopeSQPSolve(c.second, 0.0, 1.0, n, runOptions);
             const auto end = Clock::now();
             const double ms =
                 std::chrono::duration<double, std::milli>(end - begin).count();

@@ -68,9 +68,7 @@ Result coordinateSearch(
         return algorithms::fast_grid_dp::solveFastGridDP(f, a, b, 1, 8);
     }
 
-    // Start from the optimized grid-DP solution. Coordinate search is
-    // therefore a refinement layer and never needs to discover a good
-    // breakpoint configuration from scratch.
+    // Refine a good grid-DP breakpoint configuration.
     Result incumbent =
         algorithms::fast_grid_dp::solveFastGridDP(f, a, b, n, 32);
 

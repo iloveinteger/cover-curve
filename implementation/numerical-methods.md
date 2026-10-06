@@ -15,12 +15,12 @@ Adaptive Simpson quadrature is the current integration method. Integration error
 
 The shared-height DP needs
 $$
-T_{u,v}(p)=\sup_{u<x\le v}\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
+T_{u,v}(p)=\sup_{u<x\\\le v}\\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
 $$
 
 For sampled constraint points $S\subset(u,v]$, evaluate
 $$
-T_S(u,v;p)=\max_{x\in S}\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
+T_S(u,v;p)=\max_{x\in S}\\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
 $$
 
 The sampled maximum is a lower approximation to the exact supremum. The current baseline samples every breakpoint and every cell midpoint. It must not be treated as a proof of feasibility.
@@ -51,7 +51,7 @@ A single tolerance should not represent all numerical errors.
 
 A candidate transition is accepted only according to the selected numerical policy for
 $$
-q\ge T_{u,v}(p).
+q\\\ge T_{u,v}(p).
 $$
 
 If the method provides only sampled constraints, the result is a numerical candidate rather than a certified majorant. The implementation should expose this distinction instead of reporting sampled feasibility as mathematical feasibility.

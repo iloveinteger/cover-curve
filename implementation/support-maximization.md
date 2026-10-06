@@ -5,9 +5,9 @@ This document specifies the numerical search primitive for maxima of continuous 
 ## 1. General problem
 
 Given a continuous callable (h) on a compact interval ([u,v]), compute a numerical approximation to
-\[
+$$
 \max_{x\in[u,v]}h(x).
-\]
+$$
 
 The exact maximum exists by continuity and compactness. A finite black-box sampling procedure does not, in general, certify that its returned value is the exact maximum.
 
@@ -27,20 +27,20 @@ The search must not assume unimodality.
 ## 3. Use in Cover Curve
 
 The primitive is used for functions such as
-\[
+$$
 h_\beta(x)=f(x)-\beta x
-\]
+$$
 in the independent one-segment calculation.
 
 The shared-height solver instead needs the transition supremum
-\[
+$$
 T_{u,v}(p)
 =
 \sup_{u<x\le v}
 \left[
 p+\frac{v-u}{x-u}(f(x)-p)
 \right].
-\]
+$$
 
 A generic support maximizer can be reused only after the target function has been transformed appropriately and its behavior near (u) has been handled.
 

@@ -1,5 +1,6 @@
 #include <cover_curve/solvers/envelope_sqp.hpp>
 #include <cover_curve/solvers/direct_height.hpp>
+#include <cover_curve/solvers/coordinate_search.hpp>
 
 #include <algorithm>
 #include <cmath>

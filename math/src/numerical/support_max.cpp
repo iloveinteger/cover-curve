@@ -127,19 +127,25 @@ SupportMaximum adaptiveSupportMaximum(
             });
         }
 
-        std::sort(
-            scored.begin(),
-            scored.end(),
-            [](const auto& x, const auto& y) {
-                return x.score > y.score;
-            }
-        );
-
         const int count =
             std::min(
                 refinementCount,
                 static_cast<int>(scored.size())
             );
+
+        // Only the best 'count' intervals are refined. Full sorting is
+        // unnecessary; nth_element gives the same selected set in linear
+        // average time and avoids sorting every interval at every depth.
+        if (count > 0 && count < static_cast<int>(scored.size())) {
+            std::nth_element(
+                scored.begin(),
+                scored.begin() + count,
+                scored.end(),
+                [](const auto& x, const auto& y) {
+                    return x.score > y.score;
+                }
+            );
+        }
 
         std::vector<Interval> next;
         next.reserve(intervals.size() + count);

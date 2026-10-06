@@ -102,7 +102,7 @@ std::vector<double> envelopeGradient(
         const double dy = y[i + 1] - y[i];
 
         if (i > 0)
-            gradient[i] +=
+            gradient[i] -=
                 lambda * dy * (x1 - contact.x) / (h * h);
 
         if (static_cast<std::size_t>(i + 1) < n)

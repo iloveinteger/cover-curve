@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cover_curve/types.hpp>
+#include <limits>
 
 namespace cover_curve::numerical {
 
@@ -16,7 +17,8 @@ SupportMaximum adaptiveSupportMaximum(
     double beta,
     int initialSamples = 32,
     int maxDepth = 8,
-    int refinementCount = 32
+    int refinementCount = 32,
+    double seedX = std::numeric_limits<double>::quiet_NaN()
 );
 
 }

@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <stdexcept>
+#include <stdexcept>\n#include <string>
 #include <utility>
 #include <vector>
 
@@ -191,7 +191,12 @@ int main() {
             if (!std::isfinite(result.value) ||
                 !std::isfinite(violation) ||
                 violation > 5e-5)
-                throw std::runtime_error("large-n accuracy/feasibility check failed");
+                throw std::runtime_error("large-n feasibility check failed");
+
+            if ((std::string(c.first) == "x2" ||
+                 std::string(c.first) == "-x2") &&
+                rel > 1e-8)
+                throw std::runtime_error("exact quadratic reference check failed");
         }
     }
 }

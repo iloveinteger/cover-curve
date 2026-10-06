@@ -79,7 +79,7 @@ For a contact z in [x_i,x_{i+1}],
 \[
 \frac{\partial c_i}{\partial x_i}
 =
-\frac{(y_{i+1}-y_i)(x_{i+1}-z)}
+-\frac{(y_{i+1}-y_i)(x_{i+1}-z)}
 {h_i^2},
 \]
 and

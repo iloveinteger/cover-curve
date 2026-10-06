@@ -1,186 +1,203 @@
 # Existence of an optimal spline majorant
 
-Let \(f:[a,b]\to\mathbb R\) be continuous and let \(n\ge1\). Define
+Let $f:[a,b]\to\mathbb R$ be continuous and let $n\ge1$. Define
 \[
 \mathcal S_n
 =
-\{g\in C[a,b]:g\text{ is piecewise-affine with at most }n
+\{g\in C[a,b]:
+g\text{ is piecewise-affine with at most }n
 \text{ nondegenerate segments}\}.
 \]
-We minimize
+Set
 \[
-J(g)=\int_a^b(g(x)-f(x))\,dx
-\]
-over
-\[
-\mathcal F_n=\{g\in\mathcal S_n:g(x)\ge f(x)\ \forall x\in[a,b]\}.
+J(g)=\int_a^b(g-f),
+\qquad
+\mathcal F_n=\{g\in\mathcal S_n:g\ge f\text{ on }[a,b]\}.
 \]
 
-The distinction between **at most \(n\)** and **exactly \(n\)** segments is
-important: collisions of free knots are then harmless, because a collision
-simply decreases the number of nondegenerate segments.
+The use of **at most** $n$ segments is essential when free breakpoints are
+allowed: a sequence of breakpoints may coalesce, and the limiting spline
+may then have fewer nondegenerate segments.
 
 ## Theorem 1 — existence
 
-There exists \(g^*\in\mathcal F_n\) such that
+There exists $g^*\in\mathcal F_n$ such that
 \[
 J(g^*)=\min_{g\in\mathcal F_n}J(g).
 \]
-Consequently an optimizer can be represented with exactly \(n\) segments by
-subdividing affine pieces.
 
-### External compactness theorem
+For fixed breakpoints this follows by an elementary finite-dimensional
+compactness argument, given below. For free breakpoints, the existence
+statement is a standard free-knot one-sided $L^1$ spline-approximation
+result; it is used here as an external theorem rather than being inferred
+from a false $L^1$ compactness claim.
 
-We use the standard free-knot spline existence theorem of
-R. B. Barrar and H. L. Loeb,
-*Existence of best spline approximations with free knots*,
-Journal of Mathematical Analysis and Applications 31 (1970), 383--390.
+### Free-knot existence theorem used here
 
-In the form needed here, the theorem states that for a continuous target on
-a compact interval, a best \(L^p\)-approximation exists in the class of
-continuous splines of fixed degree with a bounded number of free knots
-(\(1\le p\le\infty\)); coincident knots are allowed in the limiting
-representation and therefore the class is taken with at most the prescribed
-number of nondegenerate pieces.
+A continuous target on a compact interval admits a best one-sided
+$L^1$ approximation from the class of continuous piecewise-polynomial
+splines of fixed degree with a bounded number of free knots. The class is
+understood with coalescing knots allowed, equivalently with at most the
+prescribed number of nondegenerate pieces.
 
-The present problem is a constrained version of the \(p=1\) case. The
-constraint is closed under the convergence supplied by the free-knot
-compactness argument: if \(g_j\to g\) in \(L^1\) and the limiting spline
-\(g\) is continuous, then \(g_j\ge f\) implies \(g\ge f\) almost everywhere,
-and continuity of \(g-f\) upgrades this to
+For degree one, this gives exactly the existence statement above, because
+for every feasible $g$,
+\[
+g-f\ge0
+\]
+and hence
+\[
+J(g)=\int_a^b|g-f|
+=\|g-f\|_{L^1}.
+\]
+
+This is part of the classical free-knot spline approximation theory. The
+free-knot existence result of Barrar and Loeb is the relevant compactness
+result, while the one-sided $L^1$ existence theory supplies the
+restricted-range formulation.
+
+References:
+
+- R. B. Barrar and H. L. Loeb, “Existence of best spline approximations
+  with free knots,” *Journal of Mathematical Analysis and Applications*
+  31 (1970), 383--390,
+  DOI: 10.1016/0022-247X(70)90032-6.
+- N. Richter-Dyn, “On Best Nonlinear Approximation in Sign-Monotone Norms
+  and in Norms Induced by Inner Products,” *SIAM Journal on Numerical
+  Analysis* 16 (1979), 612--622,
+  DOI: 10.1137/0716046.
+- Z. Ziegler, “One-sided $L^1$-approximation by splines of an arbitrary
+  degree,” in *Approximations with Special Emphasis on Spline Functions*,
+  Academic Press, 1969, pp. 405--413.
+
+The cited results are used only for existence. No uniqueness statement is
+needed here.
+
+### Why the naive $L^1$ compactness argument is invalid
+
+It is not enough to take a minimizing sequence and say that it is
+$L^1$-bounded, hence has an $L^1$-convergent subsequence. A bounded sequence
+in $L^1$ need not be relatively compact in $L^1$; narrow, high spikes give
+a standard counterexample. Therefore the free-knot existence theorem must
+supply the required compactness/attainment result. It cannot be replaced
+by the assertion
+\[
+\{J(g_j)\}\text{ bounded}
+\quad\Longrightarrow\quad
+\{g_j\}\text{ has an }L^1\text{-convergent subsequence}.
+\]
+
+If $g_j\to g$ in $L^1$ and the limit is known to belong to the spline
+class, then the majorant constraint is closed: from $g_j\ge f$ we obtain
+$g\ge f$ almost everywhere, and continuity of $g-f$ then gives
 \[
 g(x)\ge f(x)\qquad\forall x\in[a,b].
 \]
+The issue is therefore the compactness and preservation of the free-knot
+spline class, not the passage of the inequality itself.
 
-### Proof of Theorem 1
-
-Let
-\[
-I=\inf_{g\in\mathcal F_n}J(g).
-\]
-The feasible set is nonempty. Indeed, if
-\[
-M=\max_{x\in[a,b]}f(x),
-\]
-then the constant spline \(g\equiv M\) belongs to \(\mathcal F_n\).
-Hence \(I<\infty\).
-
-Choose a minimizing sequence \(g_j\in\mathcal F_n\) with
-\[
-J(g_j)\longrightarrow I.
-\]
-Since \(g_j\ge f\),
-\[
-J(g_j)
-=
-\int_a^b|g_j-f|
-=
-\|g_j-f\|_{L^1}.
-\]
-Thus \(\{g_j\}\) is an \(L^1\)-bounded minimizing sequence for the
-free-knot spline approximation problem.
-
-Apply the free-knot existence/compactness theorem to this sequence.
-After passing to a subsequence, there is a continuous
-\(g^*\in\mathcal S_n\) such that
-\[
-g_j\longrightarrow g^*
-\quad\text{in }L^1([a,b]).
-\]
-
-Because \(g_j-f\ge0\), the \(L^1\) convergence implies
-\(g^*-f\ge0\) almost everywhere. Since both \(g^*\) and \(f\) are
-continuous, \(g^*-f\) is continuous. A continuous function which is
-nonnegative almost everywhere on an interval is nonnegative everywhere;
-otherwise it would be negative on a nonempty open interval. Therefore
-\[
-g^*(x)\ge f(x)\qquad\forall x\in[a,b],
-\]
-so \(g^*\in\mathcal F_n\).
-
-Finally,
-\[
-|J(g_j)-J(g^*)|
-=
-\left|
-\int_a^b(g_j-g^*)\,dx
-\right|
-\le
-\|g_j-g^*\|_{L^1}
-\longrightarrow0.
-\]
-Hence
-\[
-J(g^*)=\lim_{j\to\infty}J(g_j)=I.
-\]
-Thus \(g^*\) attains the infimum.
-
-\(\square\)
-
-## Why breakpoint collisions do not invalidate the theorem
-
-The free-knot parameter set with strictly increasing knots is not compact.
-That is not the correct compactness space.
-
-A minimizing sequence may have
-\[
-x_i^{(j)}-x_{i-1}^{(j)}\to0.
-\]
-The limiting spline then simply has fewer nondegenerate pieces. The
-free-knot existence theorem is formulated precisely so that such knot
-coalescence is included in the closure of the spline class.
-
-Therefore one must **not** argue by claiming that the strictly ordered
-breakpoint simplex is compact. Compactness is obtained at the level of the
-spline class, with degenerate knots absorbed as redundant knots.
-
-## Fixed-breakpoint existence
-
-For completeness, the fixed-breakpoint case can be proved directly.
+## Theorem 2 — existence for fixed breakpoints
 
 Fix
 \[
-a=x_0<x_1<\cdots<x_n=b
+a=x_0<x_1<\cdots<x_m=b,
+\qquad m\le n.
 \]
-and write the spline by its vertex values \(y_0,\ldots,y_n\).
-The feasibility constraints
-\[
-g_y(x)\ge f(x)\qquad(x\in[a,b])
-\]
-form a closed set in \(\mathbb R^{n+1}\).
+Among continuous piecewise-affine functions whose breakpoints are contained
+in this fixed set, there exists a feasible minimizer.
 
-Moreover,
+### Proof
+
+Write
+\[
+y_i=g(x_i),\qquad i=0,\ldots,m.
+\]
+The spline is uniquely determined by the vector
+$y=(y_0,\ldots,y_m)$. The feasible set
+\[
+\mathcal C_X
+=
+\{y\in\mathbb R^{m+1}:g_y(x)\ge f(x)
+\text{ for every }x\in[a,b]\}
+\]
+is closed, because for each $x$ the value $g_y(x)$ is a continuous affine
+function of $y$.
+
+On $[x_i,x_{i+1}]$,
+\[
+\int_{x_i}^{x_{i+1}}g_y(x)\,dx
+=
+\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1}).
+\]
+Therefore
 \[
 J(g_y)
 =
-\sum_{i=0}^{n-1}
+\sum_{i=0}^{m-1}
 \frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
--\int_a^b f(x)\,dx.
+-
+\int_a^b f(x)\,dx.
 \]
-Every \(y_i\) has a strictly positive coefficient. Consequently
-\(J(g_y)\to+\infty\) whenever \(\|y\|\to\infty\) along the feasible set.
-The objective is therefore coercive on a closed feasible set and attains
-its minimum by the Weierstrass theorem.
+Equivalently,
+\[
+J(g_y)
+=
+c_0y_0+c_my_m+\sum_{i=1}^{m-1}c_i y_i
+-
+\int_a^b f,
+\]
+where
+\[
+c_0=\frac{x_1-x_0}{2},\qquad
+c_m=\frac{x_m-x_{m-1}}{2},
+\]
+and
+\[
+c_i=\frac{x_{i+1}-x_{i-1}}{2}
+\qquad(1\le i\le m-1).
+\]
+All coefficients are strictly positive.
 
-This direct argument is independent of the free-knot theorem.
+Feasibility implies
+\[
+y_i=g_y(x_i)\ge f(x_i)
+\]
+for every $i$. Thus no coordinate can tend to $-infty$ along the
+feasible set. If any coordinate tends to $+infty$, the positivity of its
+coefficient forces $J(g_y)\to+\infty$. Hence every sublevel set
+\[
+\{y\in\mathcal C_X:J(g_y)\le C\}
+\]
+is bounded. It is also closed, and therefore compact.
 
-## Exactly \(n\) segments
+A minimizing sequence eventually lies in one such compact sublevel set.
+By the Weierstrass theorem, $J$ attains its minimum on $\mathcal C_X$.
+\[
+\square
+\]
 
-If the optimizer has \(m<n\) nondegenerate affine pieces, choose arbitrary
-interior points inside its affine pieces and declare them additional
-breakpoints. The function does not change, so neither feasibility nor the
-objective changes. Hence the optimizer has an exactly-\(n\)-segment
-representation.
+## Breakpoint collisions
 
-No uniqueness is asserted.
+For free breakpoints, the strictly ordered parameter set
+\[
+a<x_1<\cdots<x_{m-1}<b
+\]
+is not compact. It is therefore incorrect to prove free-knot existence by
+claiming that this open simplex is compact.
 
-## Reference
+If
+\[
+x_i^{(j)}-x_{i-1}^{(j)}\to0,
+\]
+the two neighboring affine pieces may merge in the limit. The resulting
+function simply has fewer nondegenerate segments. This is why the problem
+is formulated with **at most $n$** segments.
 
-R. B. Barrar and H. L. Loeb, “Existence of best spline approximations with
-free knots,” *Journal of Mathematical Analysis and Applications* 31 (1970),
-383--390.
+No claim is made that an optimizer must use exactly $n$ effective segments.
 
-The existence of this classical free-knot result is independently recorded
-in standard spline bibliographies and later free-knot approximation
-literature. The one-sided \(L^1\) setting is also part of the established
-spline-approximation literature.
+## Uniqueness
+
+No uniqueness is asserted. In particular, different breakpoint
+representations can describe the same affine function, and free-knot
+one-sided $L^1$ problems need not have a unique optimizer under the
+assumptions used here.

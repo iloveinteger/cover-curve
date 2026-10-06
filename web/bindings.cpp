@@ -15,7 +15,7 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-        const auto result = cover_curve::adaptiveGridDP(f, a, b, n);
+        const auto result = cover_curve::fastGridDP(f, a, b, n);
 
         val output = val::object();
         output.set("value", result.value);

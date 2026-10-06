@@ -62,4 +62,27 @@ int main() {
             std::cout << c.first << ",direct_error," << e.what() << '\n';
         }
     }
+
+    const std::vector<double> fixedPoints{0.0, 3.141592653589793, 2.0 * 3.141592653589793};
+    const auto fixedFunction = [](double x) { return std::sin(x); };
+    double fixedFast = 0.0;
+    double fixedDirect = 0.0;
+    const double fixedFastMs = measure(
+        [](const auto& f, double a, double b, int n) {
+            return cover_curve::fastGridDPOnGrid(
+                f, a, b, n
+            );
+        },
+        fixedFunction, fixedPoints.front(), fixedPoints.back(), 2, fixedFast
+    );
+    const double fixedDirectMs = measure(
+        [](const auto& f, double a, double b, int n) {
+            std::vector<double> p{a, b / 2.0, b};
+            return cover_curve::directHeightSolve(f, p, {});
+        },
+        fixedFunction, fixedPoints.front(), fixedPoints.back(), 2, fixedDirect
+    );
+    std::cout << "fixed_sin_2_uniform," << fixedFastMs << ','
+              << fixedDirectMs << ','
+              << std::abs(fixedFast - fixedDirect) << '\\n';
 }

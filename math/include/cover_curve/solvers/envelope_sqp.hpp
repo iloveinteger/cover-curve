@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cover_curve/types.hpp>
+#include <cover_curve/solvers/direct_height.hpp>
 
 namespace cover_curve {
 

@@ -352,9 +352,9 @@ Result directHeightSolve(
                     x0,
                     x1,
                     0.0,
-                    12,
-                    4,
-                    4
+                    8,
+                    3,
+                    3
                 );
 
             if (!std::isfinite(support.value))
@@ -397,9 +397,9 @@ Result directHeightSolve(
                 points[i],
                 points[i + 1],
                 0.0,
-                16,
-                5,
-                5
+                10,
+                4,
+                4
             );
 
         const double scale =

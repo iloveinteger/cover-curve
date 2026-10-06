@@ -4,11 +4,11 @@ The mathematical discretization is performed only in breakpoint locations. Verte
 
 Let
 $$
-G_N=\{z_0<\cdots<z_m\},\\\qquad z_0=a,\\\quad z_m=b,
+G_N=\{z_0<\cdots<z_m\},\qquad z_0=a,\quad z_m=b,
 $$
 and
 $$
-\delta_N=\max_j(z_{j+1}-z_j),\\\qquad
+\delta_N=\max_j(z_{j+1}-z_j),\qquad
 \rho_N=\min_j(z_{j+1}-z_j).
 $$
 
@@ -19,13 +19,13 @@ Let $E_{n,N}^*$ be the optimum over continuous piecewise-affine majorants with a
 For $u<v$ and $p\in\mathbb R$, define
 $$
 T_{u,v}(p)=
-\sup_{u<x\\\le v}
+\sup_{u<x\le v}
 \frac{(v-u)f(x)-(v-x)p}{x-u}.
 $$
 
 A segment from $(u,p)$ to $(v,q)$ is feasible exactly when
 $$
-p\\\ge f(u),\\\qquad q\\\ge T_{u,v}(p).
+p\ge f(u),\qquad q\ge T_{u,v}(p).
 $$
 
 Its integral is
@@ -39,19 +39,19 @@ The initial condition is
 $$
 F_0(0,q)=
 \begin{cases}
-0,&q\\\ge f(a),
+0,&q\ge f(a),
 +\infty,&q<f(a),
 \end{cases}
-\\\qquad
-F_0(j,q)=+\infty\\\quad(j>0).
+\qquad
+F_0(j,q)=+\infty\quad(j>0).
 $$
 
 The Bellman recurrence is
 $$
-\\\boxed{
+\boxed{
 F_{k+1}(j,q)=
-\min_{0\\\le i<j}
-\inf_{\substack{p\\\ge f(z_i)\q\\\ge T_{z_i,z_j}(p)}}
+\min_{0\le i<j}
+\inf_{\substack{p\ge f(z_i)\q\ge T_{z_i,z_j}(p)}}
 \left[
 F_k(i,p)+\frac{z_j-z_i}{2}(p+q)
 \r\right].
@@ -60,7 +60,7 @@ $$
 
 Finally,
 $$
-\\\boxed{
+\boxed{
 E_{n,N}^*
 =
 \inf_{q\in\mathbb R}F_n(m,q)-\int_a^b f(x)\,dx.
@@ -131,28 +131,28 @@ Thus no global convexity of the free-breakpoint value function is assumed.
 
 Let
 $$
-m_f=\min_{[a,b]}f,\\\qquad M_f=\max_{[a,b]}f,
+m_f=\min_{[a,b]}f,\qquad M_f=\max_{[a,b]}f,
 $$
 $$
-C=(b-a)(M_f-m_f),\\\qquad
+C=(b-a)(M_f-m_f),\qquad
 B_N=m_f+\frac{2C}{\rho_N}.
 $$
 
 There is an optimum satisfying
 $$
-\\\boxed{m_f\\\le y_i\\\le B_N.}
+\boxed{m_f\le y_i\le B_N.}
 $$
 
-The lower bound follows from $y_i\\\ge f(x_i)\\\ge m_f$. The constant majorant $M_f$ has error $C$, so the optimal shifted objective is at most $C$. At fixed breakpoints, after shifting by $m_f$, every trapezoidal coefficient satisfies $c_i\\\ge\rho_N/2$. Therefore, for an optimal shifted height vector,
+The lower bound follows from $y_i\ge f(x_i)\ge m_f$. The constant majorant $M_f$ has error $C$, so the optimal shifted objective is at most $C$. At fixed breakpoints, after shifting by $m_f$, every trapezoidal coefficient satisfies $c_i\ge\rho_N/2$. Therefore, for an optimal shifted height vector,
 $
 \frac{\rho_N}{2}(y_i-m_f)
-\\\le
+\le
 c_i(y_i-m_f)
-\\\le C,
+\le C,
 $
 and hence
 $
-y_i\\\le m_f+\frac{2C}{\rho_N}.
+y_i\le m_f+\frac{2C}{\rho_N}.
 $
 
 Thus the height domain is bounded but continuous.
@@ -161,12 +161,12 @@ Thus the height domain is bounded but continuous.
 
 Because the breakpoint-restricted class is a subclass of the original class,
 $$
-E_n^*\\\le E_{n,N}^*.
+E_n^*\le E_{n,N}^*.
 $$
 
 Let $g^*$ be an optimal $n$-segment majorant and let $K$ be a Lipschitz constant of $g^*$. For sufficiently fine grids, choose grid points within $\delta_N$ of the breakpoints of $g^*$, preserving their order. Let $p_N$ interpolate $g^*$ at these grid points. Then
 $$
-\|p_N-g^*\|_\infty\\\le K\delta_N.
+\|p_N-g^*\|_\infty\le K\delta_N.
 $$
 
 Set
@@ -175,25 +175,25 @@ $$
 $$
 Then
 $$
-\widetilde g_N\\\ge g^*\\\ge f,
-\\\qquad
-0\\\le\widetilde g_N-g^*\le2K\delta_N.
+\widetilde g_N\ge g^*\ge f,
+\qquad
+0\le\widetilde g_N-g^*\le2K\delta_N.
 $$
 Hence
 $$
-0\\\le E_{n,N}^*-E_n^*
+0\le E_{n,N}^*-E_n^*
 \le2(b-a)K\delta_N.
 $$
 
 Therefore
 $$
-\\\boxed{
+\boxed{
 E_{n,N}^*=E_n^*+O(\delta_N)
 }
 $$
 and, in particular,
 $$
-\\\boxed{E_{n,N}^*\to E_n^*\\\quad\\\text{as }\delta_N\to0.}
+\boxed{E_{n,N}^*\to E_n^*\quad\text{as }\delta_N\to0.}
 $$
 
 The constant is not uniform over all continuous $f$; it depends on an optimal majorant.
@@ -202,13 +202,13 @@ The constant is not uniform over all continuous $f$; it depends on an optimal ma
 
 Let $m+1=|G_N|$. There are $O(nm)$ Bellman state-function pairs $(k,j)$, and each considers $O(m)$ predecessor breakpoints. Thus the recurrence performs
 $$
-\\\boxed{O(nm^2)}
+\boxed{O(nm^2)}
 $$
 predecessor transition/minimization operations in the exact oracle model.
 
 The number of stored value-function objects is
 $$
-\\\boxed{O(nm)}.
+\boxed{O(nm)}.
 $$
 
 These are oracle-complexity bounds. Since the height state is continuous, an ordinary finite arithmetic-operation or bit-complexity bound requires a representation for the value functions and exact or certified procedures for the transition supremum and continuous infima. Without such assumptions, a finite numerical-operation count is not justified.
@@ -221,11 +221,11 @@ continuous-height subproblems. The dynamic program avoids this explicit enumerat
 
 ## 8. Total approximation error
 
-Let $\\\widehat E_{n,N}$ be a numerical approximation to the exact breakpoint-grid optimum. Then
+Let $\widehat E_{n,N}$ be a numerical approximation to the exact breakpoint-grid optimum. Then
 $$
-\left|\\\widehat E_{n,N}-E_n^*\r\right|
-\\\le
-\left|\\\widehat E_{n,N}-E_{n,N}^*\r\right|
+\left|\widehat E_{n,N}-E_n^*\r\right|
+\le
+\left|\widehat E_{n,N}-E_{n,N}^*\r\right|
 +
 2(b-a)K\delta_N.
 $$

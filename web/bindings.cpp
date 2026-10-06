@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <exception>
-#include <stdexcept>
 #include <string>
 
 using emscripten::val;
@@ -15,45 +14,21 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-                    // Theory-driven curvature-density initialization plus a uniform
-            // seed. Avoid the expensive global grid DP on the web path.
-            cover_curve::EnvelopeSQPOptions options;
-            options.maxIterations = n <= 3 ? 10 : 8;
-            options.seeds = 2;
-            options.includeFastGridSeed = false;
-            options.useCurvatureSeed = true;
-            options.curvatureSamples = 65;
-            options.gradientTolerance = 2e-5;
-            options.innerOptions.maxSweeps = n <= 3 ? 40 : 30;
-            options.innerOptions.tolerance = 1e-8;
 
-            const auto result =
-                cover_curve::envelopeSQPSolve(
-                    f, a, b, n, options
-                );
+        // Theory-driven curvature-density initialization plus a uniform seed.
+        // Avoid the expensive global grid DP on the web path.
+        cover_curve::EnvelopeSQPOptions options;
+        options.maxIterations = n <= 3 ? 10 : 8;
+        options.seeds = 2;
+        options.includeFastGridSeed = false;
+        options.useCurvatureSeed = true;
+        options.curvatureSamples = 65;
+        options.gradientTolerance = 2e-5;
+        options.innerOptions.maxSweeps = n <= 3 ? 40 : 30;
+        options.innerOptions.tolerance = 1e-8;
 
-            val output = val::object();
-            output.set("value", result.value);
-
-            val breakpoints = val::array();
-            for (double x : result.breakpoints)
-                breakpoints.call<void>("push", x);
-            output.set("breakpoints", breakpoints);
-
-            val segments = val::array();
-            for (const auto& segment : result.segments) {
-                val item = val::object();
-                item.set("x0", segment.x0);
-                item.set("x1", segment.x1);
-                item.set("slope", segment.slope);
-                item.set("intercept", segment.intercept);
-                item.set("cost", segment.cost);
-                item.set("contact", segment.contact);
-                segments.call<void>("push", item);
-            }
-            output.set("segments", segments);
-            output.set("error", val::null());
-            return output;
+        const auto result =
+            cover_curve::envelopeSQPSolve(f, a, b, n, options);
 
         val output = val::object();
         output.set("value", result.value);

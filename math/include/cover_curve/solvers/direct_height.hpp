@@ -7,7 +7,7 @@ namespace cover_curve {
 
 struct DirectHeightOptions {
     // Maximum cutting-plane rounds are maxSweeps * number of heights.
-    int maxSweeps = 20;
+    int maxSweeps = 100;
     double tolerance = 1e-8;
 };
 

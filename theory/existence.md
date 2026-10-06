@@ -1,14 +1,12 @@
 # Existence of an optimal spline
 
-Let $\mathcal A_n$ be the set of continuous piecewise-affine majorants of $f$ with at most $n$ nondegenerate affine pieces.
+Let $\\\mathcal A_n$ be the set of continuous piecewise-affine majorants of $f$ with at most $n$ nondegenerate affine pieces.
 
 ## Theorem 1 — Existence
 
 For every continuous $f:[a,b]\to\mathbb R$ and every $n\ge1$, the minimum
 
-$$
-E_n^*=\min_{g\in\mathcal A_n}\int_a^b(g-f)
-$$
+$$\nE_n^*=\min_{g\in\\\mathcal A_n}\int_a^b(g-f)\n$$
 
 is attained.
 
@@ -31,6 +29,6 @@ For the one-sided $L^1$ setting, see:
 
 These references are used for the free-knot/one-sided existence input. The fixed-breakpoint existence proof and all discretization and convergence arguments needed by this project are proved directly in the other theory documents.
 
-The constraint $g\ge f$ is closed under uniform convergence, and the functional $g\mapsto\int_a^b(g-f)$ is continuous in the uniform norm. Thus the standard free-knot one-sided existence theorem applies.
+The constraint $g\\\ge f$ is closed under uniform convergence, and the functional $g\mapsto\int_a^b(g-f)$ is continuous in the uniform norm. Thus the standard free-knot one-sided existence theorem applies.
 
 No uniqueness is assumed or needed.

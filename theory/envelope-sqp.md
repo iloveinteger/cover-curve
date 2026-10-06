@@ -26,7 +26,7 @@ The outer problem is generally nonconvex. Envelope-SQP is therefore a local nume
 
 For a finite retained contact set $S$, the cutting-plane LP is
 $$
-min_y c(X)^Ty-\int_a^b f(x),dx
+\min_y c(X)^Ty-\int_a^b f(x),dx
 $$
 subject to
 $$
@@ -233,7 +233,7 @@ The chord through the endpoint values is a majorant because $x^2$ is convex. Any
 
 For a segment of length $h_i$, the chord error is
 $$
-int_0^{h_i}\left(h_i t-t^2\right),dt
+\int_0^{h_i}\left(h_i t-t^2\right),dt
 =
 \frac{h_i^3}{6}.
 $$
@@ -241,11 +241,11 @@ Therefore
 $$
 E=\frac16\sum_{i=0}^{n-1}h_i^3,
 \qquad
-sum_i h_i=1.
+\sum_i h_i=1.
 $$
 By Jensen's inequality,
 $$
-sum_i h_i^3ge nleft(\frac1n\right)^3=\frac1{n^2},
+\sum_i h_i^3\ge nleft(\frac1n\right)^3=\frac1{n^2},
 $$
 with equality for $h_i=1/n$. Hence the formula. ∎
 
@@ -350,7 +350,7 @@ Equal increments of $\int w$ are therefore a principled asymptotic seed. They ar
 For $x^4$ on $[0,1]$, the corresponding formal asymptotic reference is
 $$
 n^2E_n^*\sim
-\left(int_0^1x^{2/3},dx\right)^3
+\left(\int_0^1x^{2/3},dx\right)^3
 =
 \frac{27}{125}.
 $$
@@ -359,7 +359,7 @@ For $\sin x$ on $[0,2\pi]$, the mixed-curvature reference used by the benchmark 
 $$
 n^2E_n^*\sim
 \left[
-\left(int_0^\pi \sin(x)^{1/3},dx\right)
+\left(\int_0^\pi \sin(x)^{1/3},dx\right)
 \left(
 \left(\frac1{12}\right)^{1/3}
 +

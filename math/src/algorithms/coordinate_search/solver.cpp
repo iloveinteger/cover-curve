@@ -1,6 +1,7 @@
 #include <cover_curve/solvers/coordinate_search.hpp>
 
 #include "../fast_grid_dp/grid_dp.hpp"
+#include "../direct_height/solver.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,8 +17,12 @@ namespace {
 Result evaluateFixed(
     const Function& f,
     const std::vector<double>& points,
-    int n
+    int n,
+    bool useDirectHeightOracle
 ) {
+    if (useDirectHeightOracle)
+        return directHeightSolve(f, points);
+
     return algorithms::fast_grid_dp::solveFastGridDPOnGrid(f, points, n);
 }
 
@@ -57,8 +62,11 @@ Result coordinateSearch(
         throw std::invalid_argument("tolerance must be positive.");
     }
 
-    if (n == 1)
+    if (n == 1) {
+        if (options.useDirectHeightOracle)
+            return directHeightSolve(f, a, b, 1);
         return algorithms::fast_grid_dp::solveFastGridDP(f, a, b, 1, 8);
+    }
 
     // Start from the optimized grid-DP solution. Coordinate search is
     // therefore a refinement layer and never needs to discover a good
@@ -124,7 +132,8 @@ Result coordinateSearch(
                         evaluateFixed(
                             f,
                             candidatePoints,
-                            n
+                            n,
+                            options.useDirectHeightOracle
                         );
 
                     if (candidate.value < bestSampleValue) {

@@ -33,7 +33,7 @@ int main() {
     const auto sinf = [](double x) { return std::sin(x); };
 
     std::cout << std::fixed << std::setprecision(3);
-    std::cout << "case,fast_ms,adaptive_ms,direct_ms,abs_fast_direct\n";
+    std::cout << "case,fast_ms,adaptive_ms,direct_ms,envelope_ms,abs_fast_direct\n";
 
     for (const auto& c : {
         std::pair<const char*, cover_curve::Function>{"x2_n1", x2},
@@ -47,6 +47,7 @@ int main() {
         double fv = 0.0;
         double av = 0.0;
         double dv = 0.0;
+        double ev = 0.0;
 
         const double fm = measure(
             [](const auto& f,double a,double b,int n) {
@@ -67,8 +68,13 @@ int main() {
                     return cover_curve::directHeightSolve(f,a,b,n);
                 }, c.second,a,b,n,dv);
 
+            const double em = measure(
+                [](const auto& f,double a,double b,int n) {
+                    return cover_curve::envelopeSQPSolve(f,a,b,n);
+                }, c.second,a,b,n,ev);
+
             std::cout << c.first << ',' << fm << ',' << am << ','
-                      << dm << ',' << std::abs(fv-dv) << '\n';
+                      << dm << ',' << em << ',' << std::abs(fv-dv) << '\n';
         } catch (const std::exception& e) {
             std::cout << c.first << ",direct_error," << e.what() << '\n';
         }

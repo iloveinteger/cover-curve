@@ -86,6 +86,18 @@ int main() {
         cover_curve::adaptiveGridDP(wavy, 0.0, 4.0, 2);
     expectContinuous(rw, 1e-10, "wavy");
 
+    const auto rwFast =
+        cover_curve::fastGridDP(wavy, 0.0, 3.0, 2, 24);
+    expectContinuous(rwFast, 1e-10, "fast wavy");
+    const auto rwReference =
+        cover_curve::adaptiveGridDP(wavy, 0.0, 3.0, 2);
+    expectNear(
+        rwFast.value,
+        rwReference.value,
+        5e-5,
+        "fast wavy agreement"
+    );
+
     const auto r4 =
         cover_curve::curvatureAdaptive(square, 0.0, 1.0, 2);
     expectNear(

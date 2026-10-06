@@ -15,8 +15,7 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-        if (n >= 1) {
-            // Theory-driven curvature-density initialization plus a uniform
+                    // Theory-driven curvature-density initialization plus a uniform
             // seed. Avoid the expensive global grid DP on the web path.
             cover_curve::EnvelopeSQPOptions options;
             options.maxIterations = n <= 3 ? 10 : 8;
@@ -55,9 +54,6 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
             output.set("segments", segments);
             output.set("error", val::null());
             return output;
-        }
-
-        const auto& result = result;
 
         val output = val::object();
         output.set("value", result.value);

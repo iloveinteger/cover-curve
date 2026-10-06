@@ -1,102 +1,82 @@
-# Shared-Height Dynamic Programming
+# Continuous-Height Dynamic Programming
 
-This document separates the exact mathematical target from the current numerical implementation.
+This implementation uses the mathematical breakpoint-only formulation.
 
-## 1. Mathematical target
+## 1. State representation
 
-The mathematical algorithm discretizes **breakpoint locations only**:
+Breakpoint locations are discretized by
 \[
 G_N=\{z_0<\cdots<z_m\}.
 \]
 
-Vertex heights remain continuous real variables. There is no mathematical height grid and no height-mesh convergence parameter.
-
-For a fixed breakpoint sequence, segment feasibility is determined by
+Vertex heights are **not** stored on a finite grid. A DP state is evaluated at an arbitrary real height q:
 \[
-q\ge T_{u,v}(p),
-\]
-and the exact breakpoint-grid DP is the continuous-height recurrence in theory/algorithm.md.
-
-## 2. Current implementation status
-
-The current C++ implementation still uses a finite height grid.
-
-That implementation is therefore **not** an implementation of the exact continuous-height recurrence. It is a numerical baseline that approximates the continuous-height problem by restricting vertex heights to a finite set.
-
-It must not be used as evidence for a theorem requiring continuous heights.
-
-In particular, the old refinement
-\[
-N\mapsto2N,\qquad H\mapsto2H-1
-\]
-does not guarantee that the height mesh tends to zero, because the admissible height range depends on \(\rho_N\) and can grow with \(N\).
-
-## 3. What a height-grid-free implementation must solve
-
-For a grid point \(z_j\), segment count \(k\), and current height \(q\), the exact recurrence is
-\[
-F_{k+1}(j,q)=
-\min_{i<j}
-\inf_{\substack{p\ge f(z_i)\\q\ge T_{z_i,z_j}(p)}}
-\left[
-F_k(i,p)+\frac{z_j-z_i}{2}(p+q)
-\right].
+F_k(j,q).
 \]
 
-A replacement implementation has to maintain continuous-height value information.
-
-There are two distinct numerical tasks:
-
-1. approximate the transition functions \(T_{u,v}\);
-2. approximate the resulting continuous value functions without introducing a fixed height lattice.
-
-A simple local golden-section search is not sufficient for a global correctness claim, because the minimum over predecessor breakpoints is not generally convex.
-
-## 4. Practical numerical direction
-
-A practical height-grid-free solver can use adaptive continuous optimization over the bounded interval
+The recursive evaluator implements
 \[
-[m_f,B_N],
-\]
-where
-\[
-m_f=\min f,
-\qquad
-B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
+F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\ge f(z_i)\\q\ge T_{z_i,z_j}(p)}}\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
 \]
 
-The interval bound is mathematically valid for the global optimum of the breakpoint-restricted problem. The numerical optimizer itself may still be heuristic.
+The implementation memoizes values at the real heights actually requested by the optimizer. These are adaptive evaluation points, not a uniform height grid and there is no heightLevels parameter.
 
-Possible implementation techniques include:
+## 2. Continuous height bound
 
-- adaptive one-dimensional evaluation of value functions;
-- lower/upper envelopes of locally represented convex pieces;
-- branch-and-bound over the continuous height variable;
-- exact finite LP solves when the transition constraints are represented by a finite certified constraint set.
-
-The implementation must explicitly label which technique is used and must not claim exactness unless its approximation and global-search errors are controlled.
-
-## 5. Transition constraints
-
-The exact transition is
+The mathematical optimum can be searched inside
 \[
-T_{u,v}(p)=
-\sup_{u<x\le v}
-\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
+[m_f,B_N],\qquad B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
 \]
 
-Sampling finitely many \(x\)-values gives a lower approximation to this supremum. Such sampling can discover likely active constraints, but it cannot certify \(L\ge f\) between samples for an arbitrary continuous black-box \(f\).
+The implementation estimates m_f and M_f numerically and uses this bound. This bound controls the search domain; it does not discretize that domain.
 
-Therefore sampled constraints are suitable for candidate generation; certification requires an upper bound on the unsampled supremum or additional regularity information about \(f\).
+## 3. Transition evaluation
 
-## 6. Invariants
+For a candidate left height p, the implementation evaluates
+\[
+T_{u,v}(p)=\sup_{u<x\le v}\frac{(v-u)f(x)-(v-x)p}{x-u}
+\]
+using adaptive numerical sampling/support search.
 
-Any returned candidate spline must satisfy:
+This is still a numerical approximation. For arbitrary continuous black-box f, finite numerical sampling cannot certify the exact supremum.
 
-- one shared height at every common breakpoint;
-- ordered breakpoints;
-- all reported segments cover exactly \([a,b]\);
-- no post-hoc continuity repair;
-- objective computed from the reconstructed continuous spline, not from independently optimized intervals.
+## 4. Continuous-height minimization
 
-Until the continuous-height solver is implemented and verified, the finite-height implementation remains a baseline rather than the final algorithm.
+For each state and predecessor breakpoint, the implementation searches the bounded feasible interval in p.
+
+Because the full free-breakpoint value function is not generally convex, the implementation does not assume that one golden-section search over the whole interval is globally valid.
+
+Instead it:
+
+1. samples the bounded interval coarsely to locate promising regions;
+2. locally refines several regions with golden-section search;
+3. memoizes recursively evaluated value states.
+
+This is an adaptive global-search heuristic over a continuous variable, not a mathematical height grid.
+
+Consequently the implementation is intended to find high-quality candidates, but this search procedure does not itself constitute a global-optimality proof.
+
+## 5. Outer final-height search
+
+The final height q is optimized by the same bounded global-search mechanism. The terminal DP condition is q >= f(b).
+
+## 6. Curvature-adaptive solver
+
+The curvature-adaptive solver only changes how the breakpoint grid is generated. It delegates the actual optimization to the same continuous-height DP.
+
+Therefore curvature remains a numerical breakpoint-placement heuristic and does not change the mathematical convergence theorem.
+
+## 7. Feasibility status
+
+The returned spline has shared vertex heights by construction.
+
+However, because T is numerically approximated, the result is not a certified global majorant for arbitrary black-box continuous input. Certification requires an independently controlled upper bound on the transition supremum.
+
+## 8. Convergence status
+
+The theory proves convergence of the exact continuous-height breakpoint-grid optimum as
+\[
+\delta_N\to0.
+\]
+
+The current C++ implementation additionally has numerical errors from transition evaluation, continuous-height global search, numerical integration, and numerical estimation of the function range. Those errors are not yet covered by a full numerical convergence theorem.

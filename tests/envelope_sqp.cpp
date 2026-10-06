@@ -95,6 +95,13 @@ int main() {
             );
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
+        for (const auto& contact : detailed.contacts) {
+            std::cerr
+                << "contact segment=" << contact.segment
+                << " x=" << contact.x
+                << " lambda=" << contact.multiplier
+                << std::endl;
+        }
 
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite

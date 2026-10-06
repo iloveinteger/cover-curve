@@ -12,34 +12,34 @@ $$
 For $u<v$ and $p\in\mathbb R$, define
 $$
 T_{u,v}(p)=
-\sup_{u<x\\\le v}
+\sup_{u<x\le v}
 \frac{(v-u)f(x)-(v-x)p}{x-u}.
 $$
 
 ## Lemma 1 — Segment feasibility
 
-The affine function joining $(u,p)$ and $(v,q)$ satisfies $L\\\ge f$ on $[u,v]$ if and only if
+The affine function joining $(u,p)$ and $(v,q)$ satisfies $L\ge f$ on $[u,v]$ if and only if
 $$
-p\\\ge f(u)
+p\ge f(u)
 $$
 and
 $$
-q\\\ge T_{u,v}(p).
+q\ge T_{u,v}(p).
 $$
 
 ### Proof
 
-For $u<x\\\le v$,
+For $u<x\le v$,
 $$
 \frac{v-x}{v-u}p+
-\frac{x-u}{v-u}q\\\ge f(x)
+\frac{x-u}{v-u}q\ge f(x)
 $$
 is equivalent to
 $$
-q\\\ge
+q\ge
 \frac{(v-u)f(x)-(v-x)p}{x-u}.
 $$
-Taking the supremum over $x\in(u,v]$ gives the result. The endpoint $u$ is exactly the separate condition $p\\\ge f(u)$. ∎
+Taking the supremum over $x\in(u,v]$ gives the result. The endpoint $u$ is exactly the separate condition $p\ge f(u)$. ∎
 
 ## Lemma 2 — Transition-map properties
 
@@ -55,7 +55,7 @@ Set
 $$
 V_n(p)=
 \begin{cases}
-0,&p\\\ge f(b),
+0,&p\ge f(b),
 +\infty,&p<f(b).
 \end{cases}
 $$
@@ -67,7 +67,7 @@ $$
 when $p<f(x_i)$, and otherwise
 $$
 V_i(p)=
-\inf_{q\\\ge T_{x_i,x_{i+1}}(p)}
+\inf_{q\ge T_{x_i,x_{i+1}}(p)}
 \left[
 \frac{h_i}{2}(p+q)+V_{i+1}(q)
 \r\right].
@@ -107,7 +107,7 @@ $$
 $$
 is jointly convex, and the feasible set
 $$
-\{(p,q):p\\\ge f(x_i),\ q\\\ge T_{x_i,x_{i+1}}(p)\}
+\{(p,q):p\ge f(x_i),\ q\ge T_{x_i,x_{i+1}}(p)\}
 $$
 is convex because $T$ is convex. Partial minimization over $q$ preserves convexity. ∎
 

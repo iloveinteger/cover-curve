@@ -26,7 +26,7 @@ $\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i + \frac{x-x_i}{x_{i+1}-x_i}y_{i+1} \ge f(x), \
 
 The error is
 
-$E(g) = \int_a^b (g(x)-f(x))\,dx.$
+$E(g) = \int_a^b (g(x)-f(x))dx.$
 
 ## Objective
 

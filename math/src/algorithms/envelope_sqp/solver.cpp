@@ -565,8 +565,6 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
     };
 }
 
-// Large-n regression coverage is exercised by tests/benchmark.cpp; keep the
-// envelope path free of benchmark-only shortcuts.
 Result envelopeSQPSolve(
     const Function& f,
     double a,

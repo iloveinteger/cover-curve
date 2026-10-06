@@ -163,12 +163,15 @@ std::vector<double> envelopeGradient(
         const double lambda = contact.multiplier;
         const double dy = y[i + 1] - y[i];
 
+        // The constraint is c(x)=f(z)-L(z)<=0.  Since dL/dx_i is
+        // +dy*(x1-z)/h^2 and dL/dx_{i+1} is +dy*(z-x0)/h^2,
+        // differentiating c contributes the NEGATIVE of both terms.
         if (i > 0)
-            gradient[i] +=
+            gradient[i] -=
                 lambda * dy * (x1 - contact.x) / (h * h);
 
         if (static_cast<std::size_t>(i + 1) < n)
-            gradient[i + 1] +=
+            gradient[i + 1] -=
                 lambda * dy * (contact.x - x0) / (h * h);
 
         dualWeight[i] += lambda * (1.0 - t);
@@ -582,7 +585,8 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
 
 // Large-n regression coverage is exercised by tests/benchmark.cpp; keep the
 // envelope path free of benchmark-only shortcuts.
-Result envelopeSQPSolve(\n    const Function& f,
+Result envelopeSQPSolve(
+    const Function& f,
     double a,
     double b,
     int n,

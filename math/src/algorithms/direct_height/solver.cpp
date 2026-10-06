@@ -340,10 +340,6 @@ DirectHeightDetailedResult directHeightSolveDetailed(
         for (int j = 0; j < dimension; ++j)
             heights[j] = lower[j] + std::max(0.0, z[j]);
 
-        // Dual of max c^T z subject to A z <= b, z >= 0:
-        // min b^T lambda subject to A^T lambda >= c, lambda >= 0.
-        // Solve it explicitly so lambda is associated with the retained
-        // cutting-plane contacts.
         const int m = static_cast<int>(constraints.size());
         std::vector<std::vector<double>> dualA(
             dimension, std::vector<double>(m, 0.0)
@@ -417,7 +413,6 @@ DirectHeightDetailedResult directHeightSolveDetailed(
             break;
     }
 
-    // One final separation pass makes the stopping criterion explicit.
     for (std::size_t i = 0; i + 1 < points.size(); ++i) {
         const auto violation = [&](double x) {
             return f(x) - lineValue(

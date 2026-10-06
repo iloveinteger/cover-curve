@@ -388,6 +388,20 @@ private:
         return result;
     }
 
+    // For a segment [u,v] with endpoint heights p,q, the majorant
+    // constraint at x in [u,v) is
+    //
+    //   (1-t)p + t q >= f(x),   t=(x-u)/(v-u),
+    //
+    // hence
+    //
+    //   p >= [ (v-u) f(x) - (x-u) q ] / (v-x).
+    //
+    // Therefore the smallest feasible left height is one supremum. The
+    // previous implementation found the same value by binary-searching p
+    // and recomputing an expensive support maximum at every iteration.
+    // Eliminating that nested 32-step search is the main fast-DP
+    // optimization.
     double feasibleLowerHeight(
         int i,
         int j,
@@ -398,31 +412,45 @@ private:
         if (cached != lowerHeightCache_.end())
             return cached->second;
 
-        double lo = fValue(points_[i]);
-        double hi = upper_;
+        const double u = points_[i];
+        const double v = points_[j];
+        const double width = v - u;
+        const double eps = std::max(1e-12 * width, 1e-12);
+        const double right = v - eps;
 
-        if (evaluateTransition(i, j, hi).threshold > q) {
-            const double result =
-                std::numeric_limits<double>::infinity();
+        if (!(u < right)) {
+            const double result = fValue(u);
             lowerHeightCache_.emplace(key, result);
             return result;
         }
 
-        if (evaluateTransition(i, j, lo).threshold <= q) {
-            lowerHeightCache_.emplace(key, lo);
-            return lo;
-        }
+        const auto required = [&](double x) {
+            return (
+                width * fValue(x) -
+                (x - u) * q
+            ) / (v - x);
+        };
 
-        for (int it = 0; it < 32; ++it) {
-            const double mid = (lo + hi) / 2.0;
-            if (evaluateTransition(i, j, mid).threshold <= q)
-                hi = mid;
-            else
-                lo = mid;
-        }
+        const auto support =
+            numerical::adaptiveSupportMaximum(
+                required,
+                u,
+                right,
+                0.0,
+                kTransitionSamples,
+                kTransitionDepth,
+                kTransitionRefinements
+            );
 
-        lowerHeightCache_.emplace(key, hi);
-        return hi;
+        double result = fValue(u);
+        if (std::isfinite(support.value))
+            result = std::max(result, support.value);
+
+        if (!std::isfinite(result))
+            result = std::numeric_limits<double>::infinity();
+
+        lowerHeightCache_.emplace(key, result);
+        return result;
     }
 
     SearchResult minimizeGlobal(

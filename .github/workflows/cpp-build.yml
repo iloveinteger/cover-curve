@@ -14,6 +14,9 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --parallel
+      - name: Direct height smoke
+        run: /usr/bin/time -f '%e s' ./build/cover_curve_direct_height_smoke
+
       - name: Test
         run: ctest --test-dir build --output-on-failure
 

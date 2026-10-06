@@ -1,225 +1,102 @@
 # Shared-Height Dynamic Programming
 
-This document specifies the implementation target corresponding to the mathematical algorithm in `theory/algorithm.md`. It is a design specification; it does not claim that the current C++ solver already implements this algorithm.
+This document separates the exact mathematical target from the current numerical implementation.
 
-## 1. Discrete problem
+## 1. Mathematical target
 
-Choose a breakpoint grid
+The mathematical algorithm discretizes **breakpoint locations only**:
 \[
-G_N=\{z_0<\cdots<z_m\},\qquad z_0=a,\ z_m=b,
-\]
-and a finite height grid
-\[
-H_N\subset[m_f,B_N],
-\]
-where
-\[
-m_f=\min_{x\in[a,b]}f(x),\qquad
-B_N=m_f+\frac{4C}{\rho_N},
-\]
-\[
-C=(b-a)(M_f-m_f),\qquad
-\rho_N=\min_j(z_{j+1}-z_j).
+G_N=\{z_0<\cdots<z_m\}.
 \]
 
-The implementation target is the finite shared-height problem from the theory. Breakpoints are restricted to (G_N), vertex heights are restricted to (H_N), and adjacent segments share the same height at their common breakpoint.
+Vertex heights remain continuous real variables. There is no mathematical height grid and no height-mesh convergence parameter.
 
-The height-grid mesh is
+For a fixed breakpoint sequence, segment feasibility is determined by
 \[
-\eta_N=\max\{q'-q:q,q'\in H_N\text{ consecutive}\}.
+q\ge T_{u,v}(p),
 \]
+and the exact breakpoint-grid DP is the continuous-height recurrence in theory/algorithm.md.
 
-The refinement requirements are
+## 2. Current implementation status
+
+The current C++ implementation still uses a finite height grid.
+
+That implementation is therefore **not** an implementation of the exact continuous-height recurrence. It is a numerical baseline that approximates the continuous-height problem by restricting vertex heights to a finite set.
+
+It must not be used as evidence for a theorem requiring continuous heights.
+
+In particular, the old refinement
 \[
-\delta_N=\max_j(z_{j+1}-z_j)\to0,
-\qquad
-\eta_N\to0.
+N\mapsto2N,\qquad H\mapsto2H-1
 \]
+does not guarantee that the height mesh tends to zero, because the admissible height range depends on \(\rho_N\) and can grow with \(N\).
 
-## 2. State
+## 3. What a height-grid-free implementation must solve
 
-A DP state is
+For a grid point \(z_j\), segment count \(k\), and current height \(q\), the exact recurrence is
 \[
-(k,j,p),
-\]
-where:
-
-- (k) is the number of completed segments;
-- (z_j) is the current breakpoint;
-- (p\in H_N) is the current vertex height.
-
-Let
-\[
-D_k(j,p)
-\]
-be the minimum trapezoidal integral of the already constructed (k) segments among all feasible paths ending at ((z_j,p)). An unreachable state has value (+\infty).
-
-The height (p) is part of the state. It must not be eliminated by assigning an independent cost to the interval.
-
-## 3. Segment transition
-
-For (u<v) and left height (p), define
-\[
-T_{u,v}(p)
-=
-\sup_{u<x\le v}
-\frac{(v-u)f(x)-(v-x)p}{x-u}.
-\]
-
-A transition
-\[
-(z_j,p)\to(z_l,q)
-\]
-with (j<l) is feasible exactly when
-\[
-p\ge f(z_j),
-\qquad
-q\ge T_{z_j,z_l}(p).
-\]
-
-In the finite implementation, the exact (T) is replaced by a numerical upper approximation or by a progressively refined finite set of pointwise constraints. The approximation must be conservative for a majorant solver: an underestimated (T) can produce an infeasible segment.
-
-## 4. DP recurrence
-
-Initialize
-\[
-D_0(0,p)=
-\begin{cases}
-0,&p\ge f(a),\\
-+\infty,&p<f(a).
-\end{cases}
-\]
-
-For (k=0,\ldots,n-1),
-\[
-D_{k+1}(l,q)
-=
-\min_{k\le j<l}
-\min_{p\in H_N}
+F_{k+1}(j,q)=
+\min_{i<j}
+\inf_{\substack{p\ge f(z_i)\\q\ge T_{z_i,z_j}(p)}}
 \left[
-D_k(j,p)
-+
-\frac{z_l-z_j}{2}(p+q)
-\right],
-\]
-over transitions satisfying the feasibility condition above.
-
-The final discrete objective is
-\[
-E_{n,N,\eta}^*
-=
-\min_{q\in H_N}D_n(m,q)
--
-\int_a^b f(x)\,dx.
-\]
-
-A predecessor record must store the previous breakpoint index and previous height-grid index.
-
-## 5. Why the shared height is mandatory
-
-The two segments adjacent to (z_j) must use the same value (p=g(z_j)). Therefore the DP cannot use a scalar cost
-\[
-C(u,v)
-\]
-computed independently for each interval.
-
-The following architecture is not an implementation of the target problem:
-
-1. solve every interval independently;
-2. assign one scalar cost to each interval;
-3. optimize those scalar costs with a breakpoint DP;
-4. modify the resulting segments afterward to enforce continuity.
-
-The continuity constraint must be present in the optimization state itself.
-
-## 6. Computing the transition constraint
-
-The exact transition quantity can equivalently be written as
-\[
-T_{u,v}(p)
-=
-p+(v-u)
-\sup_{u<x\le v}
-\frac{f(x)-p}{x-u}.
-\]
-
-This form is useful for numerical evaluation. The ratio can become arbitrarily large near (u) when (p=f(u)) and (f) has sufficiently steep local growth. The implementation must therefore not assume that the supremum is finite merely because (f) is continuous.
-
-For a finite constraint set (S\subset(u,v]), use
-\[
-T_S(u,v;p)
-=
-\max_{x\in S}
-\left[
-p+\frac{v-u}{x-u}(f(x)-p)
+F_k(i,p)+\frac{z_j-z_i}{2}(p+q)
 \right].
 \]
 
-If (S) is enlarged, this lower approximation is monotone nondecreasing. It is suitable for detecting violated constraints, but it is not by itself a certified upper bound on the true (T).
+A replacement implementation has to maintain continuous-height value information.
 
-A correctness-oriented implementation should therefore distinguish:
+There are two distinct numerical tasks:
 
-- **constraint discovery:** sampled points used to find likely active constraints;
-- **feasibility certification:** an upper bound or additional regularity assumption sufficient to rule out violations between samples.
+1. approximate the transition functions \(T_{u,v}\);
+2. approximate the resulting continuous value functions without introducing a fixed height lattice.
 
-For an arbitrary continuous black-box (f), finite point samples alone cannot certify the exact supremum.
+A simple local golden-section search is not sufficient for a global correctness claim, because the minimum over predecessor breakpoints is not generally convex.
 
-## 7. Breakpoint and height refinement
+## 4. Practical numerical direction
 
-For each refinement level:
-
-1. construct (G_N);
-2. compute (m_f,M_f,C,ho_N,B_N);
-3. construct (H_N\subset[m_f,B_N]);
-4. solve the finite shared-height DP;
-5. reconstruct the spline from predecessor states;
-6. record the objective and diagnostic information.
-
-The mathematical convergence result requires
+A practical height-grid-free solver can use adaptive continuous optimization over the bounded interval
 \[
-\delta_N\to0,qquad \eta_N\to0.
+[m_f,B_N],
+\]
+where
+\[
+m_f=\min f,
+\qquad
+B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
 \]
 
-A practical sequence such as (N\mapsto2N) is only one possible refinement policy. The implementation must not treat a fixed finite grid as the exact continuous optimum.
+The interval bound is mathematically valid for the global optimum of the breakpoint-restricted problem. The numerical optimizer itself may still be heuristic.
 
-## 8. Numerical error separation
+Possible implementation techniques include:
 
-The discretization error and numerical evaluation error are separate.
+- adaptive one-dimensional evaluation of value functions;
+- lower/upper envelopes of locally represented convex pieces;
+- branch-and-bound over the continuous height variable;
+- exact finite LP solves when the transition constraints are represented by a finite certified constraint set.
 
-The theory assumes exact evaluation of:
+The implementation must explicitly label which technique is used and must not claim exactness unless its approximation and global-search errors are controlled.
 
-- (f(x));
-- the transition supremum (T_{u,v}(p));
-- (int_a^b f(x)\,dx).
+## 5. Transition constraints
 
-The implementation uses numerical approximations to these quantities. Their tolerances must be tracked separately from (delta_N) and (eta_N).
-
-A convergence report should therefore distinguish at least:
-
-- breakpoint-grid level;
-- height-grid mesh;
-- support/transition-search tolerance;
-- integration tolerance;
-- resulting objective.
-
-## 9. Complexity
-
-No complexity bound from the old independent scalar DP is inherited by this solver.
-
-For a finite height grid, the direct recurrence has state space of order
+The exact transition is
 \[
-O(nm|H_N|)
-\]
-and a naive transition evaluation can be substantially larger because it considers previous breakpoints and heights.
-
-Any optimized complexity claim must be derived from the actual shared-height implementation after that implementation exists.
-
-## 10. Required implementation invariant
-
-At every point where a candidate spline is constructed, its vertex heights are a single shared sequence
-\[
-(y_0,\ldots,y_n).
+T_{u,v}(p)=
+\sup_{u<x\le v}
+\left[p+\frac{v-u}{x-u}(f(x)-p)\right].
 \]
 
-There must be no post-hoc continuity repair that changes the optimized objective without re-solving the coupled problem.
+Sampling finitely many \(x\)-values gives a lower approximation to this supremum. Such sampling can discover likely active constraints, but it cannot certify \(L\ge f\) between samples for an arbitrary continuous black-box \(f\).
 
+Therefore sampled constraints are suitable for candidate generation; certification requires an upper bound on the unsampled supremum or additional regularity information about \(f\).
+
+## 6. Invariants
+
+Any returned candidate spline must satisfy:
+
+- one shared height at every common breakpoint;
+- ordered breakpoints;
+- all reported segments cover exactly \([a,b]\);
+- no post-hoc continuity repair;
+- objective computed from the reconstructed continuous spline, not from independently optimized intervals.
+
+Until the continuous-height solver is implemented and verified, the finite-height implementation remains a baseline rather than the final algorithm.

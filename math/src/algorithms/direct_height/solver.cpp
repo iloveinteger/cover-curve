@@ -455,6 +455,7 @@ DirectHeightDetailedResult directHeightSolveDetailed(
 
     DirectHeightDetailedResult detailed;
     detailed.result = buildResult(f, points, heights);
+    detailed.heights = heights;
 
     for (std::size_t k = 0; k < constraints.size(); ++k) {
         if (k >= finalDual.size() || finalDual[k] <= 1e-10)

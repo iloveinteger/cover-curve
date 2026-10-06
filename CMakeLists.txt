@@ -100,3 +100,11 @@ add_executable(cover_curve_direct_height_smoke
 
 target_link_libraries(cover_curve_direct_height_smoke PRIVATE cover_curve)
 add_test(NAME cover_curve_direct_height_smoke COMMAND cover_curve_direct_height_smoke)
+
+
+add_executable(cover_curve_envelope_sqp_test
+    tests/envelope_sqp.cpp
+)
+
+target_link_libraries(cover_curve_envelope_sqp_test PRIVATE cover_curve)
+add_test(NAME cover_curve_envelope_sqp_test COMMAND cover_curve_envelope_sqp_test)

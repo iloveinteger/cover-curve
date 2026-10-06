@@ -193,7 +193,7 @@ void search(
         // Fixed breakpoints leave only the continuous shared-height
         // optimization. This gives a feasible upper candidate.
         const Result candidate =
-            fast_grid_dp::solveGridDPOnGrid(
+            fast_grid_dp::solveFastGridDPOnGrid(
                 problem.f,
                 points,
                 problem.n
@@ -269,7 +269,7 @@ Result solveOnGrid(
     // Any feasible numerical solution is an upper bound for pruning.
     // The full-grid fast solver supplies the initial incumbent.
     problem.bestResult =
-        fast_grid_dp::solveGridDPOnGrid(
+        fast_grid_dp::solveFastGridDPOnGrid(
             f,
             problem.x,
             n

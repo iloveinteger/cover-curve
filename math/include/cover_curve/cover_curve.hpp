@@ -8,3 +8,4 @@
 #include <cover_curve/solvers/curvature_adaptive.hpp>
 #include <cover_curve/solvers/breakpoint_search.hpp>
 #include <cover_curve/solvers/coordinate_search.hpp>
+#include <cover_curve/solvers/direct_height.hpp>

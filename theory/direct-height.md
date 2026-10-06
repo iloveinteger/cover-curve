@@ -130,7 +130,7 @@ $$
 T=
 O\!\left(
 R\,[T_{\rm LP}(d,m)+nS_{\rm sep}(n,\tau)]
-\r\right).
+\right).
 $$
 
 The current LP is a dense two-phase simplex implementation. Simplex has no polynomial worst-case complexity guarantee, so no polynomial worst-case bound is claimed.

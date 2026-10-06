@@ -16,9 +16,9 @@ namespace cover_curve::algorithms::adaptive_grid_dp {
 namespace {
 
 constexpr double kHeightTolerance = 1e-7;
-constexpr int kGlobalSamples = 17;
-constexpr int kLocalIntervals = 4;
-constexpr int kGoldenIterations = 48;
+constexpr int kGlobalSamples = 9;
+constexpr int kLocalIntervals = 2;
+constexpr int kGoldenIterations = 32;
 
 struct Transition {
     double threshold = std::numeric_limits<double>::infinity();

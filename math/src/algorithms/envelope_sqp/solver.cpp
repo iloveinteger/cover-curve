@@ -173,16 +173,7 @@ std::vector<double> envelopeGradient(
         dualWeight[i + 1] += lambda * t;
     }
 
-    // z = y - f(x) was used by the fixed-height LP.  Its nonnegativity
-    // multipliers are
-    //
-    //   mu_j = c_j - sum_k lambda_k w_{kj}.
-    //
-    // These are the endpoint atoms of the continuous majorant constraint.
-    // Their contribution is mu_j f'(x_j).  The solver accepts arbitrary
-    // continuous Functions, so only this endpoint derivative is numerical;
-    // the expensive derivative of the complete objective is still obtained
-    // analytically from the LP dual.
+    // Endpoint atoms contribute mu_j f'(x_j); f' is evaluated numerically.
     const auto df =
         numericalDerivative(
             f, points, a, b, finiteDifferenceStep

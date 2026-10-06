@@ -163,7 +163,7 @@ int main() {
         {"-x2", negx2},
         {"x4", x4}
     }) {
-        for (const int n : {8, 16, 32, 64, 128}) {
+        for (const int n : largeN) {
             // Large-n regression remains in CI, but the outer solver needs
             // fewer refinements once n is large because each inner LP and
             // separation pass scales with the number of segments.

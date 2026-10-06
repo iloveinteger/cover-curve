@@ -587,7 +587,6 @@ private:
     double maximum_ = 0.0;
     double rho_ = 0.0;
     double upper_ = 0.0;
-    CurvatureMode curvatureMode_ = CurvatureMode::General;
 
     std::unordered_map<StateKey, StateValue, StateKeyHash, StateKeyEqual> memo_;
     mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;

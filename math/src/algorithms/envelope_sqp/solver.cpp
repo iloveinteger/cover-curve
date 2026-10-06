@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <numeric>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -441,13 +442,6 @@ Result envelopeSQPSolve(
                 sHistory.push_back(std::move(s));
                 yHistory.push_back(std::move(yy));
             }
-
-            const double stepNorm =
-                std::inner_product(
-                    nextX.begin(), nextX.end(),
-                    nextX.begin(), 0.0
-                );
-            (void)stepNorm;
 
             x = std::move(nextX);
             current = std::move(next);

@@ -92,6 +92,23 @@ struct StateKeyHash {
     }
 };
 
+struct PairKey {
+    int i;
+    int j;
+
+    bool operator==(const PairKey& other) const noexcept {
+        return i == other.i && j == other.j;
+    }
+};
+
+struct PairKeyHash {
+    std::size_t operator()(const PairKey& k) const noexcept {
+        std::size_t h = std::hash<int>{}(k.i);
+        h ^= std::hash<int>{}(k.j) + static_cast<std::size_t>(0x9e3779b9) + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
 struct TransitionKeyEqual {
     bool operator()(const TransitionKey& a, const TransitionKey& b) const noexcept {
         return a.i == b.i && a.j == b.j && a.p == b.p;
@@ -131,24 +148,26 @@ public:
     )
         : f_(f), points_(points), n_(n) {
         memo_.reserve(1024);
+        functionCache_.reserve(points_.size() * 8 + 1024);
+        supportSeedCache_.reserve(points_.size() * points_.size() / 2 + 16);
         transitionCache_.reserve(1024);
         lowerHeightCache_.reserve(1024);
         minimum_ = std::numeric_limits<double>::infinity();
         maximum_ = -std::numeric_limits<double>::infinity();
         for (double x : points_) {
-            const double y = f_(x);
+            const double y = fValue(x);
             minimum_ = std::min(minimum_, y);
             maximum_ = std::max(maximum_, y);
         }
 
         const auto maxSupport =
             numerical::adaptiveSupportMaximum(
-                f_, points_.front(), points_.back(), 0.0,
+                [this](double x) { return fValue(x); }, points_.front(), points_.back(), 0.0,
                 8, 2, 2
             );
         const auto minSupport =
             numerical::adaptiveSupportMaximum(
-                [&](double x) { return -f_(x); },
+                [&](double x) { return -fValue(x); },
                 points_.front(), points_.back(), 0.0,
                 8, 2, 2
             );
@@ -191,7 +210,7 @@ public:
     }
 
     Result solve() {
-        const double lowerFinal = f_(points_.back());
+        const double lowerFinal = fValue(points_.back());
         const auto final =
             minimizeGlobal(
                 lowerFinal,
@@ -302,7 +321,7 @@ private:
         const double u = points_[i];
         const double v = points_[j];
 
-        if (p < f_(u) - kHeightTolerance) {
+        if (p < fValue(u) - kHeightTolerance) {
             const Transition result{};
             transitionCache_.emplace(key, result);
             return result;
@@ -314,11 +333,25 @@ private:
         const double lo = u + eps;
 
         auto ratio = [&](double x) {
-            return (f_(x) - p) / (x - u);
+            return (fValue(x) - p) / (x - u);
         };
 
         double bestX = v;
         double bestRatio = ratio(v);
+
+        double seedX = std::numeric_limits<double>::quiet_NaN();
+        const PairKey pair{i, j};
+        const auto seedIt = supportSeedCache_.find(pair);
+        if (seedIt != supportSeedCache_.end())
+            seedX = seedIt->second;
+
+        if (std::isfinite(seedX) && seedX > lo && seedX < v) {
+            const double seededRatio = ratio(seedX);
+            if (seededRatio > bestRatio) {
+                bestRatio = seededRatio;
+                bestX = seedX;
+            }
+        }
 
         // Always use the certified generic support search here. A finite
         // sample of second differences cannot prove global concavity or
@@ -342,7 +375,8 @@ private:
                 0.0,
                 kTransitionSamples,
                 kTransitionDepth,
-                kTransitionRefinements
+                kTransitionRefinements,
+                seedX
             );
 
         if (std::isfinite(support.value) &&
@@ -355,6 +389,7 @@ private:
             p + width * bestRatio,
             bestX
         };
+        supportSeedCache_[pair] = bestX;
         transitionCache_.emplace(key, result);
         return result;
     }
@@ -369,7 +404,7 @@ private:
         if (cached != lowerHeightCache_.end())
             return cached->second;
 
-        double lo = f_(points_[i]);
+        double lo = fValue(points_[i]);
         double hi = upper_;
 
         if (evaluateTransition(i, j, hi).threshold > q) {
@@ -384,7 +419,7 @@ private:
             return lo;
         }
 
-        for (int it = 0; it < 32; ++it) {
+        for (int it = 0; it < 28; ++it) {
             const double mid = (lo + hi) / 2.0;
             if (evaluateTransition(i, j, mid).threshold <= q)
                 hi = mid;
@@ -505,7 +540,7 @@ private:
             return std::numeric_limits<double>::infinity();
         }
 
-        if (q < f_(points_[j]) - kHeightTolerance ||
+        if (q < fValue(points_[j]) - kHeightTolerance ||
             q < minimum_ - kHeightTolerance ||
             q > upper_ + kHeightTolerance) {
             return std::numeric_limits<double>::infinity();
@@ -523,7 +558,7 @@ private:
 
         if (k == n_ &&
             j == static_cast<int>(points_.size()) - 1) {
-            if (q < f_(points_.back()) - kHeightTolerance)
+            if (q < fValue(points_.back()) - kHeightTolerance)
                 return std::numeric_limits<double>::infinity();
 
             // This state represents the completed path. No extra cost
@@ -579,6 +614,16 @@ private:
         return best.value;
     }
 
+    double fValue(double x) const {
+        const auto it = functionCache_.find(x);
+        if (it != functionCache_.end())
+            return it->second;
+
+        const double value = f_(x);
+        functionCache_.emplace(x, value);
+        return value;
+    }
+
     const Function& f_;
     const std::vector<double>& points_;
     int n_;
@@ -589,6 +634,8 @@ private:
     double upper_ = 0.0;
 
     std::unordered_map<StateKey, StateValue, StateKeyHash, StateKeyEqual> memo_;
+    mutable std::unordered_map<double, double> functionCache_;
+    mutable std::unordered_map<PairKey, double, PairKeyHash> supportSeedCache_;
     mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;
     mutable std::unordered_map<LowerHeightKey, double, LowerHeightKeyHash, LowerHeightKeyEqual> lowerHeightCache_;
 };

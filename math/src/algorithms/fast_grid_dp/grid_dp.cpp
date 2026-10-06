@@ -353,8 +353,8 @@ private:
             }
         }
 
-        // Always use the certified generic support search here. A finite
-        // sample of second differences cannot prove global concavity or
+        // Use the certified support search; finite samples do not prove
+        // global concavity.
         // convexity for an arbitrary user function, so curvature shortcuts
         // are deliberately not used by the general fast solver.
         //

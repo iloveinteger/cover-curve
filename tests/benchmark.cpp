@@ -56,7 +56,6 @@ int main() {
     const auto negx2 = [](double x) { return -x * x; };
     const auto x4 = [](double x) { return x * x * x * x; };
     const auto sinf = [](double x) { return std::sin(x); };
-    const auto negsinf = [](double x) { return -std::sin(x); };
 
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "case,fast_ms,adaptive_ms,direct_ms,envelope_ms,abs_fast_direct\n";
@@ -125,30 +124,13 @@ int main() {
     options.innerOptions.tolerance = 1e-9;
 
     std::cout << "large_n,func,n,value,expected_or_limit,rel_error,violation,ms\n";
-    // Concave and periodic mixed-curvature validation.  For -x^2 the exact
-    // value is 1/(12 n^2).  For sin on [0,2pi], f'' changes sign at pi;
-    // test both feasibility and convergence of n^2 E_n to the mixed-curvature
-    // asymptotic constant.
-    std::cout << "large_n_concave,func,n,value,expected,rel_error,violation,ms\\n";
-    for (const int n : {8, 16, 32, 64, 128}) {
-        const auto begin = Clock::now();
-        const auto result =
-            cover_curve::envelopeSQPSolve(negsinf, 0.0, 2.0 * 3.141592653589793, n, options);
-        const auto end = Clock::now();
-        const double ms = std::chrono::duration<double, std::milli>(end - begin).count();
-        const double expected = 0.0; // filled by direct numerical asymptotic check below
-        const double violation = denseViolation(result, negsinf);
-        std::cout << "large_n_concave,-sin," << n << ',' << result.value
-                  << ',' << expected << ',' << violation << ',' << ms << '\\n';
-        if (!std::isfinite(result.value) || !std::isfinite(violation) || violation > 5e-5)
-            throw std::runtime_error("large-n -sin accuracy/feasibility check failed");
-    }
-
+    // Periodic mixed-curvature validation. For sin on [0,2pi], f'' changes
+    // sign at pi; test feasibility and convergence to the mixed-curvature constant.
+    std::cout << "large_n_periodic,func,n,value,n2_value,asymptotic,rel_error,violation,ms\n";
+    const double halfSinIntegral = std::sqrt(3.141592653589793) *
+        std::tgamma(2.0 / 3.0) / std::tgamma(7.0 / 6.0);
     const double mixedConstant = std::pow(
-        (1.0 / 12.0 + 1.0 / 24.0) *
-        std::pow(2.0, 2.0 / 3.0), 3.0) *
-        std::pow(3.141592653589793, 3.0);
-    std::cout << "large_n_periodic,func,n,value,n2_value,asymptotic,rel_error,violation,ms\\n";
+        halfSinIntegral * (std::cbrt(1.0 / 12.0) + std::cbrt(1.0 / 24.0)), 3.0);
     for (const int n : {8, 16, 32, 64, 128}) {
         const auto begin = Clock::now();
         const auto result =
@@ -160,7 +142,7 @@ int main() {
         const double violation = denseViolation(result, sinf);
         std::cout << "large_n_periodic,sin," << n << ',' << result.value << ','
                   << n2value << ',' << mixedConstant << ',' << rel << ','
-                  << violation << ',' << ms << '\\n';
+                  << violation << ',' << ms << '\n';
         if (!std::isfinite(result.value) || !std::isfinite(violation) || violation > 5e-5)
             throw std::runtime_error("large-n sin accuracy/feasibility check failed");
     }

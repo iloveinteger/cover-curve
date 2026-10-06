@@ -168,6 +168,8 @@ private:
 struct Constraint {
     std::vector<double> a;
     double rhs;
+    int segment = -1;
+    double x = 0.0;
 };
 
 Result buildResult(
@@ -279,6 +281,8 @@ DirectHeightDetailedResult directHeightSolveDetailed(
             -(f(x) -
               ((1.0 - t) * lower[segment] +
                t * lower[segment + 1]));
+        c.segment = static_cast<int>(segment);
+        c.x = x;
 
         constraints.push_back(std::move(c));
     };
@@ -461,22 +465,10 @@ DirectHeightDetailedResult directHeightSolveDetailed(
         if (k >= finalDual.size() || finalDual[k] <= 1e-10)
             continue;
 
-        int segment = -1;
-        double t = 0.0;
-        for (std::size_t i = 0; i + 1 < points.size(); ++i) {
-            if (std::abs(constraints[k].a[i]) > 1e-14 ||
-                std::abs(constraints[k].a[i + 1]) > 1e-14) {
-                segment = static_cast<int>(i);
-                t = -constraints[k].a[i + 1];
-                break;
-            }
-        }
-
-        if (segment >= 0) {
+        if (constraints[k].segment >= 0) {
             detailed.contacts.push_back({
-                segment,
-                points[segment] +
-                    t * (points[segment + 1] - points[segment]),
+                constraints[k].segment,
+                constraints[k].x,
                 finalDual[k]
             });
         }

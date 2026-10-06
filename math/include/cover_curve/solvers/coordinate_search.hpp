@@ -9,6 +9,7 @@ struct CoordinateSearchOptions {
     int samples = 5;
     int refinements = 1;
     double tolerance = 1e-7;
+    bool useDirectHeightOracle = false;
 };
 
 Result coordinateSearch(

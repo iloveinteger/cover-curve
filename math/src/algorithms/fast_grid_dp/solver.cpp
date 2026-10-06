@@ -1,6 +1,6 @@
 #include "solver.hpp"
 
-#include "fast_grid_dp.hpp"
+#include "grid_dp.hpp"
 
 #include <algorithm>
 #include <cmath>

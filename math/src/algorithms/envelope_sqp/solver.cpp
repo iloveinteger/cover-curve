@@ -321,7 +321,21 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
     std::vector<double> uniform(n + 1);
     for (int i = 0; i <= n; ++i)
         uniform[i] = a + (b - a) * i / n;
-    seeds.push_back(uniform);
+
+    if (!options.initialBreakpoints.empty()) {
+        if (options.initialBreakpoints.size() !=
+            static_cast<std::size_t>(n + 1) ||
+            !validInterior(
+                options.initialBreakpoints, a, b
+            )) {
+            throw std::invalid_argument(
+                "initialBreakpoints must contain n+1 ordered points."
+            );
+        }
+        seeds.push_back(options.initialBreakpoints);
+    } else {
+        seeds.push_back(uniform);
+    }
 
     // Cheap deterministic alternatives. These change the gap distribution
     // without invoking the expensive global grid solver. They are useful

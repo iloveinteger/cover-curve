@@ -96,3 +96,20 @@ The implementation keeps the height state continuous, but avoids several sources
 These changes reduce repeated function evaluations without changing the mathematical state space. They do not turn the numerical implementation into a certified global optimizer.
 
 The exact mathematical recurrence and its (O(nm^2)) oracle-level predecessor complexity remain the same; the constants above affect only the cost of the numerical realization.
+
+## 9. Fast grid DP solver
+
+A separate `fast_grid_dp` implementation uses the same continuous-height recurrence, transition search, feasibility search, global-search settings, height bound, and stopping rule as `adaptive_grid_dp`.
+
+Its numerical result is therefore intended to be equivalent to the baseline solver. The optimization is in the memoization layer:
+
+- state values use `std::unordered_map`;
+- transition values use `std::unordered_map`;
+- feasible lower-height values use `std::unordered_map`;
+- repeated objective evaluations in each one-dimensional search use a hash table as well.
+
+The keys are still the exact `double` values requested by the numerical optimizer. No height quantization or tolerance-based key merging is introduced.
+
+This changes the cache lookup/insert cost from ordered-map (O(log M)) to average-case (O(1)), without changing the mathematical search domain or numerical tolerances. `unordered_map` has average constant-time lookup, while `map` has logarithmic lookup. This is an implementation-level optimization, not a change to the mathematical algorithm.
+
+The fast solver is exposed as `cover_curve::fastGridDP`. It is kept separate from `adaptiveGridDP) so the two implementations can be compared directly.

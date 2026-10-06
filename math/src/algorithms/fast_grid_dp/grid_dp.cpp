@@ -24,7 +24,9 @@ constexpr double kHeightTolerance = 1e-7;
 constexpr int kGlobalSamples = 3;
 constexpr int kLocalIntervals = 1;
 constexpr int kGoldenIterations = 20;
+constexpr int kTransitionGoldenIterations = 30;
 constexpr int kTransitionSamples = 8;
+constexpr int kCurvatureDetectionSamples = 33;
 constexpr int kTransitionDepth = 2;
 constexpr int kTransitionRefinements = 2;
 
@@ -134,6 +136,7 @@ public:
         lowerHeightCache_.reserve(1024);
         minimum_ = std::numeric_limits<double>::infinity();
         maximum_ = -std::numeric_limits<double>::infinity();
+        curvatureMode_ = detectCurvatureMode();
 
         for (double x : points_) {
             const double y = f_(x);
@@ -289,6 +292,137 @@ private:
         double value;
     };
 
+    enum class CurvatureMode {
+        General,
+        Concave,
+        Convex
+    };
+
+    CurvatureMode detectCurvatureMode() const {
+        const int samples = std::max(
+            3,
+            std::min(
+                kCurvatureDetectionSamples,
+                static_cast<int>(points_.size())
+            )
+        );
+
+        if (samples < 3)
+            return CurvatureMode::General;
+
+        const double a = points_.front();
+        const double b = points_.back();
+        const double h = (b - a) / (samples - 1);
+
+        double scale = 1.0;
+        std::vector<double> values(samples);
+        for (int k = 0; k < samples; ++k) {
+            values[k] = f_(a + h * k);
+            if (!std::isfinite(values[k]))
+                return CurvatureMode::General;
+            scale = std::max(scale, std::abs(values[k]));
+        }
+
+        // The test is deliberately conservative. It is only a performance
+        // hint for smooth inputs; the general adaptive search remains the
+        // fallback for functions whose curvature is not consistently signed.
+        const double tolerance =
+            1e-10 * scale / std::max(1.0, h * h);
+
+        bool allConcave = true;
+        bool allConvex = true;
+        bool hasStrictConcave = false;
+        bool hasStrictConvex = false;
+
+        for (int k = 1; k + 1 < samples; ++k) {
+            const double second =
+                values[k + 1] - 2.0 * values[k] + values[k - 1];
+
+            if (second > tolerance)
+                allConcave = false;
+            if (second < -tolerance)
+                allConvex = false;
+            if (second < -tolerance)
+                hasStrictConcave = true;
+            if (second > tolerance)
+                hasStrictConvex = true;
+        }
+
+        if (allConcave && hasStrictConcave)
+            return CurvatureMode::Concave;
+        if (allConvex && hasStrictConvex)
+            return CurvatureMode::Convex;
+
+        // Linear functions satisfy both weak curvature conditions. Treating
+        // them as convex is exact for the support transition.
+        if (allConcave && allConvex)
+            return CurvatureMode::Convex;
+
+        return CurvatureMode::General;
+    }
+
+    double concaveRatioMaximum(
+        const std::function<double(double)>& ratio,
+        double lo,
+        double hi,
+        double& bestX
+    ) const {
+        const double phi =
+            (1.0 + std::sqrt(5.0)) / 2.0;
+        const double invPhi = 1.0 / phi;
+
+        double a = lo;
+        double b = hi;
+        double x1 = b - (b - a) * invPhi;
+        double x2 = a + (b - a) * invPhi;
+        double f1 = ratio(x1);
+        double f2 = ratio(x2);
+
+        double bestValue = ratio(lo);
+        bestX = lo;
+
+        const double hiValue = ratio(hi);
+        if (hiValue > bestValue) {
+            bestValue = hiValue;
+            bestX = hi;
+        }
+        if (f1 > bestValue) {
+            bestValue = f1;
+            bestX = x1;
+        }
+        if (f2 > bestValue) {
+            bestValue = f2;
+            bestX = x2;
+        }
+
+        for (int it = 0; it < kTransitionGoldenIterations; ++it) {
+            if (f1 <= f2) {
+                a = x1;
+                x1 = x2;
+                f1 = f2;
+                x2 = a + (b - a) * invPhi;
+                f2 = ratio(x2);
+            } else {
+                b = x2;
+                x2 = x1;
+                f2 = f1;
+                x1 = b - (b - a) * invPhi;
+                f1 = ratio(x1);
+            }
+
+            if (f1 > bestValue) {
+                bestValue = f1;
+                bestX = x1;
+            }
+            if (f2 > bestValue) {
+                bestValue = f2;
+                bestX = x2;
+            }
+        }
+
+        return bestValue;
+    }
+
     Transition evaluateTransition(
         int i,
         int j,
@@ -320,31 +454,44 @@ private:
         double bestX = v;
         double bestRatio = ratio(v);
 
-        for (int s = 1; s < kTransitionSamples; ++s) {
-            const double x =
-                lo + (v - lo) * s / kTransitionSamples;
-            const double r = ratio(x);
-            if (r > bestRatio) {
-                bestRatio = r;
-                bestX = x;
+        if (curvatureMode_ == CurvatureMode::Convex) {
+            // For convex f, (f(x)-p)/(x-u) is nondecreasing whenever
+            // p >= f(u), so its maximum is attained at x=v.
+            bestX = v;
+            bestRatio = ratio(v);
+        } else if (curvatureMode_ == CurvatureMode::Concave) {
+            // For concave f, the ratio is unimodal: its derivative's
+            // numerator has derivative f''(x)(x-u) <= 0. Golden search
+            // therefore finds the global maximum on [lo,v].
+            bestRatio =
+                concaveRatioMaximum(ratio, lo, v, bestX);
+        } else {
+            for (int s = 1; s < kTransitionSamples; ++s) {
+                const double x =
+                    lo + (v - lo) * s / kTransitionSamples;
+                const double r = ratio(x);
+                if (r > bestRatio) {
+                    bestRatio = r;
+                    bestX = x;
+                }
             }
-        }
 
-        const auto support =
-            numerical::adaptiveSupportMaximum(
-                ratio,
-                lo,
-                v,
-                0.0,
-                kTransitionSamples,
-                kTransitionDepth,
-                kTransitionRefinements
-            );
+            const auto support =
+                numerical::adaptiveSupportMaximum(
+                    ratio,
+                    lo,
+                    v,
+                    0.0,
+                    kTransitionSamples,
+                    kTransitionDepth,
+                    kTransitionRefinements
+                );
 
-        if (std::isfinite(support.value) &&
-            support.value > bestRatio) {
-            bestRatio = support.value;
-            bestX = support.x;
+            if (std::isfinite(support.value) &&
+                support.value > bestRatio) {
+                bestRatio = support.value;
+                bestX = support.x;
+            }
         }
 
         const Transition result{
@@ -583,6 +730,7 @@ private:
     double maximum_ = 0.0;
     double rho_ = 0.0;
     double upper_ = 0.0;
+    CurvatureMode curvatureMode_ = CurvatureMode::General;
 
     std::unordered_map<StateKey, StateValue, StateKeyHash, StateKeyEqual> memo_;
     mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;

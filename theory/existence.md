@@ -1,7 +1,7 @@
 # Existence of an optimal piecewise-affine upper envelope
 
-**Theorem.** Let $f\in C[a,b]$, $a<b$, and $n\ge1$. Among continuous
-piecewise-affine functions $g\ge f$ with at most $n$ nondegenerate affine
+**Theorem.** Let $fin C[a,b]$, $a<b$, and $nge1$. Among continuous
+piecewise-affine functions $gge f$ with at most $n$ nondegenerate affine
 pieces, the functional
 
 $$
@@ -174,69 +174,75 @@ $$
 i_1<\cdots<i_r.
 $$
 
-If two consecutive finite knots are adjacent, keep their limiting segment.
-If they are separated by a maximal run of infinite knots, then every segment
-in that run and both flanking segments have widths tending to zero by (3).
-Consequently,
+Consider two consecutive finite knots $i_j<i_{j+1}$.
+
+If $i_{j+1}=i_j+1$, keep the limiting segment between them. If
+$i_{j+1}>i_j+1$, all knots strictly between them are infinite. Every segment
+incident to one of these infinite knots has width tending to zero by (3).
+In particular,
 
 $$
-\bar x_{i_j}=\bar x_{i_{j+1}}=:c,
+\bar x_{i_j}=\bar x_{i_{j+1}}=:c.
 $$
 
-and replace the entire stretch by one vertical segment at $c$ joining the
-two finite endpoint values.
+Replace the whole stretch from $i_j$ to $i_{j+1}$ by one vertical segment at
+$c$ joining the finite endpoint values $\bar y_{i_j}$ and
+$\bar y_{i_{j+1}}$.
 
-If a maximal run of infinite knots touches $a$ or $b$, the same argument
-shows that its finite neighbouring knot has limiting coordinate $a$ or $b$.
-Delete the infinite run and start or end the limit configuration at that
-finite knot.
+If a maximal run of infinite knots occurs at the left boundary, let $i_1$
+be the first finite knot. The segment immediately preceding $i_1$, together
+with all segments in the boundary run, has width tending to zero by (3).
+Hence $\bar x_{i_1}=a$. Delete that run and start the limit configuration at
+$(a,\bar y_{i_1})$. The right boundary is handled symmetrically: if $i_r$
+is the last finite knot, then $\bar x_{i_r}=b$, and the boundary run after it
+is deleted.
 
-If two consecutive finite knots have the same limiting coordinate, the
-corresponding limiting segment is itself treated as a vertical segment.
-Thus the resulting configuration $\bar P$ is well-defined and has at most
-$r-1\le n$ segments. If necessary, pad it with repeated points to obtain
-exactly $n+1$ points.
+If two consecutive finite knots have the same limiting coordinate, their
+limiting segment is vertical and is kept as such. Thus the resulting limit
+configuration $\bar P$ is well-defined and has at most $r-1\le n$ segments.
+If necessary, repeated points can be inserted to represent it with exactly
+$n+1$ points.
 
 ### (d) Feasibility of the limit configuration
 
-Consider first a kept regular segment whose limiting width is positive.
-Its endpoint coordinates and values converge to finite limits, so its affine
+Consider first a kept regular segment whose limiting width is positive. Its
+endpoint coordinates and values converge to finite limits, so its affine
 interpolants converge uniformly to the limiting affine function. For every
 point in the interior of the limiting interval, that point belongs to the
 corresponding approximating interval for all sufficiently large $k$.
 Therefore the limiting affine function is at least $f$ on the interior, and
 hence on the closed interval by continuity.
 
-If a kept segment has zero limiting width, or if a vertical segment was
-inserted, its endpoint coordinates converge to the same point $c$. Feasibility
-gives
+Every vertical segment in $\bar P$ has finite endpoint values and both
+endpoints converge to the same coordinate $c$. For either endpoint,
 
 $$
 y_i^k\ge f(x_i^k),
 $$
 
-so continuity of $f$ yields
+so continuity of $f$ gives
 
 $$
-\bar y_i\ge f(c)
+\bar y_i\ge f(c).
 $$
 
-for every finite endpoint. Thus the vertical min-condition is satisfied.
+Thus every vertical segment satisfies the required feasibility condition.
 
 Hence $\bar P$ is feasible.
 
 ### (e) Cost of the limit
 
-For every kept regular segment, continuity of the endpoint formula and of
-the integral with respect to its endpoints gives
+For every kept regular segment, continuity of the endpoint formula and of the
+integral with respect to its endpoints gives
 
 $$
 I_i(P^k)\to I_i(\bar P).
 $$
 
-This remains true when the limiting width is zero, in which case both sides
-are zero. Every discarded segment has nonnegative cost by (1), and every
-vertical segment has cost zero. Therefore
+If a segment has limiting width zero, its cost also tends to zero, since its
+endpoint values are finite whenever that segment is retained. Every discarded
+segment has nonnegative cost by (1), and every vertical segment has cost zero.
+Therefore
 
 $$
 I(\bar P)
@@ -273,8 +279,8 @@ the number of segments.
 - If a vertical segment occurs at $a$ or $b$, delete it and start or end the
   path at the other endpoint.
 
-After normalization, every remaining vertical segment is an isolated
-interior segment, flanked by regular segments.
+After normalization, every remaining vertical segment is an isolated interior
+segment, flanked by regular segments.
 
 ### Claim
 
@@ -289,7 +295,9 @@ $$
 d=|v-u|>0.
 $$
 
-After reflecting the horizontal coordinate if necessary, assume
+The argument is invariant under reflection of the horizontal coordinate.
+Thus, replacing $f(x)$ by $f(a+b-x)$ and reflecting the entire configuration if
+necessary, we may assume
 
 $$
 v>u.
@@ -318,7 +326,8 @@ s=c-\eta,
 t=c+2\eta.
 $$
 
-Replace the three consecutive pieces
+For sufficiently small $\eta$, these points lie inside the adjacent regular
+segments. Replace the three consecutive pieces
 
 $$
 L\;|\;\text{vertical}\;|\;R
@@ -363,10 +372,13 @@ For sufficiently small $\eta$:
 
 - On $[s,c]$, $M-L$ is affine, vanishes at $s$, and by (4) is positive
   at $c$. Hence $M\ge L\ge f$.
-- On $[c,t]$, $M$ is increasing for sufficiently small $\eta$, and
-  $M(x)\ge M(c)=u+d/3+O(\eta)$. If $\omega$ is a modulus of continuity of
-  $f$ at $c$, then $f(x)\le f(c)+\omega(2\eta)\le u+\omega(2\eta)$. Therefore $M\ge f$
-  on $[c,t]$ for sufficiently small $\eta$.
+- The endpoint difference of $M$ is
+  $d+O(\eta)>0$, so $M$ is increasing. Hence
+  $M(x)\ge M(c)=u+d/3+O(\eta)$ on $[c,t]$.
+  Since $f$ is continuous at $c$, there is a modulus of continuity $\omega$
+  with $\omega(r)\to0$ as $r\to0$ and
+  $f(x)\le f(c)+\omega(2\eta)\le u+\omega(2\eta)$ on $[c,t]$.
+  Therefore $M\ge f$ on $[c,t]$ for sufficiently small $\eta$.
 
 Thus the modified configuration remains feasible.
 

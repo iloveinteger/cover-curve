@@ -96,9 +96,21 @@ int main() {
             );
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
+        double dualAt1 = 0.0;
+        for (const auto& contact : detailed.contacts) {
+            if (contact.segment == 0)
+                dualAt1 += contact.multiplier *
+                    (contact.x / 2.8);
+            if (contact.segment == 1)
+                dualAt1 += contact.multiplier *
+                    ((2.0 * pi - contact.x) /
+                     (2.0 * pi - 2.8));
+        }
         std::cerr
             << "fixed y1=" << detailed.heights[1]
             << " f1=" << sine(2.8)
+            << " objectiveCoeff=" << pi
+            << " dualWeight=" << dualAt1
             << std::endl;
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite

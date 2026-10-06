@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -14,183 +15,462 @@ namespace cover_curve::algorithms::adaptive_grid_dp {
 
 namespace {
 
-struct TransitionConstraint {
-    double height = std::numeric_limits<double>::infinity();
+constexpr double kHeightTolerance = 1e-7;
+constexpr int kGlobalSamples = 17;
+constexpr int kLocalIntervals = 4;
+constexpr int kGoldenIterations = 48;
+
+struct Transition {
+    double threshold = std::numeric_limits<double>::infinity();
     double contact = std::numeric_limits<double>::quiet_NaN();
 };
 
-struct DPState {
-    double value = std::numeric_limits<double>::infinity();
-    int parentGrid = -1;
-    int parentHeight = -1;
+struct StateKey {
+    int k;
+    int j;
+    double q;
+
+    bool operator<(const StateKey& other) const {
+        if (k != other.k) return k < other.k;
+        if (j != other.j) return j < other.j;
+        return q < other.q;
+    }
 };
 
-double sampledMinimum(
-    const Function& f,
-    const std::vector<double>& points
-) {
-    double minimum = std::numeric_limits<double>::infinity();
+struct StateValue {
+    double value = std::numeric_limits<double>::infinity();
+    int parentGrid = -1;
+    double parentHeight = std::numeric_limits<double>::quiet_NaN();
+};
 
-    for (double x : points)
-        minimum = std::min(minimum, f(x));
+class ContinuousHeightDP {
+public:
+    ContinuousHeightDP(
+        const Function& f,
+        const std::vector<double>& points,
+        int n
+    )
+        : f_(f), points_(points), n_(n) {
+        minimum_ = std::numeric_limits<double>::infinity();
+        maximum_ = -std::numeric_limits<double>::infinity();
 
-    const Function negated = [&](double x) {
-        return -f(x);
-    };
+        for (double x : points_) {
+            const double y = f_(x);
+            minimum_ = std::min(minimum_, y);
+            maximum_ = std::max(maximum_, y);
+        }
 
-    const auto support =
-        numerical::adaptiveSupportMaximum(
-            negated,
-            points.front(),
-            points.back(),
-            0.0
-        );
-
-    if (std::isfinite(support.value))
-        minimum = std::min(minimum, -support.value);
-
-    return minimum;
-}
-
-double sampledMaximum(
-    const Function& f,
-    const std::vector<double>& points
-) {
-    double maximum = -std::numeric_limits<double>::infinity();
-
-    for (double x : points)
-        maximum = std::max(maximum, f(x));
-
-    const auto support =
-        numerical::adaptiveSupportMaximum(
-            f,
-            points.front(),
-            points.back(),
-            0.0
-        );
-
-    if (std::isfinite(support.value))
-        maximum = std::max(maximum, support.value);
-
-    return maximum;
-}
-
-std::vector<double> makeHeightGrid(
-    double minimum,
-    double maximum,
-    double rho,
-    int heightLevels
-) {
-    if (heightLevels < 2)
-        throw std::invalid_argument(
-            "heightLevels must be at least 2."
-        );
-
-    const double C =
-        std::max(0.0, maximum - minimum);
-
-    const double upper =
-        minimum
-        + 4.0 * C
-            / std::max(
-                rho,
-                std::numeric_limits<double>::min()
+        const auto maxSupport =
+            numerical::adaptiveSupportMaximum(
+                f_, points_.front(), points_.back(), 0.0
+            );
+        const auto minSupport =
+            numerical::adaptiveSupportMaximum(
+                [&](double x) { return -f_(x); },
+                points_.front(), points_.back(), 0.0
             );
 
-    if (!std::isfinite(upper) || upper <= minimum)
-        return {minimum};
+        if (std::isfinite(maxSupport.value))
+            maximum_ = std::max(maximum_, maxSupport.value);
+        if (std::isfinite(minSupport.value))
+            minimum_ = std::min(minimum_, -minSupport.value);
 
-    std::vector<double> heights(heightLevels);
+        if (!std::isfinite(minimum_) ||
+            !std::isfinite(maximum_) ||
+            minimum_ > maximum_) {
+            throw std::runtime_error(
+                "Failed to determine a finite function range."
+            );
+        }
 
-    for (int i = 0; i < heightLevels; ++i) {
-        heights[i] =
-            minimum
-            + (upper - minimum) * i
-                / (heightLevels - 1);
+        rho_ = std::numeric_limits<double>::infinity();
+        for (std::size_t i = 1; i < points_.size(); ++i)
+            rho_ = std::min(
+                rho_, points_[i] - points_[i - 1]
+            );
+
+        const double C =
+            (points_.back() - points_.front()) *
+            std::max(0.0, maximum_ - minimum_);
+
+        upper_ =
+            minimum_ +
+            4.0 * C /
+            std::max(rho_, std::numeric_limits<double>::min());
+
+        if (!std::isfinite(upper_) || upper_ < maximum_)
+            upper_ = std::max(maximum_, minimum_ + 1.0);
+
+        if (!std::isfinite(upper_))
+            throw std::runtime_error(
+                "Failed to construct a finite height bound."
+            );
     }
 
-    return heights;
-}
-
-void computeSampledTransitions(
-    const Function& f,
-    const std::vector<double>& points,
-    const std::vector<double>& heights,
-    std::vector<
-        std::vector<std::vector<TransitionConstraint>>
-    >& transitions
-) {
-    const int N =
-        static_cast<int>(points.size()) - 1;
-    const int H =
-        static_cast<int>(heights.size());
-
-    // Samples are every breakpoint and every cell midpoint:
-    // x_0, m_0, x_1, m_1, ..., x_N.
-    //
-    // For fixed (i,p), maintain
-    // max (f(x)-p)/(x-x_i).  This yields all sampled
-    // transition thresholds T_{x_i,x_j}(p) in one pass.
-    std::vector<double> samples(2 * N + 1);
-    std::vector<double> sampleValues(2 * N + 1);
-
-    for (int i = 0; i < N; ++i) {
-        samples[2 * i] = points[i];
-        samples[2 * i + 1] =
-            (points[i] + points[i + 1]) / 2.0;
-    }
-
-    samples[2 * N] = points[N];
-
-    for (std::size_t s = 0; s < samples.size(); ++s)
-        sampleValues[s] = f(samples[s]);
-
-    for (int i = 0; i < N; ++i) {
-        const double u = points[i];
-
-        for (int hp = 0; hp < H; ++hp) {
-            const double p = heights[hp];
-
-            if (p < f(u))
-                continue;
-
-            double bestRatio =
-                -std::numeric_limits<double>::infinity();
-            double bestX = points[i + 1];
-
-            for (int j = i + 1; j <= N; ++j) {
-                // Add midpoint of [x_{j-1},x_j] and x_j.
-                for (int s = 2 * j - 1; s <= 2 * j; ++s) {
-                    const double x = samples[s];
-
-                    const double ratio =
-                        (sampleValues[s] - p) / (x - u);
-
-                    if (ratio > bestRatio) {
-                        bestRatio = ratio;
-                        bestX = x;
-                    }
+    Result solve() {
+        const double lowerFinal = f_(points_.back());
+        const auto final =
+            minimizeGlobal(
+                lowerFinal,
+                upper_,
+                [&](double q) {
+                    return value(n_, static_cast<int>(points_.size()) - 1, q);
                 }
+            );
 
-                const double width =
-                    points[j] - u;
+        if (!std::isfinite(final.value) || !std::isfinite(final.x))
+            throw std::runtime_error(
+                "No feasible continuous-height solution found."
+            );
 
-                transitions[i][j][hp] = {
-                    p + width * bestRatio,
-                    bestX
-                };
+        std::vector<double> heights(n_ + 1);
+        std::vector<int> indices(n_ + 1);
+
+        heights[n_] = final.x;
+        indices[n_] =
+            static_cast<int>(points_.size()) - 1;
+
+        for (int k = n_; k >= 1; --k) {
+            const StateKey key{k, indices[k], heights[k]};
+            const auto it = memo_.find(key);
+            if (it == memo_.end() ||
+                it->second.parentGrid < 0 ||
+                !std::isfinite(it->second.parentHeight)) {
+                throw std::runtime_error(
+                    "Failed to reconstruct continuous-height solution."
+                );
+            }
+
+            indices[k - 1] = it->second.parentGrid;
+            heights[k - 1] = it->second.parentHeight;
+        }
+
+        std::vector<double> breakpoints(n_ + 1);
+        std::vector<Segment> segments;
+        segments.reserve(n_);
+
+        double totalCost = 0.0;
+
+        for (int k = 0; k <= n_; ++k)
+            breakpoints[k] = points_[indices[k]];
+
+        for (int k = 0; k < n_; ++k) {
+            const double x0 = breakpoints[k];
+            const double x1 = breakpoints[k + 1];
+            const double y0 = heights[k];
+            const double y1 = heights[k + 1];
+            const double dx = x1 - x0;
+
+            const double slope = (y1 - y0) / dx;
+            const double intercept = y0 - slope * x0;
+
+            const Transition transition =
+                evaluateTransition(x0, x1, y0);
+
+            const double segmentIntegral =
+                dx * (y0 + y1) / 2.0;
+
+            const double segmentF =
+                numerical::adaptiveIntegral(f_, x0, x1);
+
+            const double cost =
+                segmentIntegral - segmentF;
+
+            segments.push_back({
+                x0,
+                x1,
+                slope,
+                intercept,
+                cost,
+                transition.contact
+            });
+
+            totalCost += cost;
+        }
+
+        if (totalCost < -1e-5)
+            throw std::runtime_error(
+                "Numerical result violates nonnegative majorant cost."
+            );
+
+        return {
+            std::max(0.0, totalCost),
+            std::move(breakpoints),
+            std::move(segments)
+        };
+    }
+
+private:
+    struct SearchResult {
+        double x;
+        double value;
+    };
+
+    Transition evaluateTransition(
+        double u,
+        double v,
+        double p
+    ) const {
+        if (p < f_(u) - kHeightTolerance)
+            return {};
+
+        const double width = v - u;
+        const double eps =
+            std::max(1e-12 * width, 1e-12);
+        const double lo = u + eps;
+
+        auto ratio = [&](double x) {
+            return (f_(x) - p) / (x - u);
+        };
+
+        double bestX = v;
+        double bestRatio = ratio(v);
+
+        constexpr int samples = 32;
+        for (int s = 1; s < samples; ++s) {
+            const double x =
+                lo + (v - lo) * s / samples;
+            const double r = ratio(x);
+            if (r > bestRatio) {
+                bestRatio = r;
+                bestX = x;
             }
         }
+
+        const auto support =
+            numerical::adaptiveSupportMaximum(
+                ratio, lo, v, 0.0, 24, 7, 12
+            );
+
+        if (std::isfinite(support.value) &&
+            support.value > bestRatio) {
+            bestRatio = support.value;
+            bestX = support.x;
+        }
+
+        return {
+            p + width * bestRatio,
+            bestX
+        };
     }
-}
+
+    double feasibleLowerHeight(
+        double u,
+        double v,
+        double q
+    ) const {
+        const double fU = f_(u);
+        double lo = fU;
+        double hi = upper_;
+
+        if (evaluateTransition(u, v, hi).threshold > q)
+            return std::numeric_limits<double>::infinity();
+
+        if (evaluateTransition(u, v, lo).threshold <= q)
+            return lo;
+
+        for (int it = 0; it < 48; ++it) {
+            const double mid = (lo + hi) / 2.0;
+            if (evaluateTransition(u, v, mid).threshold <= q)
+                hi = mid;
+            else
+                lo = mid;
+        }
+
+        return hi;
+    }
+
+    SearchResult minimizeGlobal(
+        double lo,
+        double hi,
+        const std::function<double(double)>& objective
+    ) {
+        if (!(lo <= hi))
+            return {lo, std::numeric_limits<double>::infinity()};
+
+        if (hi - lo <= kHeightTolerance)
+            return {lo, objective(lo)};
+
+        std::vector<double> x(kGlobalSamples);
+        std::vector<double> y(kGlobalSamples);
+
+        for (int s = 0; s < kGlobalSamples; ++s) {
+            x[s] =
+                lo + (hi - lo) * s /
+                (kGlobalSamples - 1);
+            y[s] = objective(x[s]);
+        }
+
+        int best = 0;
+        for (int s = 1; s < kGlobalSamples; ++s)
+            if (y[s] < y[best])
+                best = s;
+
+        SearchResult result{x[best], y[best]};
+
+        const int left =
+            std::max(0, best - kLocalIntervals);
+        const int right =
+            std::min(kGlobalSamples - 1, best + kLocalIntervals);
+
+        for (int s = left; s < right; ++s) {
+            const double a = x[s];
+            const double b = x[s + 1];
+
+            const double fa = objective(a);
+            const double fb = objective(b);
+
+            // Golden-section is used only locally. The outer sampling
+            // preserves the fact that the global value function need
+            // not be convex.
+            const double phi =
+                (1.0 + std::sqrt(5.0)) / 2.0;
+
+            double l = a;
+            double r = b;
+            double x1 = r - (r - l) / phi;
+            double x2 = l + (r - l) / phi;
+            double f1 = objective(x1);
+            double f2 = objective(x2);
+
+            for (int it = 0; it < kGoldenIterations; ++it) {
+                if (f1 <= f2) {
+                    r = x2;
+                    x2 = x1;
+                    f2 = f1;
+                    x1 = r - (r - l) / phi;
+                    f1 = objective(x1);
+                } else {
+                    l = x1;
+                    x1 = x2;
+                    f1 = f2;
+                    x2 = l + (r - l) / phi;
+                    f2 = objective(x2);
+                }
+            }
+
+            const double candidateX =
+                (l + r) / 2.0;
+            const double candidateY =
+                objective(candidateX);
+
+            if (candidateY < result.value) {
+                result = {candidateX, candidateY};
+            }
+
+            if (fa < result.value)
+                result = {a, fa};
+            if (fb < result.value)
+                result = {b, fb};
+        }
+
+        return result;
+    }
+
+    double value(int k, int j, double q) {
+        const StateKey key{k, j, q};
+        const auto found = memo_.find(key);
+        if (found != memo_.end())
+            return found->second.value;
+
+        if (j < k ||
+            j > static_cast<int>(points_.size()) - 1 ||
+            k < 0 || k > n_) {
+            return std::numeric_limits<double>::infinity();
+        }
+
+        if (q < f_(points_[j]) - kHeightTolerance ||
+            q < minimum_ - kHeightTolerance ||
+            q > upper_ + kHeightTolerance) {
+            return std::numeric_limits<double>::infinity();
+        }
+
+        if (k == 0) {
+            const double result =
+                j == 0 && q >= f_(points_.front()) - kHeightTolerance
+                    ? 0.0
+                    : std::numeric_limits<double>::infinity();
+
+            memo_[key] = {result, -1, q};
+            return result;
+        }
+
+        if (k == n_ &&
+            j == static_cast<int>(points_.size()) - 1) {
+            if (q < f_(points_.back()) - kHeightTolerance)
+                return std::numeric_limits<double>::infinity();
+
+            // This state represents the completed path. No extra cost
+            // is added after the last segment.
+        }
+
+        StateValue best;
+
+        for (int i = k - 1; i < j; ++i) {
+            if (j - i < 1)
+                continue;
+
+            const double u = points_[i];
+            const double v = points_[j];
+            const double dx = v - u;
+
+            const double pLo =
+                feasibleLowerHeight(u, v, q);
+
+            if (!std::isfinite(pLo) ||
+                pLo > upper_ + kHeightTolerance)
+                continue;
+
+            const SearchResult inner =
+                minimizeGlobal(
+                    pLo,
+                    upper_,
+                    [&](double p) {
+                        const double threshold =
+                            evaluateTransition(u, v, p).threshold;
+
+                        if (threshold > q + kHeightTolerance)
+                            return std::numeric_limits<double>::infinity();
+
+                        const double previous =
+                            value(k - 1, i, p);
+
+                        if (!std::isfinite(previous))
+                            return std::numeric_limits<double>::infinity();
+
+                        return previous + dx * (p + q) / 2.0;
+                    }
+                );
+
+            if (inner.value < best.value) {
+                best.value = inner.value;
+                best.parentGrid = i;
+                best.parentHeight = inner.x;
+            }
+        }
+
+        memo_[key] = best;
+        return best.value;
+    }
+
+    const Function& f_;
+    const std::vector<double>& points_;
+    int n_;
+
+    double minimum_ = 0.0;
+    double maximum_ = 0.0;
+    double rho_ = 0.0;
+    double upper_ = 0.0;
+
+    std::map<StateKey, StateValue> memo_;
+};
 
 } // namespace
 
 Result solveGridDPOnGrid(
     const Function& f,
     const std::vector<double>& points,
-    int n,
-    int heightLevels
+    int n
 ) {
     if (!f)
         throw std::invalid_argument("Function must be valid.");
@@ -217,231 +497,8 @@ Result solveGridDPOnGrid(
         }
     }
 
-    const int N =
-        static_cast<int>(points.size()) - 1;
-
-    double rho =
-        std::numeric_limits<double>::infinity();
-
-    for (int i = 0; i < N; ++i) {
-        rho = std::min(
-            rho,
-            points[i + 1] - points[i]
-        );
-    }
-
-    const double minimum =
-        sampledMinimum(f, points);
-
-    const double maximum =
-        sampledMaximum(f, points);
-
-    if (!std::isfinite(minimum) ||
-        !std::isfinite(maximum) ||
-        minimum > maximum) {
-        throw std::runtime_error(
-            "Failed to determine a finite function range."
-        );
-    }
-
-    const std::vector<double> heights =
-        makeHeightGrid(
-            minimum,
-            maximum,
-            rho,
-            heightLevels
-        );
-
-    const int H =
-        static_cast<int>(heights.size());
-
-    std::vector<
-        std::vector<std::vector<TransitionConstraint>>
-    > transitions(
-        N + 1,
-        std::vector<std::vector<TransitionConstraint>>(
-            N + 1,
-            std::vector<TransitionConstraint>(H)
-        )
-    );
-
-    computeSampledTransitions(
-        f,
-        points,
-        heights,
-        transitions
-    );
-
-    std::vector<
-        std::vector<std::vector<DPState>>
-    > history(
-        n + 1,
-        std::vector<std::vector<DPState>>(
-            N + 1,
-            std::vector<DPState>(H)
-        )
-    );
-
-    for (int hp = 0; hp < H; ++hp) {
-        if (heights[hp] >= f(points.front()))
-            history[0][0][hp].value = 0.0;
-    }
-
-    for (int k = 1; k <= n; ++k) {
-        for (int j = k; j <= N; ++j) {
-            const double x1 = points[j];
-
-            for (int hq = 0; hq < H; ++hq) {
-                const double q = heights[hq];
-
-                if (q < f(x1))
-                    continue;
-
-                DPState best;
-
-                for (int i = k - 1; i < j; ++i) {
-                    const double dx =
-                        x1 - points[i];
-
-                    for (int hp = 0; hp < H; ++hp) {
-                        const DPState& previous =
-                            history[k - 1][i][hp];
-
-                        if (!std::isfinite(previous.value))
-                            continue;
-
-                        const auto& transition =
-                            transitions[i][j][hp];
-
-                        if (q < transition.height)
-                            continue;
-
-                        const double candidate =
-                            previous.value
-                            + dx
-                                * (heights[hp] + q)
-                                / 2.0;
-
-                        if (candidate < best.value) {
-                            best.value = candidate;
-                            best.parentGrid = i;
-                            best.parentHeight = hp;
-                        }
-                    }
-                }
-
-                history[k][j][hq] = best;
-            }
-        }
-    }
-
-    double bestIntegral =
-        std::numeric_limits<double>::infinity();
-
-    int finalHeight = -1;
-
-    for (int hq = 0; hq < H; ++hq) {
-        const double value =
-            history[n][N][hq].value;
-
-        if (value < bestIntegral) {
-            bestIntegral = value;
-            finalHeight = hq;
-        }
-    }
-
-    if (!std::isfinite(bestIntegral) ||
-        finalHeight < 0) {
-        throw std::runtime_error(
-            "No feasible shared-height solution found."
-        );
-    }
-
-    std::vector<int> gridIndices(n + 1);
-    std::vector<int> heightIndices(n + 1);
-
-    gridIndices[n] = N;
-    heightIndices[n] = finalHeight;
-
-    for (int k = n; k >= 1; --k) {
-        const DPState& state =
-            history[k][gridIndices[k]][heightIndices[k]];
-
-        if (state.parentGrid < 0 ||
-            state.parentHeight < 0) {
-            throw std::runtime_error(
-                "Failed to reconstruct shared-height solution."
-            );
-        }
-
-        gridIndices[k - 1] = state.parentGrid;
-        heightIndices[k - 1] = state.parentHeight;
-    }
-
-    std::vector<double> breakpoints(n + 1);
-    std::vector<double> vertexHeights(n + 1);
-    std::vector<Segment> segments;
-    segments.reserve(n);
-
-    for (int k = 0; k <= n; ++k) {
-        breakpoints[k] = points[gridIndices[k]];
-        vertexHeights[k] = heights[heightIndices[k]];
-    }
-
-    double totalCost = 0.0;
-
-    for (int k = 0; k < n; ++k) {
-        const double x0 = breakpoints[k];
-        const double x1 = breakpoints[k + 1];
-        const double y0 = vertexHeights[k];
-        const double y1 = vertexHeights[k + 1];
-        const double dx = x1 - x0;
-
-        const double slope =
-            (y1 - y0) / dx;
-
-        const double intercept =
-            y0 - slope * x0;
-
-        const auto& transition =
-            transitions[
-                gridIndices[k]
-            ][
-                gridIndices[k + 1]
-            ][
-                heightIndices[k]
-            ];
-
-        const double segmentIntegral =
-            dx * (y0 + y1) / 2.0;
-
-        const double segmentF =
-            numerical::adaptiveIntegral(
-                f,
-                x0,
-                x1
-            );
-
-        const double cost =
-            segmentIntegral - segmentF;
-
-        segments.push_back({
-            x0,
-            x1,
-            slope,
-            intercept,
-            std::max(0.0, cost),
-            transition.contact
-        });
-
-        totalCost += cost;
-    }
-
-    return {
-        std::max(0.0, totalCost),
-        std::move(breakpoints),
-        std::move(segments)
-    };
+    ContinuousHeightDP dp(f, points, n);
+    return dp.solve();
 }
 
 Result solveGridDP(
@@ -449,8 +506,7 @@ Result solveGridDP(
     double a,
     double b,
     int n,
-    int N,
-    int heightLevels
+    int N
 ) {
     if (!std::isfinite(a) ||
         !std::isfinite(b) ||
@@ -466,17 +522,10 @@ Result solveGridDP(
         );
 
     std::vector<double> points(N + 1);
-
     for (int i = 0; i <= N; ++i)
-        points[i] =
-            a + (b - a) * i / N;
+        points[i] = a + (b - a) * i / N;
 
-    return solveGridDPOnGrid(
-        f,
-        points,
-        n,
-        heightLevels
-    );
+    return solveGridDPOnGrid(f, points, n);
 }
 
 } // namespace cover_curve::algorithms::adaptive_grid_dp

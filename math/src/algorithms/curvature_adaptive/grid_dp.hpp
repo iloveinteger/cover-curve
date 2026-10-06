@@ -9,8 +9,7 @@ namespace cover_curve::algorithms::curvature_adaptive {
 Result solveGrid(
     const Function& f,
     const std::vector<double>& points,
-    int n,
-    
+    int n
 );
 
 }

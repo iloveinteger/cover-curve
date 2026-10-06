@@ -16,7 +16,7 @@ $$
 
 The recursive evaluator implements
 $$
-F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\ge f(z_i)\\q\ge T_{z_i,z_j}(p)}}\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
+F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\ge f(z_i)\q\ge T_{z_i,z_j}(p)}}\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
 $$
 
 The implementation memoizes values at the real heights actually requested by the optimizer. These are adaptive evaluation points, not a uniform height grid and there is no heightLevels parameter.

@@ -28,35 +28,32 @@ J(g^*)=\min_{g\in\mathcal F_n}J(g).
 
 For fixed breakpoints this follows by an elementary finite-dimensional
 compactness argument, given below. For free breakpoints, the existence
-statement is a standard free-knot one-sided $L^1$ spline-approximation
-result; it is used here as an external theorem rather than being inferred
-from a false $L^1$ compactness claim.
+statement is taken from the established free-knot one-sided $L^1$
+approximation theory. It is used here as an external theorem; it is **not**
+deduced from an $L^1$-boundedness argument.
 
-### Free-knot existence theorem used here
+### External free-knot existence input
 
-A continuous target on a compact interval admits a best one-sided
-$L^1$ approximation from the class of continuous piecewise-polynomial
-splines of fixed degree with a bounded number of free knots. The class is
-understood with coalescing knots allowed, equivalently with at most the
-prescribed number of nondegenerate pieces.
+The required external result is the existence theory for best one-sided
+$L^1$ approximation by splines with free knots. In the present degree-one
+case it applies to continuous piecewise-affine splines with a bounded
+number of free knots, with coalescing knots allowed in the limiting
+representation.
 
-For degree one, this gives exactly the existence statement above, because
-for every feasible $g$,
+For every feasible $g$,
 \[
-g-f\ge0
+g-f\ge0,
 \]
-and hence
+so the one-sided objective is exactly the ordinary $L^1$ error:
 \[
-J(g)=\int_a^b|g-f|
-=\|g-f\|_{L^1}.
+J(g)
+=
+\int_a^b|g-f|
+=
+\|g-f\|_{L^1}.
 \]
 
-This is part of the classical free-knot spline approximation theory. The
-free-knot existence result of Barrar and Loeb is the relevant compactness
-result, while the one-sided $L^1$ existence theory supplies the
-restricted-range formulation.
-
-References:
+The classical literature relevant to this existence input includes:
 
 - R. B. Barrar and H. L. Loeb, “Existence of best spline approximations
   with free knots,” *Journal of Mathematical Analysis and Applications*
@@ -70,8 +67,8 @@ References:
   degree,” in *Approximations with Special Emphasis on Spline Functions*,
   Academic Press, 1969, pp. 405--413.
 
-The cited results are used only for existence. No uniqueness statement is
-needed here.
+These references are cited for the external existence input only. No
+uniqueness statement is used.
 
 ### Why the naive $L^1$ compactness argument is invalid
 
@@ -162,8 +159,8 @@ Feasibility implies
 \[
 y_i=g_y(x_i)\ge f(x_i)
 \]
-for every $i$. Thus no coordinate can tend to $-infty$ along the
-feasible set. If any coordinate tends to $+infty$, the positivity of its
+for every $i$. Thus no coordinate can tend to $-\infty$ along the
+feasible set. If any coordinate tends to $+\infty$, the positivity of its
 coefficient forces $J(g_y)\to+\infty$. Hence every sublevel set
 \[
 \{y\in\mathcal C_X:J(g_y)\le C\}

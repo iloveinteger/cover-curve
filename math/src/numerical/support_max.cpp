@@ -30,7 +30,8 @@ SupportMaximum adaptiveSupportMaximum(
     double beta,
     int initialSamples,
     int maxDepth,
-    int refinementCount
+    int refinementCount,
+    double seedX
 ) {
     if (u == v) {
         const double value = f(u) - beta * u;
@@ -45,7 +46,8 @@ SupportMaximum adaptiveSupportMaximum(
             beta,
             initialSamples,
             maxDepth,
-            refinementCount
+            refinementCount,
+            seedX
         );
     }
 
@@ -59,6 +61,12 @@ SupportMaximum adaptiveSupportMaximum(
     };
 
     const double gv = g(v);
+
+    if (std::isfinite(seedX) && seedX > u && seedX < v) {
+        const double gs = g(seedX);
+        if (gs > best.value)
+            best = {seedX, gs};
+    }
 
     if (gv > best.value) {
         best = {v, gv};

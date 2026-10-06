@@ -86,8 +86,9 @@ int main() {
             "x^2 envelope is not a majorant."
         );
 
+        const double pi = std::acos(-1.0);
         const std::vector<double> fixed = {
-            0.0, 2.8, 2.0 * std::acos(-1.0)
+            0.0, pi, 2.0 * pi
         };
         const auto detailed =
             directHeightSolveDetailed(
@@ -95,14 +96,6 @@ int main() {
             );
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
-        for (const auto& contact : detailed.contacts) {
-            std::cerr
-                << "contact segment=" << contact.segment
-                << " x=" << contact.x
-                << " lambda=" << contact.multiplier
-                << std::endl;
-        }
-
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite
         // difference of the complete fixed-breakpoint value function.
@@ -123,19 +116,15 @@ int main() {
         const double h = 1e-2;
         const auto vp = directHeightSolve(
             sine,
-            std::vector<double>{0.0, 2.8 + h, 2.0 * pi},
+            std::vector<double>{0.0, pi + h, 2.0 * pi},
             options.innerOptions
         ).value;
         const auto vm = directHeightSolve(
             sine,
-            std::vector<double>{0.0, 2.8 - h, 2.0 * pi},
+            std::vector<double>{0.0, pi - h, 2.0 * pi},
             options.innerOptions
         ).value;
         const double fd = (vp - vm) / (2.0 * h);
-        std::cerr
-            << "gradient diagnostic: analytic=" << gd.gradient[1]
-            << " fd=" << fd
-            << std::endl;
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
         if (std::abs(gd.gradient[1] - fd) >= 1e-2) {

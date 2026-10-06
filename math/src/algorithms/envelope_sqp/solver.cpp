@@ -49,10 +49,7 @@ std::vector<double> curvatureSeed(
     for (int i = 0; i < samples; ++i)
         xs[i] = a + i * h;
 
-    // Three-point curvature estimate.  The asymptotic theory gives knot
-    // density proportional to c^(1/3)|f''|^(1/3), where c=1/12 on convex
-    // pieces and c=1/24 on concave pieces.  A small floor prevents a zero
-    // curvature/inflection point from creating an unusably large gap.
+    // Asymptotic knot density: c^(1/3)|f''|^(1/3).
     const double floor = 1e-8;
     for (int i = 1; i + 1 < samples; ++i) {
         const double d2 =

@@ -331,7 +331,7 @@ $$
 the best affine majorant has leading error
 $$
 \egin{cases}
-q h^3/12,&q>0,\\
+q h^3/12,&q>0,\
 |q| h^3/24,&q<0.
 \end{cases}
 $$
@@ -344,7 +344,7 @@ where
 $$
 c(x)=
 \egin{cases}
-1/12,&f''(x)>0,\\
+1/12,&f''(x)>0,\
 1/24,&f''(x)<0.
 \end{cases}
 $$

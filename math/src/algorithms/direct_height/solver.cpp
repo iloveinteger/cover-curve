@@ -414,7 +414,12 @@ Result directHeightSolve(
         if (!std::isfinite(support.value) ||
             support.value > options.tolerance * scale) {
             throw std::runtime_error(
-                "Direct height solver did not reach continuous feasibility."
+                "Direct height solver did not reach continuous feasibility "
+                "(segment " + std::to_string(i) +
+                ", violation=" + std::to_string(support.value) +
+                ", x=" + std::to_string(support.x) +
+                ", tolerance=" +
+                std::to_string(options.tolerance * scale) + ")."
             );
         }
     }

@@ -80,6 +80,49 @@ int main() {
     expectContinuous(r3, 1e-10, "square");
     expectContinuous(rf, 1e-10, "fast square");
 
+    // The new solver is a direct non-DP search over the internal breakpoint.
+    // Its first sample is x=1/2, which is already the exact optimum for x^2
+    // with two segments.
+    cover_curve::BreakpointSearchOptions searchOptions;
+    searchOptions.maxDepth = 4;
+    searchOptions.maxEvaluations = 32;
+
+    const auto rSearch =
+        cover_curve::breakpointSearch(
+            square,
+            0.0,
+            1.0,
+            2,
+            searchOptions
+        );
+    expectNear(
+        rSearch.value,
+        1.0 / 24.0,
+        2e-3,
+        "breakpoint search square n=2"
+    );
+    expectContinuous(
+        rSearch,
+        1e-10,
+        "breakpoint search square"
+    );
+
+    const auto rSearchSmall =
+        cover_curve::breakpointSearch(
+            square,
+            0.0,
+            1.0,
+            2,
+            cover_curve::BreakpointSearchOptions{
+                2,
+                8
+            }
+        );
+    if (rSearch.value > rSearchSmall.value + 1e-12) {
+        std::cerr << "breakpoint search lost incumbent when budget increased\n";
+        return 1;
+    }
+
     const Function wavy =
         [](double x) { return x + std::sin(x); };
     const auto rw =

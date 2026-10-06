@@ -17,20 +17,15 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
         const auto f = cover_curve::parseExpression(expression);
         const auto baseline = cover_curve::fastGridDP(f, a, b, n);
 
-        // Direct breakpoint-space search is useful for small n, but its
-        // non-DP cost grows quickly with breakpoint dimension. For the
-        // interactive web solver, keep that search to n <= 3 and use the
-        // optimized continuous-height DP otherwise.
-        if (n <= 3) {
-            cover_curve::BreakpointSearchOptions options;
-            options.maxDepth = 5;
-            options.maxEvaluations = 32;
-
-            const auto searched =
-                cover_curve::breakpointSearch(f, a, b, n, options);
+        // Refine the DP solution by optimizing breakpoints one at a time.
+        // Coordinate search starts from the baseline and only accepts
+        // improvements, so it cannot worsen the returned objective.
+        if (n <= 4) {
+            const auto refined =
+                cover_curve::coordinateSearch(f, a, b, n);
 
             const auto& result =
-                searched.value < baseline.value ? searched : baseline;
+                refined.value < baseline.value ? refined : baseline;
 
             val output = val::object();
             output.set("value", result.value);

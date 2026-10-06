@@ -18,23 +18,6 @@ double measure(Solver solver, const cover_curve::Function& f,
     return std::chrono::duration<double, std::milli>(end - begin).count() / repeats;
 }
 
-template <class Solver>
-double measureFixed(Solver solver, const cover_curve::Function& f,
-                    const std::vector<double>& p, int repeats, double& value) {
-    value = solver(f, p).value;
-    auto begin = Clock::now();
-    for (int i = 0; i < repeats; ++i) value = solver(f, p).value;
-    auto end = Clock::now();
-    return std::chrono::duration<double, std::milli>(end - begin).count() / repeats;
-}
-
-struct Case {
-    const char* name;
-    cover_curve::Function f;
-    double a, b;
-    int n;
-};
-
 int main() {
     constexpr int repeats = 2;
     constexpr double pi = 3.14159265358979323846;

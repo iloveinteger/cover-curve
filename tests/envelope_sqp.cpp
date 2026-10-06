@@ -126,6 +126,10 @@ int main() {
             options.innerOptions
         ).value;
         const double fd = (vp - vm) / (2.0 * h);
+        std::cerr
+            << "gradient diagnostic: analytic=" << gd.gradient[1]
+            << " fd=" << fd
+            << std::endl;
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
         if (std::abs(gd.gradient[1] - fd) >= 1e-2) {

@@ -109,17 +109,6 @@ int main() {
             );
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
-        double dualAt1 = 0.0;
-        for (const auto& contact : detailed.contacts) {
-            if (contact.segment == 0)
-                dualAt1 += contact.multiplier *
-                    (contact.x / 2.8);
-            if (contact.segment == 1)
-                dualAt1 += contact.multiplier *
-                    ((2.0 * pi - contact.x) /
-                     (2.0 * pi - 2.8));
-        }
-
         const auto t0 = std::chrono::steady_clock::now();
         // Check the envelope gradient against finite differences.
         EnvelopeSQPOptions gradientOptions = options;

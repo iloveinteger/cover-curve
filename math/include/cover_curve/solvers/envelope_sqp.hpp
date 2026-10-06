@@ -18,6 +18,10 @@ struct EnvelopeSQPOptions {
     double finiteDifferenceStep = 1e-6;
     bool includeFastGridSeed = false;
     DirectHeightOptions innerOptions;
+
+    // Optional user-supplied first breakpoint configuration. When empty,
+    // the solver starts from uniform breakpoints.
+    std::vector<double> initialBreakpoints;
 };
 
 struct EnvelopeSQPDetailedResult {

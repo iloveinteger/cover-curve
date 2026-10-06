@@ -8,6 +8,7 @@
 #include <limits>
 #include <map>
 #include <stdexcept>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -16,9 +17,15 @@ namespace cover_curve::algorithms::adaptive_grid_dp {
 namespace {
 
 constexpr double kHeightTolerance = 1e-7;
-constexpr int kGlobalSamples = 5;
+
+// Numerical search controls. Heights remain continuous; these parameters
+// only reduce repeated one-dimensional objective evaluations.
+constexpr int kGlobalSamples = 3;
 constexpr int kLocalIntervals = 1;
-constexpr int kGoldenIterations = 12;
+constexpr int kGoldenIterations = 6;
+constexpr int kTransitionSamples = 8;
+constexpr int kTransitionDepth = 2;
+constexpr int kTransitionRefinements = 2;
 
 struct Transition {
     double threshold = std::numeric_limits<double>::infinity();
@@ -43,6 +50,30 @@ struct StateValue {
     double parentHeight = std::numeric_limits<double>::quiet_NaN();
 };
 
+struct TransitionKey {
+    int i;
+    int j;
+    double p;
+
+    bool operator<(const TransitionKey& other) const {
+        if (i != other.i) return i < other.i;
+        if (j != other.j) return j < other.j;
+        return p < other.p;
+    }
+};
+
+struct LowerHeightKey {
+    int i;
+    int j;
+    double q;
+
+    bool operator<(const LowerHeightKey& other) const {
+        if (i != other.i) return i < other.i;
+        if (j != other.j) return j < other.j;
+        return q < other.q;
+    }
+};
+
 class ContinuousHeightDP {
 public:
     ContinuousHeightDP(
@@ -62,12 +93,14 @@ public:
 
         const auto maxSupport =
             numerical::adaptiveSupportMaximum(
-                f_, points_.front(), points_.back(), 0.0
+                f_, points_.front(), points_.back(), 0.0,
+                8, 2, 2
             );
         const auto minSupport =
             numerical::adaptiveSupportMaximum(
                 [&](double x) { return -f_(x); },
-                points_.front(), points_.back(), 0.0
+                points_.front(), points_.back(), 0.0,
+                8, 2, 2
             );
 
         if (std::isfinite(maxSupport.value))
@@ -165,7 +198,7 @@ public:
             const double intercept = y0 - slope * x0;
 
             const Transition transition =
-                evaluateTransition(x0, x1, y0);
+                evaluateTransition(indices[k], indices[k + 1], y0);
 
             const double segmentIntegral =
                 dx * (y0 + y1) / 2.0;
@@ -207,12 +240,23 @@ private:
     };
 
     Transition evaluateTransition(
-        double u,
-        double v,
+        int i,
+        int j,
         double p
     ) const {
-        if (p < f_(u) - kHeightTolerance)
-            return {};
+        const TransitionKey key{i, j, p};
+        const auto cached = transitionCache_.find(key);
+        if (cached != transitionCache_.end())
+            return cached->second;
+
+        const double u = points_[i];
+        const double v = points_[j];
+
+        if (p < f_(u) - kHeightTolerance) {
+            const Transition result{};
+            transitionCache_.emplace(key, result);
+            return result;
+        }
 
         const double width = v - u;
         const double eps =
@@ -226,10 +270,9 @@ private:
         double bestX = v;
         double bestRatio = ratio(v);
 
-        constexpr int samples = 16;
-        for (int s = 1; s < samples; ++s) {
+        for (int s = 1; s < kTransitionSamples; ++s) {
             const double x =
-                lo + (v - lo) * s / samples;
+                lo + (v - lo) * s / kTransitionSamples;
             const double r = ratio(x);
             if (r > bestRatio) {
                 bestRatio = r;
@@ -239,7 +282,13 @@ private:
 
         const auto support =
             numerical::adaptiveSupportMaximum(
-                ratio, lo, v, 0.0, 8, 3, 2
+                ratio,
+                lo,
+                v,
+                0.0,
+                kTransitionSamples,
+                kTransitionDepth,
+                kTransitionRefinements
             );
 
         if (std::isfinite(support.value) &&
@@ -248,35 +297,48 @@ private:
             bestX = support.x;
         }
 
-        return {
+        const Transition result{
             p + width * bestRatio,
             bestX
         };
+        transitionCache_.emplace(key, result);
+        return result;
     }
 
     double feasibleLowerHeight(
-        double u,
-        double v,
+        int i,
+        int j,
         double q
     ) const {
-        const double fU = f_(u);
-        double lo = fU;
+        const LowerHeightKey key{i, j, q};
+        const auto cached = lowerHeightCache_.find(key);
+        if (cached != lowerHeightCache_.end())
+            return cached->second;
+
+        double lo = f_(points_[i]);
         double hi = upper_;
 
-        if (evaluateTransition(u, v, hi).threshold > q)
-            return std::numeric_limits<double>::infinity();
+        if (evaluateTransition(i, j, hi).threshold > q) {
+            const double result =
+                std::numeric_limits<double>::infinity();
+            lowerHeightCache_.emplace(key, result);
+            return result;
+        }
 
-        if (evaluateTransition(u, v, lo).threshold <= q)
+        if (evaluateTransition(i, j, lo).threshold <= q) {
+            lowerHeightCache_.emplace(key, lo);
             return lo;
+        }
 
-        for (int it = 0; it < 24; ++it) {
+        for (int it = 0; it < 18; ++it) {
             const double mid = (lo + hi) / 2.0;
-            if (evaluateTransition(u, v, mid).threshold <= q)
+            if (evaluateTransition(i, j, mid).threshold <= q)
                 hi = mid;
             else
                 lo = mid;
         }
 
+        lowerHeightCache_.emplace(key, hi);
         return hi;
     }
 
@@ -285,11 +347,21 @@ private:
         double hi,
         const std::function<double(double)>& objective
     ) {
+        std::map<double, double> evaluations;
+        const auto eval = [&](double x) {
+            const auto it = evaluations.find(x);
+            if (it != evaluations.end())
+                return it->second;
+            const double y = eval(x);
+            evaluations.emplace(x, y);
+            return y;
+        };
+
         if (!(lo <= hi))
             return {lo, std::numeric_limits<double>::infinity()};
 
         if (hi - lo <= kHeightTolerance)
-            return {lo, objective(lo)};
+            return {lo, eval(lo)};
 
         std::vector<double> x(kGlobalSamples);
         std::vector<double> y(kGlobalSamples);
@@ -298,7 +370,7 @@ private:
             x[s] =
                 lo + (hi - lo) * s /
                 (kGlobalSamples - 1);
-            y[s] = objective(x[s]);
+            y[s] = eval(x[s]);
         }
 
         int best = 0;
@@ -317,8 +389,8 @@ private:
             const double a = x[s];
             const double b = x[s + 1];
 
-            const double fa = objective(a);
-            const double fb = objective(b);
+            const double fa = eval(a);
+            const double fb = eval(b);
 
             // Golden-section is used only locally. The outer sampling
             // preserves the fact that the global value function need
@@ -330,8 +402,8 @@ private:
             double r = b;
             double x1 = r - (r - l) / phi;
             double x2 = l + (r - l) / phi;
-            double f1 = objective(x1);
-            double f2 = objective(x2);
+            double f1 = eval(x1);
+            double f2 = eval(x2);
 
             for (int it = 0; it < kGoldenIterations; ++it) {
                 if (f1 <= f2) {
@@ -339,20 +411,20 @@ private:
                     x2 = x1;
                     f2 = f1;
                     x1 = r - (r - l) / phi;
-                    f1 = objective(x1);
+                    f1 = eval(x1);
                 } else {
                     l = x1;
                     x1 = x2;
                     f1 = f2;
                     x2 = l + (r - l) / phi;
-                    f2 = objective(x2);
+                    f2 = eval(x2);
                 }
             }
 
             const double candidateX =
                 (l + r) / 2.0;
             const double candidateY =
-                objective(candidateX);
+                eval(candidateX);
 
             if (candidateY < result.value) {
                 result = {candidateX, candidateY};
@@ -415,7 +487,7 @@ private:
             const double dx = v - u;
 
             const double pLo =
-                feasibleLowerHeight(u, v, q);
+                feasibleLowerHeight(i, j, q);
 
             if (!std::isfinite(pLo) ||
                 pLo > upper_ + kHeightTolerance)
@@ -427,7 +499,7 @@ private:
                     upper_,
                     [&](double p) {
                         const double threshold =
-                            evaluateTransition(u, v, p).threshold;
+                            evaluateTransition(i, j, p).threshold;
 
                         if (threshold > q + kHeightTolerance)
                             return std::numeric_limits<double>::infinity();
@@ -463,6 +535,8 @@ private:
     double upper_ = 0.0;
 
     std::map<StateKey, StateValue> memo_;
+    mutable std::map<TransitionKey, Transition> transitionCache_;
+    mutable std::map<LowerHeightKey, double> lowerHeightCache_;
 };
 
 } // namespace

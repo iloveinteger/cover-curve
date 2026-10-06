@@ -11,7 +11,7 @@ struct EnvelopeSQPOptions {
     int maxIterations = 20;
     int memory = 5;
     int lineSearchSteps = 12;
-    int seeds = 1;
+    int seeds = 3;
     double gradientTolerance = 1e-6;
     double stepTolerance = 1e-8;
     double sufficientDecrease = 1e-4;

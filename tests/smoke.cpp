@@ -93,16 +93,16 @@ int main() {
     const auto rsFast =
         cover_curve::fastGridDP(sine, 0.0, 2.0 * pi, 3, 32);
     const auto rsReference =
-        cover_curve::adaptiveGridDP(sine, 0.0, 2.0 * M_PI, 3);
+        cover_curve::adaptiveGridDP(sine, 0.0, 2.0 * pi, 3);
     expectNear(rsFast.value, rsReference.value, 8e-5, "fast sine agreement");
     expectContinuous(rsFast, 1e-10, "fast sine");
 
     const Function cosine =
         [](double x) { return std::cos(x); };
     const auto rcFast =
-        cover_curve::fastGridDP(cosine, 0.0, 2.0 * M_PI, 3, 32);
+        cover_curve::fastGridDP(cosine, 0.0, 2.0 * pi, 3, 32);
     const auto rcReference =
-        cover_curve::adaptiveGridDP(cosine, 0.0, 2.0 * M_PI, 3);
+        cover_curve::adaptiveGridDP(cosine, 0.0, 2.0 * pi, 3);
     expectNear(rcFast.value, rcReference.value, 8e-5, "fast cosine agreement");
     expectContinuous(rcFast, 1e-10, "fast cosine");
 
@@ -135,6 +135,24 @@ int main() {
         5e-5,
         "fast wavy agreement"
     );
+
+    const Function piecewise =
+        [](double x) {
+            if (x < 0.0)
+                return x * x;
+            return -x * x + 1.0;
+        };
+    const auto rpFast =
+        cover_curve::fastGridDP(piecewise, -1.0, 1.0, 3, 32);
+    const auto rpReference =
+        cover_curve::adaptiveGridDP(piecewise, -1.0, 1.0, 3);
+    expectNear(
+        rpFast.value,
+        rpReference.value,
+        1e-4,
+        "fast piecewise curvature agreement"
+    );
+    expectContinuous(rpFast, 1e-10, "fast piecewise curvature");
 
     const auto r4 =
         cover_curve::curvatureAdaptive(square, 0.0, 1.0, 2);

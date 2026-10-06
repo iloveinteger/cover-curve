@@ -146,9 +146,7 @@ public:
         const std::vector<double>& points,
         int n
     )
-        : f_(f), points_(points), n_(n), fixedGrid_(
-            static_cast<int>(points.size()) == n + 1
-        ) {
+        : f_(f), points_(points), n_(n) {
         memo_.reserve(1024);
         functionCache_.reserve(points_.size() * 8 + 1024);
         supportSeedCache_.reserve(points_.size() * points_.size() / 2 + 16);
@@ -534,15 +532,7 @@ private:
             j > static_cast<int>(points_.size()) - 1 ||
             k < 0 || k > n_) {
             return std::numeric_limits<double>::infinity();
-        }
-
-        // With exactly n+1 grid points and n segments, every supplied
-        // breakpoint is mandatory. Any state with j != k cannot be part
-        // of a complete n-segment path, so reject it immediately.
-        if (fixedGrid_ && j != k)
-            return std::numeric_limits<double>::infinity();
-
-        if (q < fValue(points_[j]) - kHeightTolerance ||
+        }        if (q < fValue(points_[j]) - kHeightTolerance ||
             q < minimum_ - kHeightTolerance ||
             q > upper_ + kHeightTolerance) {
             return std::numeric_limits<double>::infinity();
@@ -569,10 +559,7 @@ private:
 
         StateValue best;
 
-        const int firstParent = fixedGrid_ ? j - 1 : k - 1;
-        const int lastParent = fixedGrid_ ? j - 1 : j - 1;
-
-        for (int i = firstParent; i <= lastParent; ++i) {
+        for (int i = k - 1; i < j; ++i) {
             if (j - i < 1)
                 continue;
 
@@ -634,7 +621,6 @@ private:
     const Function& f_;
     const std::vector<double>& points_;
     int n_;
-    bool fixedGrid_;
 
     double minimum_ = 0.0;
     double maximum_ = 0.0;

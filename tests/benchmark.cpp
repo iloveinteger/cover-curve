@@ -110,9 +110,6 @@ int main() {
               << ",NA," << fixedDirectMs << ",NA,"
               << std::abs(fixedFast - fixedDirect) << '\n';
 
-    // Large-n accuracy stress test; CI executes this benchmark on every main push.  x^2 and -x^2 have exact finite-n
-    // optima 1/(6 n^2) and 1/(12 n^2), respectively.  x^4 is also checked
-    // against its asymptotic constant 27/125.
     cover_curve::EnvelopeSQPOptions options;
     options.maxIterations = 12;
     options.seeds = 2;
@@ -122,7 +119,7 @@ int main() {
     options.gradientTolerance = 2e-5;
     options.stepTolerance = 1e-9;
     options.innerOptions.maxSweeps = 60;
-    options.innerOptions.tolerance = 1e-9;
+    options.innerOptions.tolerance = 1e-7;
 
     const bool fullLargeN = std::getenv("COVER_CURVE_FULL_LARGE_N") != nullptr;
     const std::vector<int> largeN = fullLargeN

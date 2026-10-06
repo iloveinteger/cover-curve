@@ -217,7 +217,7 @@ double lineValue(
 
 }
 
-Result directHeightSolve(
+DirectHeightDetailedResult directHeightSolveDetailed(
     const Function& f,
     const std::vector<double>& points,
     const DirectHeightOptions& options
@@ -304,6 +304,7 @@ Result directHeightSolve(
         );
 
     std::vector<double> heights(dimension);
+    std::vector<double> finalDual;
     const int maxIterations = std::max(
         4,
         options.maxSweeps * static_cast<int>(points.size())
@@ -334,6 +335,32 @@ Result directHeightSolve(
 
         for (int j = 0; j < dimension; ++j)
             heights[j] = lower[j] + std::max(0.0, z[j]);
+
+        // Dual of max c^T z subject to A z <= b, z >= 0:
+        // min b^T lambda subject to A^T lambda >= c, lambda >= 0.
+        // Solve it explicitly so lambda is associated with the retained
+        // cutting-plane contacts.
+        const int m = static_cast<int>(constraints.size());
+        std::vector<std::vector<double>> dualA(
+            dimension, std::vector<double>(m, 0.0)
+        );
+        std::vector<double> dualB(dimension);
+        for (int j = 0; j < dimension; ++j)
+            dualB[j] = -objective[j];
+
+        for (int r = 0; r < m; ++r)
+            for (int j = 0; j < dimension; ++j)
+                dualA[j][r] = -constraints[r].a[j];
+
+        std::vector<double> dualObjective(m);
+        for (int r = 0; r < m; ++r)
+            dualObjective[r] = -constraints[r].rhs;
+
+        Simplex dualLp(dualA, dualB, dualObjective);
+        if (!dualLp.solve(finalDual))
+            throw std::runtime_error(
+                "Direct height dual LP became infeasible."
+            );
 
         bool added = false;
         double worstViolation = 0.0;
@@ -426,13 +453,43 @@ Result directHeightSolve(
         }
     }
 
-    Result result = buildResult(f, points, heights);
-    if (result.value < -options.tolerance)
-        throw std::runtime_error(
-            "Direct height solver produced a negative majorant cost."
-        );
+    DirectHeightDetailedResult detailed;
+    detailed.result = buildResult(f, points, heights);
 
-    return result;
+    for (std::size_t k = 0; k < constraints.size(); ++k) {
+        if (k >= finalDual.size() || finalDual[k] <= 1e-10)
+            continue;
+
+        int segment = -1;
+        double t = 0.0;
+        for (std::size_t i = 0; i + 1 < points.size(); ++i) {
+            if (std::abs(constraints[k].a[i]) > 1e-14 ||
+                std::abs(constraints[k].a[i + 1]) > 1e-14) {
+                segment = static_cast<int>(i);
+                t = -constraints[k].a[i + 1];
+                break;
+            }
+        }
+
+        if (segment >= 0) {
+            detailed.contacts.push_back({
+                segment,
+                points[segment] +
+                    t * (points[segment + 1] - points[segment]),
+                finalDual[k]
+            });
+        }
+    }
+
+    return detailed;
+}
+
+Result directHeightSolve(
+    const Function& f,
+    const std::vector<double>& points,
+    const DirectHeightOptions& options
+) {
+    return directHeightSolveDetailed(f, points, options).result;
 }
 
 Result directHeightSolve(

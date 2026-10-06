@@ -37,9 +37,9 @@ $$
 T_{u,v}(p)
 =
 \sup_{u<x\\\le v}
-\\left[
+\left[
 p+\frac{v-u}{x-u}(f(x)-p)
-\right].
+\r\right].
 $$
 
 A generic support maximizer can be reused only after the target function has been transformed appropriately and its behavior near (u) has been handled.

@@ -586,7 +586,7 @@ private:
 
     std::unordered_map<StateKey, StateValue, StateKeyHash, StateKeyEqual> memo_;
     mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;
-    mutable mutable std::unordered_map<LowerHeightKey, double, LowerHeightKeyHash, LowerHeightKeyEqual> lowerHeightCache_;
+    mutable std::unordered_map<LowerHeightKey, double, LowerHeightKeyHash, LowerHeightKeyEqual> lowerHeightCache_;
 };
 
 } // namespace

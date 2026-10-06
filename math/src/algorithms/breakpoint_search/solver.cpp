@@ -1,6 +1,6 @@
 #include <cover_curve/solvers/breakpoint_search.hpp>
 
-#include "../adaptive_grid_dp/grid_dp.hpp"
+#include "../fast_grid_dp/grid_dp.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -167,7 +167,7 @@ Result breakpointSearch(
 
     // There is no breakpoint variable for a single segment.
     if (n == 1) {
-        return algorithms::adaptive_grid_dp::solveGridDPOnGrid(
+        return algorithms::fast_grid_dp::solveFastGridDPOnGrid(
             f,
             std::vector<double>{a, b},
             1

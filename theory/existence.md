@@ -6,7 +6,9 @@ Let $\\\mathcal A_n$ be the set of continuous piecewise-affine majorants of $f$ 
 
 For every continuous $f:[a,b]\to\mathbb R$ and every $n\ge1$, the minimum
 
-$$\nE_n^*=\min_{g\in\\\mathcal A_n}\int_a^b(g-f)\n$$
+$$
+E_n^*=\min_{g\in\\\mathcal A_n}\int_a^b(g-f)
+$$
 
 is attained.
 

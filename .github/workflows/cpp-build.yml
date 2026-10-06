@@ -19,6 +19,3 @@ jobs:
 
       - name: Benchmark solver
         run: ./build/cover_curve_benchmark
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure

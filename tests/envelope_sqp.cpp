@@ -96,6 +96,10 @@ int main() {
             );
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
+        std::cerr
+            << "fixed y1=" << detailed.heights[1]
+            << " f1=" << sine(2.8)
+            << std::endl;
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite
         // difference of the complete fixed-breakpoint value function.

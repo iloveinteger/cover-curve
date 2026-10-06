@@ -38,9 +38,7 @@ bool strictlyIncreasing(
     return true;
 }
 
-// Return the box midpoint when it is feasible. Otherwise construct a
-// strictly ordered point by a backward pass. The latter is only a sampling
-// rule; it does not discard any part of the search domain.
+// Sample a strictly ordered point from the search box.
 bool sampleNode(
     const Node& node,
     double a,

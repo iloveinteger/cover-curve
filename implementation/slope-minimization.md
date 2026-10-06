@@ -13,7 +13,7 @@ $$
 \alpha\ge\max_{x\in[u,v]}(f(x)-\beta x).
 $$
 
-For fixed (eta), the smallest feasible intercept is
+For fixed (\eta), the smallest feasible intercept is
 $$
 \alpha(\beta)=\max_{x\in[u,v]}(f(x)-\beta x).
 $$
@@ -29,7 +29,7 @@ $$
 \int_u^v f(x)\,dx.
 $$
 
-The support term is convex in (eta), so the exact scalar objective is convex.
+The support term is convex in (\eta), so the exact scalar objective is convex.
 
 ## 2. Role in the current architecture
 

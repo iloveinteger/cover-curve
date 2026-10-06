@@ -374,7 +374,8 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         options.seeds <= 0 ||
         options.gradientTolerance <= 0.0 ||
         options.stepTolerance <= 0.0 ||
-        options.finiteDifferenceStep <= 0.0)
+        options.finiteDifferenceStep <= 0.0 ||
+        options.curvatureSamples < 17)
         throw std::invalid_argument("Invalid envelope SQP options.");
 
     std::vector<std::vector<double>> seeds;

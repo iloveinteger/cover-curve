@@ -17,12 +17,17 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
         const auto f = cover_curve::parseExpression(expression);
         const auto baseline = cover_curve::fastGridDP(f, a, b, n);
 
-        // Refine the DP solution by optimizing breakpoints one at a time.
+        // Refine the DP solution by optimizing breakpoints one at a time.\n        // For small n, use the continuous-height cutting-plane oracle so the\n        // breakpoint search is not limited by the height-grid approximation.
         // Coordinate search starts from the baseline and only accepts
         // improvements, so it cannot worsen the returned objective.
         if (n <= 4) {
+            cover_curve::CoordinateSearchOptions options;
+            options.useDirectHeightOracle = true;
+
             const auto refined =
-                cover_curve::coordinateSearch(f, a, b, n);
+                cover_curve::coordinateSearch(
+                    f, a, b, n, options
+                );
 
             const auto& result =
                 refined.value < baseline.value ? refined : baseline;

@@ -48,10 +48,10 @@ Shared vertex heights enforce continuity exactly.
 
 ## Documentation
 
-- [Theory](theory/README.md) — definitions, theorems, formulas, proofs, pseudocode, complexity, convergence, correctness, and error terms.
+- [Theory](theory/problem.md) — definitions, theorems, formulas, proofs, pseudocode, complexity, convergence, correctness, and error terms.
 - [Implementation](implementation/README.md) — concrete C++/numerical realization, tolerances, data flow, and numerical limitations.
 
-Start with theory/problem.md, then theory/fixed-breakpoint.md, theory/dynamic-programming.md, and theory/algorithm.md.
+Start with [theory/problem.md](theory/problem.md), then [theory/fixed-breakpoint.md](theory/fixed-breakpoint.md), [theory/dynamic-programming.md](theory/dynamic-programming.md), and [theory/algorithm.md](theory/algorithm.md).
 
 ## Numerical correctness boundary
 

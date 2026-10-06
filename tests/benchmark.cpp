@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
@@ -123,6 +124,10 @@ int main() {
     options.innerOptions.maxSweeps = 60;
     options.innerOptions.tolerance = 1e-9;
 
+    const bool fullLargeN = std::getenv("COVER_CURVE_FULL_LARGE_N") != nullptr;
+    const std::vector<int> largeN = fullLargeN
+        ? std::vector<int>{8, 16, 32, 64, 128}
+        : std::vector<int>{8, 16, 32, 64};
     std::cout << "large_n,func,n,value,expected_or_limit,rel_error,violation,ms\n";
     // Periodic mixed-curvature validation. For sin on [0,2pi], f'' changes
     // sign at pi; test feasibility and convergence to the mixed-curvature constant.
@@ -131,7 +136,7 @@ int main() {
         std::tgamma(2.0 / 3.0) / std::tgamma(7.0 / 6.0);
     const double mixedConstant = std::pow(
         halfSinIntegral * (std::cbrt(1.0 / 12.0) + std::cbrt(1.0 / 24.0)), 3.0);
-    for (const int n : {8, 16, 32, 64, 128}) {
+    for (const int n : largeN) {
         auto runOptions = options;
         if (n >= 64) {
             runOptions.maxIterations = 6;

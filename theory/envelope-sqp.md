@@ -1,90 +1,164 @@
 # Envelope optimization of breakpoints
 
-## 1. Value-function formulation
+## 1. Outer value function
 
-For breakpoints
+For strict breakpoints
 \[
-a=x_0<x_1<\cdots<x_n=b,
+X=(x_0,\ldots,x_n),\qquad a=x_0<\cdots<x_n=b,
 \]
 define
 \[
-V(x)=\min_y E(x,y),
-\qquad
-E(x,y)=
+V(X)=\min_{y\in\mathcal F_X}
+\left[
 \sum_{i=0}^{n-1}\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
--\int_a^b f.
+-\int_a^b f
+\right].
 \]
 
-For fixed \(x\), the minimization over shared endpoint heights is a
-semi-infinite linear program.  The direct-height solver is its numerical
-cutting-plane implementation.
+For fixed \(X\), this is a linear semi-infinite program in \(y\). The implementation directHeightSolveDetailed is a numerical cutting-plane method for this inner problem.
 
-The outer problem
+The free-breakpoint problem is
 \[
-\min_{a<x_1<\cdots<x_{n-1}<b}V(x)
+E_n^*=\min_{a<x_1<\cdots<x_{n-1}<b}V(X).
 \]
-is generally nonconvex.  Envelope-SQP/L-BFGS is therefore a local optimizer;
-there is no general global-optimality theorem.
+It is generally nonconvex. Therefore the Envelope-SQP implementation is a local numerical optimizer, not a globally correct algorithm for arbitrary \(f\).
 
-## 2. Local L1 majorant constant
+## 2. Fixed-breakpoint oracle
 
-Let an interval have length \(h\), and suppose \(f\in C^2\) with
-nonzero curvature of constant sign on the interval.  After translating,
-scaling \(x=x_0+ht\), Taylor expansion gives
+For a finite set of contact points, the LP is
 \[
-f(x_0+ht)=f(x_0)+hf'(x_0)t+
-\frac12f''(x_0)h^2t^2+o(h^2)
+\min_y c(X)^Ty-\int_a^b f,
 \]
-uniformly for \(t\in[0,1]\).
-
-The affine and linear Taylor terms can be absorbed into the majorant line.
-Thus the leading local problem is the best affine majorant of
-\(q t^2/2\).
-
-### Convex case
-
-For \(q>0\), the optimal affine majorant is the chord \(qt/2\). Hence
+subject to
 \[
-\int_0^1\left(\frac q2t-\frac q2t^2\right)dt=\frac q{12}.
+f(z)-w_i(z;X)^Ty\le0,
 \]
-Therefore
-\[
-E_I=\frac{f''(x_0)}{12}h^3+o(h^3).
-\]
+where \(w_i\) contains the two linear interpolation weights on segment \(i\).
 
-### Concave case
+The separation oracle searches
+\[
+\max_{z\in[x_i,x_{i+1}]}\{f(z)-L_i(z)\}.
+\]
+If the maximum is at most \(\varepsilon\), then the returned spline is an \(\varepsilon\)-majorant.
 
-For \(q=-\kappa<0\), the optimal affine majorant is the tangent at
-\(t=1/2\):
+## 3. Envelope derivative
+
+Assume \(V\) is differentiable at \(X\), and let \((y,\lambda,\mu)\) be a primal/dual optimum satisfying the usual LP regularity conditions. Here \(\lambda_k\ge0\) are multipliers for contact constraints
 \[
-\ell(t)=-\frac\kappa2t+\frac\kappa8.
+f(z_k)-L(z_k)\le0,
 \]
-Consequently
+and \(\mu_j\ge0\) are endpoint multipliers for
 \[
-\int_0^1\left(
--\frac\kappa2t+\frac\kappa4+
-\frac\kappa2t^2
-\right)dt
-=\frac\kappa{24}.
-\]
-Thus
-\[
-E_I=\frac{|f''(x_0)|}{24}h^3+o(h^3).
+f(x_j)-y_j\le0.
 \]
 
-So the correct constants are
+The Lagrangian is
 \[
-c_+=\frac1{12},\qquad c_- =\frac1{24}.
+\mathcal L
+=E(X,y)+\sum_k\lambda_k(f(z_k)-L(z_k))
++\sum_j\mu_j(f(x_j)-y_j).
 \]
-The statement that a tangent is less expensive than the shifted chord is
-incorrect: for a quadratic concave function the tangent at the midpoint and
-the appropriately shifted chord coincide.  The constant is nevertheless
-\(1/24\).
 
-## 3. Optimal knot density
-
-Write
+At a differentiability point, the envelope theorem gives
 \[
+\nabla_XV=\nabla_X\mathcal L
+\]
+with the optimal primal/dual variables held fixed.
+
+For a contact \(z\in[x_i,x_{i+1}]\), \(h=x_{i+1}-x_i\),
+\[
+\frac{\partial(f(z)-L(z))}{\partial x_i}
+=
+-\frac{(y_{i+1}-y_i)(x_{i+1}-z)}{h^2},
+\]
+\[
+\frac{\partial(f(z)-L(z))}{\partial x_{i+1}}
+=
+-\frac{(y_{i+1}-y_i)(z-x_i)}{h^2}.
+\]
+
+The negative signs are essential: the constraint is \(f-L\le0\).
+
+The direct objective contributes, for an interior breakpoint,
+\[
+\frac{\partial E}{\partial x_j}
+=\frac{y_{j-1}-y_{j+1}}2.
+\]
+
+For the endpoint constraint \(f(x_j)-y_j\le0\),
+\[
+\frac{\partial}{\partial x_j}[f(x_j)-y_j]=f'(x_j).
+\]
+The current API accepts only a value function \(f(x)\), so the implementation estimates this term by a centered finite difference.
+
+At active-set transitions \(V\) can be nonsmooth and the LP dual can be nonunique. The computed vector is then a numerical sensitivity direction, not an everywhere-valid classical gradient.
+
+## 4. Outer algorithm
+
+The implementation is L-BFGS-style rather than textbook SQP: it does not solve a quadratic-program subproblem. The name Envelope-SQP describes the envelope-based constrained outer architecture.
+
+Pseudocode:
+
+    for each selected seed:
+        x <- seed
+        current <- DirectHeight(x)
+        history <- empty
+
+        repeat at most maxIterations:
+            g <- envelopeSensitivity(x, current)
+            if ||g||_infinity <= gradientTolerance:
+                break
+
+            p <- L-BFGS(g, history)
+            if g dot p >= 0:
+                p <- -g
+
+            alpha <- largest ordering-preserving step
+
+            backtrack:
+                trial <- x + alpha*p
+                if trial is invalid:
+                    alpha <- alpha/2
+                    continue
+
+                candidate <- DirectHeight(trial)
+
+                if V(trial) <= V(x)
+                    + sufficientDecrease * alpha * (g dot p):
+                    accept trial
+                    update history
+                    x <- trial
+                    current <- candidate
+                    break
+
+                alpha <- alpha/2
+
+            if no trial is accepted:
+                break
+
+        return the best result over all seeds
+
+Every accepted step is reevaluated by the fixed-breakpoint solver.
+
+## 5. Convergence statement
+
+There is no general global-convergence theorem for this implementation.
+
+What follows directly from the code is conditional:
+
+1. every accepted step satisfies the configured sufficient-decrease test;
+2. therefore objective values along one seed are non-increasing;
+3. the objective is bounded below by zero;
+4. if infinitely many accepted steps occur, the objective values converge to a finite limit.
+
+This does not imply convergence of the breakpoint vector, stationarity, or global optimality. Those conclusions require additional assumptions that are not enforced by the implementation.
+
+## 6. Curvature-density seed
+
+On a constant-sign \(C^2\) interval, the local majorant error is
+\[
+c(x)|f''(x)|h^3+o(h^3),
+\qquad
 c(x)=
 \begin{cases}
 1/12,&f''(x)>0,\\
@@ -92,233 +166,94 @@ c(x)=
 \end{cases}
 \]
 
-For a fine partition,
+Balancing the leading term over \(n\) cells gives
 \[
-E\sim\sum_i c(\xi_i)|f''(\xi_i)|h_i^3.
-\]
-Set
-\[
-w(x)=c(x)^{1/3}|f''(x)|^{1/3}.
-\]
-For \(n\) intervals, Holder's inequality gives
-\[
-\sum_i w_i h_i^3
-\ge
-\frac{(\sum_i w_i^{1/3}h_i)^3}{n^2}
-\]
-in the corresponding discrete form.  Passing to the Riemann limit yields
-the lower bound
-\[
-\liminf_{n\to\infty}n^2E_n^*
-\ge
-\left(\int_a^b w(x)\,dx\right)^3.
+\boxed{\rho(x)\propto c(x)^{1/3}|f''(x)|^{1/3}}.
 \]
 
-Conversely, choosing breakpoints by equal increments of
-\[
-\Phi(x)=\int_a^x w(t)\,dt
-\]
-gives \(\int_{x_i}^{x_{i+1}}w=A/n\), and the local upper expansion gives
-\[
-\limsup_{n\to\infty}n^2E_n^*
-\le A^3,
-\qquad
-A=\int_a^b c(x)^{1/3}|f''(x)|^{1/3}dx.
-\]
+The implementation estimates \(f''\) by a centered three-point difference, integrates this density numerically, and inverts its cumulative distribution. This is an initializer, not a finite-\(n\) optimality theorem.
 
-Hence, whenever the local expansion is uniform (in particular on a
-single-sign curvature interval),
+## 7. Local asymptotic constant
+
+If \(f\in C^2\) and \(f''\) has one strict sign on \([a,b]\), then
 \[
 \boxed{
 \lim_{n\to\infty}n^2E_n^*
 =
 \left(
-\int_a^b c(x)^{1/3}|f''(x)|^{1/3}dx
+\int_a^b c^{1/3}|f''(x)|^{1/3}\,dx
 \right)^3.
 }
 \]
 
-For globally convex \(f\), this reduces to
+For one cell of length \(h\), Taylor expansion reduces the leading problem to an affine majorant of \(qt^2/2\). For \(q>0\), the optimal majorant is \(qt/2\), with error \(q/12\). For \(q=-\kappa<0\), the optimal majorant is the midpoint tangent
 \[
-\lim n^2E_n^*
-=\frac1{12}
-\left(\int_a^b(f'')^{1/3}\right)^3.
+-\kappa t/2+\kappa/8,
 \]
+with error \(\kappa/24\).
 
-For globally concave \(f\),
+Put \(w=c^{1/3}|f''|^{1/3}\). The discrete leading term is \(\sum_i w_i^3h_i^3\). Hölder gives
 \[
-\lim n^2E_n^*
-=\frac1{24}
-\left(\int_a^b|f''|^{1/3}\right)^3.
+\sum_i w_i^3h_i^3
+\ge
+\frac{\left(\sum_i w_i h_i\right)^3}{n^2}.
 \]
-
-## 4. Finite inflections and the leading constant
-
-The mixed-curvature formula can be proved at the leading \(n^{-2}\) order without
-assuming a uniform nonzero curvature at the inflection points.
-
-Assume \(f\in C^2\) and that the zero set of \(f''\) contains only finitely
-many isolated sign-changing points.  Let \(m\) be their number.  For every
-partition, at most \(m\) cells cross an inflection.
-
-First take an arbitrary sequence of asymptotically optimal partitions.  The
-quadratic/linear upper construction gives \(E_n^*=O(n^{-2})\), hence
-\(E_n^*\to0\).  If a cell crossing an isolated inflection had length bounded
-below by a positive constant along a subsequence, its restriction to a fixed
-subinterval where \(f\) is genuinely non-affine would have a strictly
-positive majorant error, contradicting \(E_n^*\to0\).  Thus every crossing
-cell has length \(h_n\to0\).
-
-Since \(c^{1/3}|f''|^{1/3}\) is continuous up to the harmless jump in \(c\)
-at the isolated zero, the weighted mass of those finitely many crossing cells
-satisfies
+For fine partitions \(\sum_i w_i h_i\to\int_a^b w\), giving the lower bound. Equal increments of
 \[
-\sum_{\text{crossing }i}
-\int_{x_i}^{x_{i+1}}
-c(x)^{1/3}|f''(x)|^{1/3}\,dx=o(1).
+\Phi(x)=\int_a^xw(t)\,dt
 \]
-On all remaining cells the curvature has a fixed sign, so the local lower
-estimate applies.  Holder gives
+give the matching upper bound. Hence the displayed limit.
+
+## 8. Mixed curvature
+
+A completely unconditional mixed-sign theorem is not claimed for arbitrary \(C^2\) functions.
+
+A sufficient assumption for the formula used in the large-\(n\) benchmark is:
+
+- \(f\in C^3([a,b])\);
+- \(f''\) has finitely many isolated zeros.
+
+Then
 \[
-E_n\ge
-\frac1{n^2}
+\boxed{
+\lim_{n\to\infty}n^2E_n^*
+=
 \left(
-\sum_{\text{noncrossing }i}
-\int_{x_i}^{x_{i+1}}
+\int_a^b
 c(x)^{1/3}|f''(x)|^{1/3}\,dx
-\right)^3
-+o(n^{-2}).
-\]
-The omitted weighted mass is \(o(1)\), giving the global liminf.
-
-For the limsup, distribute the knots by the cumulative density
-\[
-\Phi(x)=\int_a^x c(t)^{1/3}|f''(t)|^{1/3}\,dt.
-\]
-All noncrossing cells have the local upper expansion.  There are only
-finitely many crossing cells; their total contribution is lower order because
-their weighted mass is one cell's quantile mass \(A/n\) and the curvature
-vanishes at the crossing point.  Hence
-\[
-\boxed{
-\lim_{n\to\infty}n^2E_n^*
-=
-\left(
-\int_a^b c(x)^{1/3}|f''(x)|^{1/3}\,dx
-\right)^3.
+\right)^3,
 }
 \]
+where \(c=1/12\) on \(f''>0\) and \(c=1/24\) on \(f''<0\).
 
-The argument does **not** assert a universal \(O(n^{-3})\) remainder at
-inflections.  That stronger finite-\(n\) statement needs additional
-regularity/order-of-vanishing assumptions.
+Proof idea with the required estimates: remove the finitely many cells crossing zeros of \(f''\). On every remaining cell the constant-sign expansion applies. Near an isolated zero, \(f''(x)=O(|x-x_0|)\) because \(f\in C^3\); the quadratic term therefore vanishes to first order and the local majorant error is \(O(h^4)\). The density quantile construction makes the finitely many crossing-cell contributions \(o(n^{-2})\), while their density mass is \(o(1)\). Applying the constant-sign lower bound to the remaining cells and the density construction for the upper bound yields the same liminf and limsup.
 
-## 5. Fixed-node certification
+This proof is intentionally stated with these explicit regularity assumptions. No universal finite-\(n\) \(O(n^{-3})\) remainder is claimed.
 
-Let \(LB_x\) be the value of the finite cutting-plane LP. Then
+## 9. Complexity
+
+Let \(d=n-1\), \(S\) be the number of seeds, \(K\) the maximum accepted outer iterations per seed, and \(L\) the line-search budget. If one fixed-breakpoint solve costs \(C_{\mathrm{DH}}(n,\varepsilon)\), then
 \[
-LB_x\le OPT(x).
-\]
-If the continuous separation oracle certifies
-\[
-\max_{t\in[x_i,x_{i+1}]}(f(t)-L_i(t))\le\varepsilon
-\]
-for every segment, then shifting the constructed majorant upward by
-\(\varepsilon\) gives a feasible majorant and
-\[
-\boxed{
-LB_x\le OPT(x)\le E(g)+0
-\le LB_x+\varepsilon(b-a).
-}
-\]
-Thus the fixed-node problem has a numerical certificate with a rigorous
-objective gap, subject to the separation oracle's global certification.
-
-## 6. Envelope derivative
-
-Use the active-contact Lagrangian
-\[
-\mathcal L=E+\sum_k\lambda_k(f(z_k)-L(z_k))
-+\sum_j\mu_j(f(x_j)-y_j).
-\]
-At a differentiable value-function point, the envelope derivative is obtained
-by differentiating this Lagrangian while holding the optimal primal/dual
-variables fixed.
-
-For a contact \(z\in[x_i,x_{i+1}]\),
-\[
-\frac{\partial(f(z)-L(z))}{\partial x_i}
+T_{\mathrm{outer}}
 =
-\frac{(y_{i+1}-y_i)(x_{i+1}-z)}
-{(x_{i+1}-x_i)^2},
+O(SKLC_{\mathrm{DH}}(n,\varepsilon))
 \]
-and
-\[
-\frac{\partial(f(z)-L(z))}{\partial x_{i+1}}
-=
-\frac{(y_{i+1}-y_i)(z-x_i)}
-{(x_{i+1}-x_i)^2}.
-\]
+plus \(O(SKnd)\) vector/L-BFGS work.
 
-For an interior breakpoint,
-\[
-\frac{\partial E}{\partial x_j}
-=\frac{y_{j-1}-y_{j+1}}2.
-\]
+The implementation has no polynomial worst-case bound: the inner simplex method has no polynomial worst-case guarantee, and the separation oracle is numerical.
 
-At active-set transitions the value function can be nonsmooth; the computed
-vector should then be interpreted as a local sensitivity direction rather
-than an everywhere-valid classical gradient.  The outer method has no global
-optimality guarantee.
+The curvature seed costs \(O(M+n)\) arithmetic work for \(M\) samples, apart from the cost of evaluating \(f\).
 
-## 7. Fast theory-based initialization
+## 10. Error budget
 
-The asymptotic theorem directly gives the breakpoint density
-\[
-\boxed{
-\rho(x)\propto
-c(x)^{1/3}|f''(x)|^{1/3}.
-}
-\]
+A finite numerical result contains several distinct errors:
 
-The implementation now estimates \(f''\) from a small uniform sample and
-constructs the inverse cumulative-density partition.  It keeps one uniform
-seed as a robustness baseline and uses the curvature-density seed as the
-second default seed.  This removes the previous arbitrary power-law seed
-from the default path.
+- cutting-plane/LP error;
+- separation-oracle error;
+- numerical integration error;
+- finite-difference error in endpoint sensitivities;
+- outer stopping/optimization error;
+- floating-point error;
+- and nonconvex outer optimization error.
 
-The curvature seed is only an initializer; it is not itself claimed to be
-the finite-\(n\) global optimum.
-
-## 8. Algorithm
-
-~~~text
-x <- uniform seed
-x_curv <- inverse-CDF seed using c^(1/3)|f''|^(1/3)
-
-for each selected seed:
-    (y, lambda, contacts) <- directHeight(x)
-    g <- envelopeGradient(x, y, lambda, contacts)
-
-    if ||g||_inf <= tolerance:
-        stop
-
-    p <- L-BFGS(g)
-    restrict step to a < x_1 < ... < x_{n-1} < b
-    backtrack until V(x) decreases
-    update L-BFGS history
-
-return best feasible result
-~~~
-
-The expensive global grid solver is not required for the default initialization.
-
-## 9. Guarantees
-
-- fixed breakpoints: certified numerical gap \(\le\varepsilon(b-a)\);
-- majorant feasibility: certified by the global separation pass, up to its
-  numerical tolerance;
-- asymptotic knot density: proved under the stated smoothness/curvature
-  assumptions;
-- finite nondegenerate inflections: leading \(n^{-2}\) constant is proved;
-- outer breakpoint optimization: local only; no general global certificate.
+The asymptotic \(n^{-2}\) formula is a theorem about the exact optimum \(E_n^*\); it is not a finite-run error bound.

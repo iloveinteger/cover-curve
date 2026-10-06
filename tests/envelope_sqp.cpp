@@ -114,7 +114,6 @@ int main() {
         );
 
         const double h = 1e-2;
-        const double pi = std::acos(-1.0);
         const auto vp = directHeightSolve(
             sine,
             std::vector<double>{0.0, 2.8 + h, 2.0 * pi},

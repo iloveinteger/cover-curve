@@ -15,26 +15,22 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-        const auto baseline = cover_curve::fastGridDP(f, a, b, n);
-
-        // Refine the DP solution by optimizing breakpoints one at a time.\n        // For small n, use the continuous-height cutting-plane oracle so the\n        // breakpoint search is not limited by the height-grid approximation.
-        // Coordinate search starts from the baseline and only accepts
-        // improvements, so it cannot worsen the returned objective.
         if (n <= 2) {
-            cover_curve::CoordinateSearchOptions options;
-            options.maxSweeps = 1;
-            options.samples = 3;
-            options.refinements = 0;
-            options.tolerance = 1e-6;
-            options.useDirectHeightOracle = true;
+            // The envelope solver is an independent continuous-height
+            // breakpoint refinement. It avoids the expensive global grid
+            // DP and coordinate-search sweep for the small-n web path.
+            cover_curve::EnvelopeSQPOptions options;
+            options.maxIterations = 12;
+            options.seeds = 3;
+            options.includeFastGridSeed = false;
+            options.gradientTolerance = 1e-5;
+            options.innerOptions.maxSweeps = 60;
+            options.innerOptions.tolerance = 1e-8;
 
-            const auto refined =
-                cover_curve::coordinateSearch(
+            const auto result =
+                cover_curve::envelopeSQPSolve(
                     f, a, b, n, options
                 );
-
-            const auto& result =
-                refined.value < baseline.value ? refined : baseline;
 
             val output = val::object();
             output.set("value", result.value);
@@ -59,6 +55,8 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
             output.set("error", val::null());
             return output;
         }
+
+        const auto baseline = cover_curve::fastGridDP(f, a, b, n);
 
         const auto& result = baseline;
 

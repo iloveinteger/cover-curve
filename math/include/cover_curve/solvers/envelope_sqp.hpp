@@ -3,6 +3,8 @@
 #include <cover_curve/types.hpp>
 #include <cover_curve/solvers/direct_height.hpp>
 
+#include <vector>
+
 namespace cover_curve {
 
 struct EnvelopeSQPOptions {

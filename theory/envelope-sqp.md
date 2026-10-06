@@ -285,7 +285,26 @@ $$
 
 At both endpoints the tangent has the same excess $h^2/4$ above $-t^2$. Hence for equal adjacent lengths the midpoint tangents agree at their common breakpoint and form a continuous feasible spline.
 
-For any affine majorant of $-t^2$, the integral error is at least the midpoint-tangent value $h^3/12$. Therefore every $n$-segment feasible spline satisfies
+To see the one-cell lower bound directly, write the error polynomial as
+$
+q(t)=L(t)+t^2=t^2+At+B.
+$
+Feasibility is exactly $q(t)\ge0$ on $[0,h]$. If $-2h\le A\le0$, the minimum of $q$ is at the vertex, so $B\ge A^2/4$, and hence
+$
+\int_0^h q(t)\,dt
+\ge
+\frac{h^3}{3}+\frac{Ah^2}{2}+\frac{A^2h}{4}
+=
+\frac{h\bigl(3(A+h)^2+h^2\bigr)}{12}
+\ge\frac{h^3}{12}.
+$
+If $A\ge0$, feasibility gives $B\ge0$ and the integral is at least $h^3/3$. If $A\le-2h$, feasibility at $t=h$ gives $B\ge-Ah-h^2$, and the integral is at least
+$
+\frac{h^2(-3A-4h)}6\ge\frac{h^3}{3}.
+$
+Thus every affine majorant has error at least $h^3/12$, with equality for the midpoint tangent.
+
+Therefore every $n$-segment feasible spline satisfies
 $$
 E\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
 \qquad

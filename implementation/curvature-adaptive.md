@@ -1,46 +1,51 @@
-# Optional Candidate-Grid Heuristics
+# Curvature-density initialization
 
-This document describes optional breakpoint-grid heuristics. These heuristics are not part of the mathematical correctness theorem.
+This module is an initialization heuristic for free-breakpoint optimization. It is not a substitute for the fixed-breakpoint solver and does not provide a finite-\(n\) optimality certificate.
 
-## 1. Role
+## 1. Theory
 
-The correctness-oriented solver is defined by the breakpoint grid, height grid, and shared-height DP in `adaptive-grid-dp.md`.
-
-A heuristic may be used to choose a nonuniform candidate breakpoint grid before that DP is run. It must not change the shared-height optimization itself.
-
-## 2. Curvature-based candidate grid
-
-If additional smoothness information is available, one possible heuristic is based on
+For constant-sign curvature, the local \(L^1\) majorant error is
 \[
-w(x)=\sqrt{|f''(x)|}.
+c(x)|f''(x)|h^3+o(h^3),
+\]
+with
+\[
+c(x)=1/12\quad(f''>0),\qquad
+c(x)=1/24\quad(f''<0).
 \]
 
-The implementation may estimate this quantity numerically, form an approximate cumulative density, and place candidate breakpoints at approximately equal density increments.
+Balancing this leading term over \(n\) cells gives
+\[
+\boxed{\rho(x)\propto c(x)^{1/3}|f''(x)|^{1/3}}.
+\]
 
-This is only a candidate-generation heuristic. No claim is made here that this density is optimal for the coupled majorant problem.
+The implementation therefore uses the cube-root curvature density. The older \(|f''|^{1/2}\) description is obsolete.
 
-## 3. Numerical safeguards
+## 2. Construction
 
-A numerical implementation may use:
+For \(M\) uniformly spaced samples:
 
-- a positive floor for the estimated density;
-- an upper cap;
-- endpoint-specific finite-difference formulas;
-- smoothing of noisy second-derivative estimates.
+1. estimate \(f''\) with the centered three-point difference;
+2. compute
+   \[
+   d_i=\max(d_{\min},(c_i|f''_i|)^{1/3});
+   \]
+3. integrate \(d_i\) by the trapezoidal rule;
+4. place \(n-1\) interior knots at equal cumulative-density quantiles.
 
-These are implementation choices, not theoretical constants.
+A positive floor is used only to avoid a degenerate numerical CDF at zero curvature.
 
-## 4. Interaction with the exact architecture
+## 3. Complexity
 
-After a candidate grid is generated, the solver must still:
+The seed construction costs \(O(M)\) sampled function evaluations and \(O(M+n)\) arithmetic work.
 
-1. construct the finite height grid;
-2. optimize shared vertex heights;
-3. enforce segment majorant constraints;
-4. reconstruct one continuous piecewise-affine function.
+It is normally negligible compared with one direct-height solve.
 
-The curvature heuristic must never replace the shared-height DP with independent segment optimization.
+## 4. Limitations
 
-## 5. Status
+- second-derivative estimation can be noisy for black-box functions;
+- the density is an asymptotic model;
+- the seed does not prove finite-\(n\) global optimality;
+- active-set transitions can make the outer value function nonsmooth.
 
-This module is optional and heuristic. It does not establish global optimality, convergence, or a curvature-based asymptotic law. Any future theorem about curvature-adaptive grids must be proved separately before being incorporated into the correctness theory.
+The uniform seed is retained as a robustness baseline.

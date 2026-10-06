@@ -24,6 +24,7 @@ add_library(cover_curve
     math/src/algorithms/curvature_adaptive/curvature_grid.cpp
     math/src/algorithms/curvature_adaptive/grid_dp.cpp
     math/src/algorithms/curvature_adaptive/solver.cpp
+    math/src/algorithms/branch_bound_grid/solver.cpp
 )
 
 target_include_directories(cover_curve

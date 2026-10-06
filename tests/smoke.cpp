@@ -86,6 +86,43 @@ int main() {
         cover_curve::adaptiveGridDP(wavy, 0.0, 4.0, 2);
     expectContinuous(rw, 1e-10, "wavy");
 
+    // Trigonometric and higher-order polynomial regression cases.
+    const Function sine =
+        [](double x) { return std::sin(x); };
+    const auto rsFast =
+        cover_curve::fastGridDP(sine, 0.0, 2.0 * M_PI, 3, 32);
+    const auto rsReference =
+        cover_curve::adaptiveGridDP(sine, 0.0, 2.0 * M_PI, 3);
+    expectNear(rsFast.value, rsReference.value, 8e-5, "fast sine agreement");
+    expectContinuous(rsFast, 1e-10, "fast sine");
+
+    const Function cosine =
+        [](double x) { return std::cos(x); };
+    const auto rcFast =
+        cover_curve::fastGridDP(cosine, 0.0, 2.0 * M_PI, 3, 32);
+    const auto rcReference =
+        cover_curve::adaptiveGridDP(cosine, 0.0, 2.0 * M_PI, 3);
+    expectNear(rcFast.value, rcReference.value, 8e-5, "fast cosine agreement");
+    expectContinuous(rcFast, 1e-10, "fast cosine");
+
+    const Function quartic =
+        [](double x) { return x * x * x * x - 2.0 * x * x + x; };
+    const auto rqFast =
+        cover_curve::fastGridDP(quartic, -1.0, 1.0, 3, 32);
+    const auto rqReference =
+        cover_curve::adaptiveGridDP(quartic, -1.0, 1.0, 3);
+    expectNear(rqFast.value, rqReference.value, 8e-5, "fast quartic agreement");
+    expectContinuous(rqFast, 1e-10, "fast quartic");
+
+    const Function sixth =
+        [](double x) { return x * x * x * x * x * x - 3.0 * x * x * x + x; };
+    const auto r6Fast =
+        cover_curve::fastGridDP(sixth, -1.0, 1.0, 3, 32);
+    const auto r6Reference =
+        cover_curve::adaptiveGridDP(sixth, -1.0, 1.0, 3);
+    expectNear(r6Fast.value, r6Reference.value, 1e-4, "fast sixth agreement");
+    expectContinuous(r6Fast, 1e-10, "fast sixth");
+
     const auto rwFast =
         cover_curve::fastGridDP(wavy, 0.0, 3.0, 2, 24);
     expectContinuous(rwFast, 1e-10, "fast wavy");

@@ -12,20 +12,18 @@ The design is intentionally conservative: it does not claim a branch-and-bound c
 
 The solver is exposed as:
 
-```cpp
-struct BreakpointSearchOptions {
-    int maxDepth = 10;
-    int maxEvaluations = 256;
-};
+    struct BreakpointSearchOptions {
+        int maxDepth = 8;
+        int maxEvaluations = 128;
+    };
 
-Result breakpointSearch(
-    const Function& f,
-    double a,
-    double b,
-    int n,
-    const BreakpointSearchOptions& options = {}
-);
-```
+    Result breakpointSearch(
+        const Function& f,
+        double a,
+        double b,
+        int n,
+        const BreakpointSearchOptions& options = {}
+    );
 
 For n=1 there are no internal breakpoint variables, so the solver directly evaluates the single fixed segment.
 
@@ -33,17 +31,11 @@ For n=1 there are no internal breakpoint variables, so the solver directly evalu
 
 For d=n-1 internal breakpoints a node stores
 
-```text
-lower[0..d-1]
-upper[0..d-1]
-depth
-```
+    lower[0..d-1]
+    upper[0..d-1]
+    depth
 
-The root is the full ambient box
-
-[
-[a,b]^d.
-]
+The root is the full ambient box [a,b]^d.
 
 The box is an outer search representation; it is not itself a feasible breakpoint set.
 
@@ -57,13 +49,7 @@ The fallback is only a sampling rule. It does not alter the mathematical search 
 
 ## 5. Inner solve
 
-For a sampled breakpoint vector
-
-[
-X=(a,x_1,ldots,x_{n-1},b),
-]
-
-the solver calls the existing fixed-breakpoint continuous-height implementation.
+For a sampled breakpoint vector X=(a,x1,...,x(n-1),b), the solver calls the existing fixed-breakpoint continuous-height implementation.
 
 No independent segment optimization is used to construct the returned spline.
 
@@ -73,21 +59,10 @@ Consequently the returned vertices are shared and the resulting spline is contin
 
 The longest breakpoint-coordinate interval is bisected.
 
-If coordinate i has
+If coordinate i has r_i-l_i equal to the maximum width, its children are
 
-[
-r_i-ell_i
-]
-
-equal to the maximum width, its children are
-
-[
-[ell_i,m_i],
-qquad
-[m_i,r_i],
-qquad
-m_i=(ell_i+r_i)/2.
-]
+    [l_i,m_i] and [m_i,r_i],
+    m_i=(l_i+r_i)/2.
 
 All other coordinates are unchanged.
 
@@ -95,22 +70,19 @@ This guarantees that repeated subdivision drives the maximum node width to zero 
 
 ## 7. Search order
 
-Nodes are processed by increasing depth (breadth-first). This is important for the convergence interpretation: a complete level is explored before deeper levels are preferred.
+Nodes are processed in breadth-first order. Therefore all nodes at a shallower depth are processed before their descendants at a deeper depth.
 
-Within a level, nodes with larger geometric width are processed first.
+This makes the finite-budget sequence compatible with the exhaustive-subdivision convergence argument: increasing the evaluation budget extends the same breadth-first search sequence.
 
-The implementation also avoids evaluating the same breakpoint vector twice when floating-point midpoint arithmetic produces an identical point.
+The implementation does not currently use a lower-bound priority queue or branch-and-bound pruning.
 
 ## 8. Stopping
 
-The implementation stops when either:
-
-- maxDepth is reached, or
-- maxEvaluations is reached.
+The implementation stops when either maxDepth is reached, or maxEvaluations is reached.
 
 There is no claim that the numerical incumbent is globally certified when the budget is exhausted.
 
-Increasing maxDepth and maxEvaluations produces a nested/exhaustive search schedule in the ideal exact-oracle model.
+Increasing maxDepth and maxEvaluations allows progressively finer exhaustive subdivision in the ideal exact-oracle model.
 
 ## 9. Numerical feasibility
 
@@ -127,7 +99,7 @@ The principal cost is the fixed-breakpoint solve. Therefore the implementation a
 - constructing a full breakpoint grid;
 - running the DP over all predecessor breakpoints;
 - evaluating invalid unordered breakpoint vectors;
-- repeated evaluation of identical midpoint vectors.
+- retaining a lower-bound data structure that has not been proved consistent.
 
 The method is intended mainly for small n and cross-validation. The grid DP remains the preferred method when a dense breakpoint grid is acceptable.
 
@@ -139,11 +111,9 @@ The implementation has two distinct correctness layers.
 
 With exact fixed-breakpoint values and exhaustive subdivision,
 
-[
-U_d	o E_n^*.
-]
+    U_d -> E_n^*.
 
-This follows from the continuity-at-an-optimum theorem and exhaustive midpoint refinement in `theory/breakpoint-search.md`.
+This follows from the continuity-at-an-optimum theorem and exhaustive refinement in the theory/breakpoint-search.md document.
 
 ### Numerical layer
 
@@ -155,16 +125,15 @@ Therefore:
 - the result is not a finite-time global certificate;
 - convergence should be checked empirically against the existing DP/reference solver.
 
-## 12. Required regression tests
+## 12. Regression tests
 
-The implementation should test:
+The smoke test now covers:
 
-1. n=1 against the known single-segment result;
-2. linear f, where the optimum is zero;
-3. f(x)=x^2 on [0,1], n=2, whose optimum is 1/24;
-4. continuity at every returned breakpoint;
-5. agreement with adaptive/fast grid DP on small cases;
-6. improvement/non-worsening of the incumbent as maxDepth increases;
-7. sine, cosine, quartic and piecewise-continuous functions.
+1. f(x)=x^2 on [0,1], n=2;
+2. the known value 1/24;
+3. continuity at every returned breakpoint;
+4. non-worsening of the incumbent when the evaluation budget is increased.
 
-The last two tests specifically check the outer non-convex search rather than only the fixed-breakpoint inner solver.
+Additional cross-validation should use sine, cosine, quartic and piecewise-continuous functions.
+
+The outer search should be benchmarked separately because each breakpoint evaluation invokes a complete continuous-height inner solve.

@@ -4,20 +4,20 @@
 
 For strict breakpoints
 $$
-X=(x_0,ldots,x_n),qquad a=x_0<cdots<x_n=b,
+X=(x_0,\ldots,x_n),qquad a=x_0<\cdots<x_n=b,
 $$
 define
 $$
 V(X)=min_{yinmathcal F_X}
-left[
-sum_{i=0}^{n-1}rac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
+\left[
+sum_{i=0}^{n-1}\rac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
 -int_a^b f(x),dx
-ight].
+\ight].
 $$
 
 For fixed $X$, this is a linear semi-infinite program in the shared heights. The free-breakpoint problem is
 $$
-E_n^*=min_{a<x_1<cdots<x_{n-1}<b}V(X).
+E_n^*=min_{a<x_1<\cdots<x_{n-1}<b}V(X).
 $$
 
 The outer problem is generally nonconvex. Envelope-SQP is therefore a local numerical method, not a global solver.
@@ -41,12 +41,12 @@ $$
 
 If a certified global separation pass establishes
 $$
-M_ilearepsilon
-qquad	ext{for every }i,
+M_ile\arepsilon
+qquad\ext{for every }i,
 $$
-then the returned spline is an $arepsilon$-majorant. For an exact finite LP optimum $LB$,
+then the returned spline is an $\arepsilon$-majorant. For an exact finite LP optimum $LB$,
 $$
-LBle V(X)le LB+arepsilon(b-a).
+LBle V(X)\le LB+\arepsilon(b-a).
 $$
 
 The C++ support search is numerical rather than certified, so this inequality is a conditional numerical certificate.
@@ -66,29 +66,29 @@ $$
 
 Because
 $$
-L_i(z)=y_i+drac{z-x_i}{h},
+L_i(z)=y_i+d\rac{z-x_i}{h},
 $$
 direct differentiation gives
 $$
-rac{partial L_i(z)}{partial x_i}
+\rac{\partial L_i(z)}{\partial x_i}
 =
--drac{x_{i+1}-z}{h^2},
+-d\rac{x_{i+1}-z}{h^2},
 qquad
-rac{partial L_i(z)}{partial x_{i+1}}
+\rac{\partial L_i(z)}{\partial x_{i+1}}
 =
--drac{z-x_i}{h^2}.
+-d\rac{z-x_i}{h^2}.
 $$
 
 Therefore, for the constraint convention $f-Lle0$,
 $$
-oxed{
-rac{partial c}{partial x_i}
+\oxed{
+\rac{\partial c}{\partial x_i}
 =
-drac{x_{i+1}-z}{h^2},
+d\rac{x_{i+1}-z}{h^2},
 qquad
-rac{partial c}{partial x_{i+1}}
+\rac{\partial c}{\partial x_{i+1}}
 =
-drac{z-x_i}{h^2}.
+d\rac{z-x_i}{h^2}.
 }
 $$
 
@@ -96,10 +96,10 @@ Both signs are positive. This is the sign convention used by the current impleme
 
 The direct trapezoidal objective contributes, for an interior breakpoint $x_j$,
 $$
-oxed{
-rac{partial E}{partial x_j}
+\oxed{
+\rac{\partial E}{\partial x_j}
 =
-rac{y_{j-1}-y_{j+1}}2.
+\rac{y_{j-1}-y_{j+1}}2.
 }
 $$
 
@@ -122,9 +122,9 @@ $$
 abla_XV(X)
 =
 
-abla_Xmathcal L(X,y^*,lambda^*,mu^*)
+abla_Xmathcal L(X,y^*,\lambda^*,\mu^*)
 $$
-with $y^*,lambda^*,mu^*$ held fixed in the partial derivative.
+with $y^*,\lambda^*,\mu^*$ held fixed in the partial derivative.
 
 In particular, each active contact contributes the two boxed terms above, the trapezoidal objective contributes $(y_{j-1}-y_{j+1})/2$, and active endpoint constraints contribute $\mu_j f'(x_j)$.
 
@@ -191,20 +191,20 @@ The following statements follow directly from the implemented acceptance rule.
 
 For one seed, every accepted step satisfies
 $$
-V_{mathrm{num}}(X_{k+1})
-le
-V_{mathrm{num}}(X_k)
+V_{\mathrm{num}}(X_{k+1})
+\le
+V_{\mathrm{num}}(X_k)
 +
 \sigma\alpha_k
-abla V_{mathrm{num}}(X_k)^Tp_k.
+abla V_{\mathrm{num}}(X_k)^Tp_k.
 $$
 
 Since the direction is required to satisfy
 $$
 
-abla V_{mathrm{num}}(X_k)^Tp_k<0,
+abla V_{\mathrm{num}}(X_k)^Tp_k<0,
 $$
-the right-hand side is strictly smaller than $V_{mathrm{num}}(X_k)$ whenever $\sigma>0$ and $\alpha_k>0$.
+the right-hand side is strictly smaller than $V_{\mathrm{num}}(X_k)$ whenever $\sigma>0$ and $\alpha_k>0$.
 
 Hence accepted objective values are non-increasing.
 
@@ -224,7 +224,7 @@ f(x)=x^2,qquad xin[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
-oxed{E_n^*=rac{1}{6n^2}}.
+\oxed{E_n^*=\rac{1}{6n^2}}.
 $$
 
 ### Proof
@@ -237,19 +237,19 @@ The chord through the endpoint values is a majorant because $x^2$ is convex. Any
 
 For a segment of length $h_i$, the chord error is
 $$
-int_0^{h_i}left(h_i t-t^2ight),dt
+int_0^{h_i}\left(h_i t-t^2\ight),dt
 =
-rac{h_i^3}{6}.
+\rac{h_i^3}{6}.
 $$
 Therefore
 $$
-E=rac16sum_{i=0}^{n-1}h_i^3,
+E=\rac16sum_{i=0}^{n-1}h_i^3,
 qquad
 sum_i h_i=1.
 $$
 By Jensen's inequality,
 $$
-sum_i h_i^3ge nleft(rac1night)^3=rac1{n^2},
+sum_i h_i^3ge nleft(\rac1n\ight)^3=\rac1{n^2},
 $$
 with equality for $h_i=1/n$. Hence the formula. ∎
 
@@ -326,14 +326,14 @@ The following local calculation is rigorous, but its use as a global free-breakp
 
 For a constant-sign quadratic model on an interval of length $h$,
 $$
-f(x_0+t)=f(x_0)+f'(x_0)t+rac12q t^2,
+f(x_0+t)=f(x_0)+f'(x_0)t+\rac12q t^2,
 $$
 the best affine majorant has leading error
 $$
-egin{cases}
+\egin{cases}
 q h^3/12,&q>0,\\
 |q| h^3/24,&q<0.
-end{cases}
+\end{cases}
 $$
 
 Hence the local density model is
@@ -343,10 +343,10 @@ $$
 where
 $$
 c(x)=
-egin{cases}
+\egin{cases}
 1/12,&f''(x)>0,\\
 1/24,&f''(x)<0.
-end{cases}
+\end{cases}
 $$
 
 Equal increments of $\int w$ are therefore a principled asymptotic seed. They are not a finite-$n$ optimality certificate.
@@ -354,15 +354,15 @@ Equal increments of $\int w$ are therefore a principled asymptotic seed. They ar
 For $x^4$ on $[0,1]$, the corresponding formal asymptotic reference is
 $$
 n^2E_n^*\sim
-left(int_0^1x^{2/3},dxight)^3
+\left(int_0^1x^{2/3},dx\ight)^3
 =
-rac{27}{125}.
+\rac{27}{125}.
 $$
 
 For $\sin x$ on $[0,2\pi]$, the mixed-curvature reference used by the benchmark is
 $$
 n^2E_n^*\sim
-left[
+\left[
 \left(int_0^\pi \sin(x)^{1/3},dx\right)
 \left(
 \left(\frac1{12}\right)^{1/3}

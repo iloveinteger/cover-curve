@@ -4,7 +4,7 @@
 
 Let
 $$
-X=(x_0,\ldots,x_n),\\\qquad a=x_0<x_1<\cdots<x_n=b,
+X=(x_0,\ldots,x_n),\qquad a=x_0<x_1<\cdots<x_n=b,
 $$
 and let $V(X)$ be the exact fixed-breakpoint shared-height optimum.
 
@@ -39,7 +39,7 @@ Every trial point supplies all $n+1$ breakpoints to the fixed-breakpoint oracle.
 
 Assume the fixed-breakpoint oracle is exact and the coordinate subproblem is solved globally. If $X^{k+1}$ is obtained from $X^k$ by replacing coordinate $x_i^k$ with a global minimizer of $\phi_i$ on its admissible interval, then
 $$
-V(X^{k+1})\\\le V(X^k).
+V(X^{k+1})\le V(X^k).
 $$
 
 ### Proof
@@ -49,7 +49,7 @@ $$
 V(X^{k+1})
 =
 \min_{t\in I_i}\phi_i(t)
-\\\le
+\le
 \phi_i(x_i^k)
 =
 V(X^k).
@@ -74,7 +74,7 @@ Assume:
 Then $X^*$ is coordinatewise minimizing: for every interior coordinate $i$ and every admissible $t$,
 $$
 V(X^*)
-\\\le
+\le
 V(x_1^*,\ldots,x_{i-1}^*,t,x_{i+1}^*,\ldots,x_{n-1}^*).
 $$
 
@@ -83,7 +83,7 @@ $$
 Consider a subsequence immediately before updates of coordinate $i$ that converges to $X^*$. Global optimality of the coordinate update gives
 $$
 V(X^k)
-\\\le
+\le
 V(x_1^k,\ldots,x_{i-1}^k,t,x_{i+1}^k,\ldots,x_{n-1}^k)
 $$
 for every admissible $t$ and every member of that subsequence.
@@ -92,7 +92,7 @@ By continuity of $V$, passage to the limit gives the stated inequality. ∎
 
 If $V$ is differentiable at an interior accumulation point, coordinatewise minimality implies
 $$
-\frac{\\\partial V}{\\\partial x_i}(X^*)=0
+\frac{\partial V}{\partial x_i}(X^*)=0
 $$
 for every $i$. Thus such a limit point is stationary.
 
@@ -126,30 +126,30 @@ Let
 - $d=n-1$ be the number of interior breakpoints;
 - $S$ be the number of coarse samples per coordinate;
 - $R$ be the number of refinement rounds;
-- $C_{\\\mathrm{DH}}$ be the cost of one fixed-breakpoint solve.
+- $C_{\mathrm{DH}}$ be the cost of one fixed-breakpoint solve.
 
 One full sweep uses
 $$
-O\bigl(d(S+R)C_{\\\mathrm{DH}}\bigr)
+O\bigl(d(S+R)C_{\mathrm{DH}}\bigr)
 $$
 fixed-breakpoint solves, up to implementation-specific reuse.
 
 For $K$ sweeps,
 $$
-O\bigl(Kd(S+R)C_{\\\mathrm{DH}}\bigr).
+O\bigl(Kd(S+R)C_{\mathrm{DH}}\bigr).
 $$
 
 The method avoids the exponential ambient subdivision tree of direct breakpoint-space exhaustive search, but it sacrifices global optimality.
 
 ## 7. Numerical error
 
-For a returned point $X_{\\\mathrm{out}}$ and numerical value $\\\widehat V$,
+For a returned point $X_{\mathrm{out}}$ and numerical value $\widehat V$,
 $$
-|\\\widehat V-E_n^*|
-\\\le
-|\\\widehat V-V(X_{\\\mathrm{out}})|
+|\widehat V-E_n^*|
+\le
+|\widehat V-V(X_{\mathrm{out}})|
 +
-|V(X_{\\\mathrm{out}})-E_n^*|.
+|V(X_{\mathrm{out}})-E_n^*|.
 $$
 
 The first term is controlled only by the numerical fixed-breakpoint and coordinate-search tolerances. The second is the nonconvex optimization gap and is not bounded by the coordinatewise stopping test alone.

@@ -120,6 +120,9 @@ int main() {
         gradientOptions.lineSearchSteps = 1;
         gradientOptions.sufficientDecrease = 1e6;
         gradientOptions.gradientTolerance = 1e-12;
+        gradientOptions.initialBreakpoints = {
+            0.0, 2.8, 2.0 * pi
+        };
 
         const auto gd = envelopeSQPSolveDetailed(
             sine,
@@ -143,37 +146,6 @@ int main() {
         const double fd = (vp - vm) / (2.0 * h);
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
-        {
-            const auto& rr = detailed.result;
-            double y0 = rr.segments[0].slope * rr.segments[0].x0 + rr.segments[0].intercept;
-            double y1 = rr.segments[0].slope * rr.segments[0].x1 + rr.segments[0].intercept;
-            double y2 = rr.segments[1].slope * rr.segments[1].x1 + rr.segments[1].intercept;
-            double base = 0.5 * (y0 - y2);
-            double contactPart = 0.0;
-            double weight = 0.0;
-            for (const auto& cc : detailed.contacts) {
-                const int i = cc.segment;
-                const double x0 = fixed[i], x1 = fixed[i + 1];
-                const double hh = x1 - x0;
-                const double dy = (i == 0 ? y1 - y0 : y2 - y1);
-                if (i == 0) {
-                    contactPart += cc.multiplier * dy * (x1 - cc.x) / (hh * hh);
-                    weight += cc.multiplier * (x1 - cc.x) / hh;
-                } else if (i == 1) {
-                    contactPart += cc.multiplier * dy * (cc.x - x0) / (hh * hh);
-                    weight += cc.multiplier * (cc.x - x0) / hh;
-                }
-            }
-            const double ccj = (fixed[2] - fixed[0]) / 2.0;
-            std::cerr << "base=" << base
-                      << " contact=" << contactPart
-                      << " mu=" << (ccj - weight)
-                      << " fprime=" << std::cos(fixed[1])
-                      << " total=" << (base + contactPart +
-                          (ccj - weight) * std::cos(fixed[1]))
-                      << std::endl;
-        }
-
         if (std::abs(gd.gradient[1] - fd) >= 1e-2) {
             std::cerr
                 << "gradient=" << gd.gradient[1]

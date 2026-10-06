@@ -67,7 +67,10 @@ int main() {
 
     const auto r3 =
         cover_curve::adaptiveGridDP(square, 0.0, 1.0, 2);
+    const auto rf =
+        cover_curve::fastGridDP(square, 0.0, 1.0, 2);
     expectNear(r3.value, 1.0 / 24.0, 2e-3, "square n=2");
+    expectNear(rf.value, r3.value, 1e-10, "fast/adaptive agreement");
 
     if (r3.breakpoints.size() != 3 ||
         r3.segments.size() != 2) {
@@ -75,6 +78,7 @@ int main() {
         return 1;
     }
     expectContinuous(r3, 1e-10, "square");
+    expectContinuous(rf, 1e-10, "fast square");
 
     const Function wavy =
         [](double x) { return x + std::sin(x); };

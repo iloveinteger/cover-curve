@@ -16,9 +16,9 @@ namespace cover_curve::algorithms::adaptive_grid_dp {
 namespace {
 
 constexpr double kHeightTolerance = 1e-7;
-constexpr int kGlobalSamples = 9;
-constexpr int kLocalIntervals = 2;
-constexpr int kGoldenIterations = 32;
+constexpr int kGlobalSamples = 5;
+constexpr int kLocalIntervals = 1;
+constexpr int kGoldenIterations = 12;
 
 struct Transition {
     double threshold = std::numeric_limits<double>::infinity();
@@ -226,7 +226,7 @@ private:
         double bestX = v;
         double bestRatio = ratio(v);
 
-        constexpr int samples = 32;
+        constexpr int samples = 16;
         for (int s = 1; s < samples; ++s) {
             const double x =
                 lo + (v - lo) * s / samples;
@@ -239,7 +239,7 @@ private:
 
         const auto support =
             numerical::adaptiveSupportMaximum(
-                ratio, lo, v, 0.0, 24, 7, 12
+                ratio, lo, v, 0.0, 8, 3, 2
             );
 
         if (std::isfinite(support.value) &&
@@ -269,7 +269,7 @@ private:
         if (evaluateTransition(u, v, lo).threshold <= q)
             return lo;
 
-        for (int it = 0; it < 48; ++it) {
+        for (int it = 0; it < 24; ++it) {
             const double mid = (lo + hi) / 2.0;
             if (evaluateTransition(u, v, mid).threshold <= q)
                 hi = mid;

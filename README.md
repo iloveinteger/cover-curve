@@ -4,21 +4,32 @@
 
 Given a continuous function $f:[a,b]\to\mathbb R$, find a continuous piecewise-linear majorant $g\\\ge f$ with $n$ segments minimizing
 
-$$\nE(g)=\int_a^b (g(x)-f(x))\,dx.\n$$
+$$
+E(g)=\int_a^b (g(x)-f(x))\,dx.
+$$
 
 ## Problem
 
 Choose shared breakpoints and vertex heights
 
-$$\na=x_0<x_1<\cdots<x_n=b,\n\\\qquad y_i=g(x_i).\n$$
+$$
+a=x_0<x_1<\cdots<x_n=b,
+\\\qquad y_i=g(x_i).
+$$
 
 On each segment,
 
-$$\nL_i(x)=\n\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+\n\frac{x-x_i}{x_{i+1}-x_i}y_{i+1},\n$$
+$$
+L_i(x)=
+\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+
+\frac{x-x_i}{x_{i+1}-x_i}y_{i+1},
+$$
 
 with
 
-$$\nL_i(x)\\\ge f(x)\\\qquad (x\in[x_i,x_{i+1}]).\n$$
+$$
+L_i(x)\\\ge f(x)\\\qquad (x\in[x_i,x_{i+1}]).
+$$
 
 Shared vertex heights enforce continuity exactly.
 

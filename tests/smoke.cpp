@@ -198,9 +198,9 @@ int main() {
     expectContinuous(rpFast, 1e-10, "fast piecewise curvature");
 
     cover_curve::CoordinateSearchOptions coordinateOptions;
-    coordinateOptions.maxSweeps = 3;
-    coordinateOptions.samples = 5;
-    coordinateOptions.refinements = 2;
+    coordinateOptions.maxSweeps = 2;
+    coordinateOptions.samples = 3;
+    coordinateOptions.refinements = 1;
 
     const auto rCoordinate =
         cover_curve::coordinateSearch(

@@ -1,0 +1,122 @@
+#include <cover_curve/solvers/envelope_sqp.hpp>
+#include <cover_curve/solvers/direct_height.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+
+namespace {
+
+double xSquared(double x) {
+    return x * x;
+}
+
+double sine(double x) {
+    return std::sin(x);
+}
+
+void require(bool condition, const char* message) {
+    if (!condition)
+        throw std::runtime_error(message);
+}
+
+double denseViolation(
+    const cover_curve::Result& result,
+    const cover_curve::Function& f,
+    int samples = 2001
+) {
+    double worst = 0.0;
+    for (int k = 0; k < samples; ++k) {
+        const double a = result.breakpoints.front();
+        const double b = result.breakpoints.back();
+        const double x = a + (b - a) * k / (samples - 1.0);
+
+        auto it = std::upper_bound(
+            result.breakpoints.begin(),
+            result.breakpoints.end(),
+            x
+        );
+        std::size_t i =
+            it == result.breakpoints.begin()
+                ? 0
+                : static_cast<std::size_t>(
+                    std::distance(result.breakpoints.begin(), it) - 1
+                );
+        if (i >= result.segments.size())
+            i = result.segments.size() - 1;
+
+        const auto& s = result.segments[i];
+        const double g = s.slope * x + s.intercept;
+        worst = std::max(worst, f(x) - g);
+    }
+    return worst;
+}
+
+}
+
+int main() {
+    using namespace cover_curve;
+
+    try {
+        EnvelopeSQPOptions options;
+        options.maxIterations = 12;
+        options.seeds = 1;
+        options.includeFastGridSeed = false;
+        options.gradientTolerance = 1e-5;
+        options.innerOptions.maxSweeps = 40;
+        options.innerOptions.tolerance = 1e-9;
+
+        const Result x2 =
+            envelopeSQPSolve(xSquared, 0.0, 1.0, 2, options);
+
+        require(x2.breakpoints.size() == 3,
+                "x^2 returned invalid breakpoint count.");
+        require(std::abs(x2.breakpoints[1] - 0.5) < 5e-3,
+                "x^2 breakpoint did not converge to 0.5.");
+        require(
+            std::abs(x2.value - 1.0 / 24.0) < 5e-4,
+            "x^2 objective disagrees with 1/(6n^2)."
+        );
+        require(
+            denseViolation(x2, xSquared) <= 2e-5,
+            "x^2 envelope is not a majorant."
+        );
+
+        const std::vector<double> fixed = {
+            0.0, 1.0, 2.0
+        };
+        const auto detailed =
+            directHeightSolveDetailed(
+                sine, fixed, options.innerOptions
+            );
+        require(!detailed.contacts.empty(),
+                "dual contact set is unexpectedly empty.");
+
+        const Result sin =
+            envelopeSQPSolve(
+                sine,
+                0.0,
+                2.0 * std::acos(-1.0),
+                2,
+                options
+            );
+        require(
+            denseViolation(sin, sine) <= 2e-5,
+            "sin envelope is not a majorant."
+        );
+
+        std::cout
+            << "envelope SQP: PASS"
+            << " x2_value=" << x2.value
+            << " x2_mid=" << x2.breakpoints[1]
+            << " sin_value=" << sin.value
+            << std::endl;
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "envelope SQP: FAIL: "
+                  << e.what() << std::endl;
+        return 1;
+    }
+}

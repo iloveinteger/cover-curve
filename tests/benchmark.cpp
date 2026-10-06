@@ -160,9 +160,6 @@ int main() {
         {"x4", x4}
     }) {
         for (const int n : largeN) {
-            // Large-n regression remains in CI, but the outer solver needs
-            // fewer refinements once n is large because each inner LP and
-            // separation pass scales with the number of segments.
             auto runOptions = options;
             if (n >= 64) {
                 runOptions.maxIterations = 6;

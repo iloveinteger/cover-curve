@@ -1,4 +1,5 @@
 #include <cover_curve/cover_curve.hpp>
+#include "../math/src/algorithms/fast_grid_dp/grid_dp.hpp"
 #include <chrono>
 #include <cmath>
 #include <iomanip>

@@ -34,8 +34,10 @@ public:
             D_[i][n_ + 1] = b[i];
         }
 
-        for (int j = 0; j < n_; ++j)
+        for (int j = 0; j < n_; ++j) {
+            N_[j] = j;
             D_[m_][j] = -c[j];
+        }
 
         N_[n_] = -1;
         D_[m_ + 1][n_] = 1.0;

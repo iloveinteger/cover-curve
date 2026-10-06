@@ -64,11 +64,11 @@ on every segment and adds a violating contact.
 
 If a certified separation pass establishes
 $$
-\max_i\max_{x\in[x_i,x_{i+1}]}v_i(x)\le\varepsilon,
+\max_i\max_{x\in[x_i,x_{i+1}]}v_i(x)\\\le\varepsilon,
 $$
 then shifting the majorant upward by $\varepsilon$ gives
 $$
-LB\le V(X)\le LB+\varepsilon(b-a)
+LB\\\le V(X)\\\le LB+\varepsilon(b-a)
 $$
 for an exact finite LP. With the current scale-relative stopping rule, use the corresponding scaled epsilon from theory/direct-height.md.
 

@@ -155,17 +155,6 @@ int main() {
         const double fd = (vp - vm) / (2.0 * h);
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
-        std::cerr << "gradient_check analytic=" << gd.gradient[1]
-                  << " finite_difference=" << fd
-                  << " diff=" << (gd.gradient[1] - fd) << std::endl;
-        std::cerr << "heights=";
-        for (double y : detailed.heights) std::cerr << " " << y;
-        std::cerr << std::endl;
-        for (const auto& contact : detailed.contacts) {
-            std::cerr << "contact seg=" << contact.segment
-                      << " x=" << contact.x
-                      << " lambda=" << contact.multiplier << std::endl;
-        }
         require(
             std::abs(gd.gradient[1] - fd) < 1e-2,
             "envelope gradient disagrees with fixed-breakpoint finite difference."

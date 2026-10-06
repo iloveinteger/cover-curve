@@ -13,7 +13,7 @@ $$
 subject to
 $$
 f(x)-w(x)^Ty\le0
-\\\qquad
+\qquad
 (x\in[x_i,x_{i+1}]).
 $$
 
@@ -23,12 +23,12 @@ This is a linear semi-infinite program: finitely many variables and a continuum 
 
 Let $S$ be a finite set of sampled contacts. The restricted LP keeps only
 $$
-f(z)-w(z)^Ty\le0,\\\qquad z\in S.
+f(z)-w(z)^Ty\le0,\qquad z\in S.
 $$
 
 Its feasible set contains the feasible set of the full problem. Therefore
 $$
-LB(S)\\\le V(X).
+LB(S)\le V(X).
 $$
 
 After solving the restricted LP, define
@@ -69,7 +69,7 @@ $$
 $$
 then the current $y$ is feasible for the full problem. Because $y$ was optimal for a relaxation,
 $$
-LB(S)\\\le V(X)\\\le E_X(y).
+LB(S)\le V(X)\le E_X(y).
 $$
 
 If the finite LP is solved exactly, the restricted optimum equals $E_X(y)$, so equality holds:
@@ -85,7 +85,7 @@ Finite termination is not guaranteed for every semi-infinite LP; an exchange seq
 
 Suppose the separation oracle establishes
 $$
-\max_i M_i\\\le\varepsilon.
+\max_i M_i\le\varepsilon.
 $$
 Then
 $$
@@ -98,18 +98,18 @@ $$
 
 Hence, for an exact restricted LP,
 $$
-\\\boxed{
-LB(S)\\\le V(X)\\\le E(g)+\varepsilon(b-a).
+\boxed{
+LB(S)\le V(X)\le E(g)+\varepsilon(b-a).
 }
 $$
 
 The implementation uses a scale-relative tolerance. If
 $$
-M_i\\\le\varepsilon s_i,
+M_i\le\varepsilon s_i,
 $$
 then the analogous bound is
 $$
-V(X)\\\le E(g)+\varepsilon(b-a)\max_i s_i
+V(X)\le E(g)+\varepsilon(b-a)\max_i s_i
 $$
 provided the separation bound is genuinely global.
 

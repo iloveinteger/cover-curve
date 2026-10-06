@@ -87,10 +87,11 @@ int main() {
     expectContinuous(rw, 1e-10, "wavy");
 
     // Trigonometric and higher-order polynomial regression cases.
+    constexpr double pi = 3.1415926535897932384626433832795;
     const Function sine =
         [](double x) { return std::sin(x); };
     const auto rsFast =
-        cover_curve::fastGridDP(sine, 0.0, 2.0 * M_PI, 3, 32);
+        cover_curve::fastGridDP(sine, 0.0, 2.0 * pi, 3, 32);
     const auto rsReference =
         cover_curve::adaptiveGridDP(sine, 0.0, 2.0 * M_PI, 3);
     expectNear(rsFast.value, rsReference.value, 8e-5, "fast sine agreement");

@@ -343,6 +343,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         std::vector<double> x = seed;
         Evaluation current =
             evaluate(f, x, options, a, b);
+        int iterationsDone = 0;
 
         std::vector<std::vector<double>> sHistory;
         std::vector<std::vector<double>> yHistory;
@@ -448,6 +449,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
 
             x = std::move(nextX);
             current = std::move(next);
+            iterationsDone = iteration + 1;
 
             if (std::abs(oldValue - current.result.value) <=
                 options.stepTolerance *
@@ -459,7 +461,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
             current.result.value < globalBest.value) {
             globalBest = std::move(current.result);
             globalGradient = std::move(current.gradient);
-            globalIterations = iteration;
+            globalIterations = iterationsDone;
             globalStart = static_cast<int>(&seed - &seeds.front());
             haveBest = true;
         }

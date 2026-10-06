@@ -39,14 +39,17 @@ The theory is organized as one logical chain:
 3. `theory/fixed-breakpoint.md` — exact fixed-breakpoint formulation and existence.
 4. `theory/dynamic-programming.md` — exact continuous-height shared-height Bellman formulation.
 5. `theory/algorithm.md` — breakpoint-only discretization, continuous-height DP, and convergence to the original optimum.
+6. `theory/breakpoint-search.md` — direct non-convex breakpoint-space search, local continuity of the fixed-breakpoint value function, and exhaustive-subdivision convergence.
 
-The main mathematical convergence statement is
+The breakpoint-grid convergence statement is
 
 $
 E_{n,N}^*\longrightarrow E_n^*
 $
 
 when the breakpoint-grid mesh tends to zero. No height-grid convergence parameter is required by the mathematical formulation.
+
+The direct breakpoint-search theorem is different: it assumes an exact fixed-breakpoint oracle and proves convergence by exhaustive subdivision and continuity at an optimal strict breakpoint representation.
 
 ## Numerical implementation
 
@@ -58,15 +61,31 @@ $
 
 and the integral must be controlled separately.
 
-The current baseline implementation still uses a finite height grid together with sampled transition constraints. It is therefore a numerical approximation to the continuous-height theory, not an implementation of the exact continuous-height DP and not a global feasibility certificate for arbitrary continuous black-box functions.
+The current baseline implementations use continuous real-valued heights with numerical support and one-dimensional searches. They are therefore numerical approximations to the continuous-height theory, not global feasibility certificates for arbitrary continuous black-box functions.
 
-The implementation specification in `implementation/adaptive-grid-dp.md` describes the required height-grid-free target and the remaining numerical issues.
+The implementation specifications are:
+
+- `implementation/adaptive-grid-dp.md` — continuous-height DP realization.
+- `implementation/breakpoint-search.md` — direct adaptive breakpoint search.
 
 ## Status
 
 The theory is organized around the exact continuous shared-height problem. The old independent one-segment-cost DP is not part of the mathematical solution, because independently optimized segments do not enforce continuity.
 
+The independently optimized one-segment problem is still useful as a relaxation, but the new breakpoint-search convergence proof does **not** rely on that relaxation becoming exact as a breakpoint box shrinks.
+
 Curvature-based breakpoint heuristics are also not part of the correctness theorem. They may be used as numerical acceleration or grid-design heuristics, but the mathematical convergence result needs only breakpoint meshes with vanishing mesh size.
+
+## Solvers
+
+The library currently contains:
+
+- `adaptiveGridDP` — baseline continuous-height breakpoint-grid DP.
+- `fastGridDP` — optimized implementation of the same mathematical recurrence.
+- `curvatureAdaptive` — curvature-guided breakpoint-grid heuristic.
+- `breakpointSearch` — direct deterministic breakpoint-space search with exhaustive subdivision.
+
+The last solver is intended primarily for small $n$ and independent cross-validation of the DP family.
 
 ## Build
 

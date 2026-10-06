@@ -54,7 +54,7 @@ F_{k+1}(j,q)=
 \inf_{\substack{p\ge f(z_i)\q\ge T_{z_i,z_j}(p)}}
 \left[
 F_k(i,p)+\frac{z_j-z_i}{2}(p+q)
-\r\right].
+\right].
 }
 $$
 
@@ -223,9 +223,9 @@ continuous-height subproblems. The dynamic program avoids this explicit enumerat
 
 Let $\widehat E_{n,N}$ be a numerical approximation to the exact breakpoint-grid optimum. Then
 $$
-\left|\widehat E_{n,N}-E_n^*\r\right|
+\left|\widehat E_{n,N}-E_n^*\right|
 \le
-\left|\widehat E_{n,N}-E_{n,N}^*\r\right|
+\left|\widehat E_{n,N}-E_{n,N}^*\right|
 +
 2(b-a)K\delta_N.
 $$

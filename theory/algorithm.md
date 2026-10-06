@@ -135,7 +135,7 @@ m_f=\min_{[a,b]}f,\qquad M_f=\max_{[a,b]}f,
 $$
 $$
 C=(b-a)(M_f-m_f),\qquad
-B_N=m_f+\frac{4C}{\rho_N}.
+B_N=m_f+\frac{2C}{\rho_N}.
 $$
 
 There is an optimum satisfying
@@ -143,10 +143,17 @@ $$
 \boxed{m_f\le y_i\le B_N.}
 $$
 
-The lower bound follows from $y_i\ge f(x_i)\ge m_f$. The constant majorant $M_f$ has error $C$. At fixed breakpoints, after shifting by $m_f$, the trapezoidal coefficients satisfy $c_i\ge\rho_N/2$, while the optimal shifted objective is at most $2C$. Therefore
-$$
-\frac{\rho_N}{2}(y_i-m_f)\le2C.
-$$
+The lower bound follows from $y_i\ge f(x_i)\ge m_f$. The constant majorant $M_f$ has error $C$, so the optimal shifted objective is at most $C$. At fixed breakpoints, after shifting by $m_f$, every trapezoidal coefficient satisfies $c_i\ge\rho_N/2$. Therefore, for an optimal shifted height vector,
+$
+\frac{\rho_N}{2}(y_i-m_f)
+\le
+c_i(y_i-m_f)
+\le C,
+$
+and hence
+$
+y_i\le m_f+\frac{2C}{\rho_N}.
+$
 
 Thus the height domain is bounded but continuous.
 

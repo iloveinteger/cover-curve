@@ -10,13 +10,13 @@ c(x)|f''(x)|h^3+o(h^3),
 $$
 with
 $$
-c(x)=1/12\\\quad(f''>0),\\\qquad
-c(x)=1/24\\\quad(f''<0).
+c(x)=1/12\quad(f''>0),\qquad
+c(x)=1/24\quad(f''<0).
 $$
 
 Balancing this leading term over $n$ cells gives
 $$
-\\\boxed{\rho(x)\propto c(x)^{1/3}|f''(x)|^{1/3}}.
+\boxed{\rho(x)\propto c(x)^{1/3}|f''(x)|^{1/3}}.
 $$
 
 The implementation therefore uses the cube-root curvature density. The older $|f''|^{1/2}$ description is obsolete.
@@ -28,7 +28,7 @@ For $M$ uniformly spaced samples:
 1. estimate $f''$ with the centered three-point difference;
 2. compute
 $$
-   d_i=\\\max(d_{\\\min},(c_i|f''_i|)^{1/3});
+   d_i=\max(d_{\min},(c_i|f''_i|)^{1/3});
 $$
 3. integrate $d_i$ by the trapezoidal rule;
 4. place $n-1$ interior knots at equal cumulative-density quantiles.

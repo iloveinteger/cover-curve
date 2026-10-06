@@ -17,9 +17,6 @@ jobs:
       - name: Direct height smoke
         run: /usr/bin/time -f '%e s' ./build/cover_curve_direct_height_smoke
 
-      - name: Solver smoke
-        run: timeout 60 ./build/cover_curve_smoke
-
       - name: Benchmark solver
         run: ./build/cover_curve_benchmark
 

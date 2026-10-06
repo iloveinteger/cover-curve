@@ -55,7 +55,7 @@ Set
 $$
 V_n(p)=
 \begin{cases}
-0,&p\ge f(b),\\
+0,&p\ge f(b),\
 +\infty,&p<f(b).
 \end{cases}
 $$

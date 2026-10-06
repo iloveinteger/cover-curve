@@ -16,7 +16,7 @@ $$
 
 The recursive evaluator implements
 $$
-F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\ge f(z_i)\q\ge T_{z_i,z_j}(p)}}\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
+F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\\\ge f(z_i)\q\\\ge T_{z_i,z_j}(p)}}\\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
 $$
 
 The implementation memoizes values at the real heights actually requested by the optimizer. These are adaptive evaluation points, not a uniform height grid and there is no heightLevels parameter.
@@ -25,7 +25,7 @@ The implementation memoizes values at the real heights actually requested by the
 
 The mathematical optimum can be searched inside
 $$
-[m_f,B_N],\qquad B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
+[m_f,B_N],\\\qquad B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
 $$
 
 The implementation estimates m_f and M_f numerically and uses this bound. This bound controls the search domain; it does not discretize that domain.
@@ -34,7 +34,7 @@ The implementation estimates m_f and M_f numerically and uses this bound. This b
 
 For a candidate left height p, the implementation evaluates
 $$
-T_{u,v}(p)=\sup_{u<x\le v}\frac{(v-u)f(x)-(v-x)p}{x-u}
+T_{u,v}(p)=\sup_{u<x\\\le v}\frac{(v-u)f(x)-(v-x)p}{x-u}
 $$
 using adaptive numerical sampling/support search.
 

@@ -352,7 +352,7 @@ private:
             const auto it = evaluations.find(x);
             if (it != evaluations.end())
                 return it->second;
-            const double y = eval(x);
+            const double y = objective(x);
             evaluations.emplace(x, y);
             return y;
         };

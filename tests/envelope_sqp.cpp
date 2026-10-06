@@ -112,6 +112,12 @@ int main() {
             << " objectiveCoeff=" << pi
             << " dualWeight=" << dualAt1
             << std::endl;
+        for (const auto& contact : detailed.contacts)
+            std::cerr
+                << "contact segment=" << contact.segment
+                << " x=" << contact.x
+                << " lambda=" << contact.multiplier
+                << std::endl;
         const auto t0 = std::chrono::steady_clock::now();
         // Validate the analytic envelope derivative against a finite
         // difference of the complete fixed-breakpoint value function.

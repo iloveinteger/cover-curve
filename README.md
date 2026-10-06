@@ -5,7 +5,7 @@
 Given a continuous function $f:[a,b]\to\mathbb R$, find a continuous piecewise-linear majorant $g\ge f$ with $n$ segments minimizing
 
 $$
-E(g)=\int_a^b (g(x)-f(x))\\,dx.
+E(g)=\int_a^b (g(x)-f(x))\,dx.
 $$
 
 ## Problem

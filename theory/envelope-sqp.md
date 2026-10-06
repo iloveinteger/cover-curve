@@ -8,16 +8,16 @@ X=(x_0,\ldots,x_n),\qquad a=x_0<\cdots<x_n=b,
 $$
 define
 $$
-V(X)=min_{y\in \mathcal F_X}
+V(X)=\\min_{y\in \mathcal F_X}
 \left[
-sum_{i=0}^{n-1}\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
--int_a^b f(x),dx
-\r\right].
+\sum_{i=0}^{n-1}\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
+-\int_a^b f(x),dx
+\right].
 $$
 
 For fixed $X$, this is a linear semi-infinite program in the shared heights. The free-breakpoint problem is
 $$
-E_n^*=min_{a<x_1<\cdots<x_{n-1}<b}V(X).
+E_n^*=\\min_{a<x_1<\cdots<x_{n-1}<b}V(X).
 $$
 
 The outer problem is generally nonconvex. Envelope-SQP is therefore a local numerical method, not a global solver.
@@ -26,22 +26,22 @@ The outer problem is generally nonconvex. Envelope-SQP is therefore a local nume
 
 For a finite retained contact set $S$, the cutting-plane LP is
 $$
-min_y c(X)^Ty-int_a^b f(x),dx
+min_y c(X)^Ty-\int_a^b f(x),dx
 $$
 subject to
 $$
-f(z)-w_i(z;X)^Tyle0,\qquad zin S,
+f(z)-w_i(z;X)^Ty\le0,\qquad z\in S,
 $$
 where $w_i$ contains the two interpolation weights on the segment containing $z$.
 
 The separation problem is
 $$
-M_i=max_{zin[x_i,x_{i+1}]}{f(z)-L_i(z)}.
+M_i=\\max_{z\in[x_i,x_{i+1}]}{f(z)-L_i(z)}.
 $$
 
 If a certified global separation pass establishes
 $$
-M_ile\arepsilon
+M_i\le\varepsilon
 \qquad\ext{for every }i,
 $$
 then the returned spline is an $\arepsilon$-majorant. For an exact finite LP optimum $LB$,
@@ -59,7 +59,7 @@ Let
 $$
 c(z;X,y)=f(z)-L_i(z)
 $$
-for a contact $zin[x_i,x_{i+1}]$, and put
+for a contact $z\in[x_i,x_{i+1}]$, and put
 $$
 h=x_{i+1}-x_i,\qquad d=y_{i+1}-y_i.
 $$
@@ -81,7 +81,7 @@ $$
 
 Therefore, for the constraint convention $f-Lle0$,
 $$
-\oxed{
+\boxed{
 \frac{\partial c}{\partial x_i}
 =
 d\frac{x_{i+1}-z}{h^2},
@@ -96,7 +96,7 @@ Both signs are positive. This is the sign convention used by the current impleme
 
 The direct trapezoidal objective contributes, for an interior breakpoint $x_j$,
 $$
-\oxed{
+\boxed{
 \frac{\partial E}{\partial x_j}
 =
 \frac{y_{j-1}-y_{j+1}}2.
@@ -220,7 +220,7 @@ f(x)=x^2,\qquad xin[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
-\oxed{E_n^*=\frac{1}{6n^2}}.
+\boxed{E_n^*=\frac{1}{6n^2}}.
 $$
 
 ### Proof
@@ -233,19 +233,19 @@ The chord through the endpoint values is a majorant because $x^2$ is convex. Any
 
 For a segment of length $h_i$, the chord error is
 $$
-int_0^{h_i}\left(h_i t-t^2\r\right),dt
+int_0^{h_i}\left(h_i t-t^2\right),dt
 =
 \frac{h_i^3}{6}.
 $$
 Therefore
 $$
-E=\frac16sum_{i=0}^{n-1}h_i^3,
+E=\frac16\sum_{i=0}^{n-1}h_i^3,
 \qquad
 sum_i h_i=1.
 $$
 By Jensen's inequality,
 $$
-sum_i h_i^3ge nleft(\frac1n\r\right)^3=\frac1{n^2},
+sum_i h_i^3ge nleft(\frac1n\right)^3=\frac1{n^2},
 $$
 with equality for $h_i=1/n$. Hence the formula. ∎
 
@@ -270,7 +270,7 @@ Its error is
 $$
 L(t)+t^2
 =
-\left(t-\frac h2\r\right)^2,
+\left(t-\frac h2\right)^2,
 $$
 so
 $$
@@ -302,7 +302,7 @@ Thus every affine majorant has error at least $h^3/12$, with equality for the mi
 
 Therefore every $n$-segment feasible spline satisfies
 $$
-E\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
+E\ge\frac1{12}\\sum_{i=0}^{n-1}h_i^3,
 \qquad
 \sum_i h_i=1.
 $$
@@ -350,7 +350,7 @@ Equal increments of $\int w$ are therefore a principled asymptotic seed. They ar
 For $x^4$ on $[0,1]$, the corresponding formal asymptotic reference is
 $$
 n^2E_n^*\sim
-\left(int_0^1x^{2/3},dx\r\right)^3
+\left(int_0^1x^{2/3},dx\right)^3
 =
 \frac{27}{125}.
 $$
@@ -359,13 +359,13 @@ For $\sin x$ on $[0,2\pi]$, the mixed-curvature reference used by the benchmark 
 $$
 n^2E_n^*\sim
 \left[
-\left(int_0^\pi \sin(x)^{1/3},dx\r\right)
+\left(int_0^\pi \sin(x)^{1/3},dx\right)
 \left(
-\left(\frac1{12}\r\right)^{1/3}
+\left(\frac1{12}\right)^{1/3}
 +
-\left(\frac1{24}\r\right)^{1/3}
-\r\right)
-\r\right]^3.
+\left(\frac1{24}\right)^{1/3}
+\right)
+\right]^3.
 $$
 
 These last two formulas are benchmark references, not project-level global-optimality theorems.

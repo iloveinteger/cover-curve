@@ -4,7 +4,7 @@
 
 For strict breakpoints
 $$
-X=(x_0,\ldots,x_n),\\qquad a=x_0<\cdots<x_n=b,
+X=(x_0,\ldots,x_n),\qquad a=x_0<\cdots<x_n=b,
 $$
 define
 $$
@@ -30,7 +30,7 @@ min_y c(X)^Ty-int_a^b f(x),dx
 $$
 subject to
 $$
-f(z)-w_i(z;X)^Tyle0,\\qquad zin S,
+f(z)-w_i(z;X)^Tyle0,\qquad zin S,
 $$
 where $w_i$ contains the two interpolation weights on the segment containing $z$.
 
@@ -42,11 +42,11 @@ $$
 If a certified global separation pass establishes
 $$
 M_ile\arepsilon
-\\qquad\ext{for every }i,
+\qquad\ext{for every }i,
 $$
 then the returned spline is an $\arepsilon$-majorant. For an exact finite LP optimum $LB$,
 $$
-LBle V(X)\\\le LB+\arepsilon(b-a).
+LBle V(X)\le LB+\arepsilon(b-a).
 $$
 
 The C++ support search is numerical rather than certified, so this inequality is a conditional numerical certificate.
@@ -61,7 +61,7 @@ c(z;X,y)=f(z)-L_i(z)
 $$
 for a contact $zin[x_i,x_{i+1}]$, and put
 $$
-h=x_{i+1}-x_i,\\qquad d=y_{i+1}-y_i.
+h=x_{i+1}-x_i,\qquad d=y_{i+1}-y_i.
 $$
 
 Because
@@ -70,11 +70,11 @@ L_i(z)=y_i+d\frac{z-x_i}{h},
 $$
 direct differentiation gives
 $$
-\frac{\\\partial L_i(z)}{\\\partial x_i}
+\frac{\partial L_i(z)}{\partial x_i}
 =
 -d\frac{x_{i+1}-z}{h^2},
-\\qquad
-\frac{\\\partial L_i(z)}{\\\partial x_{i+1}}
+\qquad
+\frac{\partial L_i(z)}{\partial x_{i+1}}
 =
 -d\frac{z-x_i}{h^2}.
 $$
@@ -82,11 +82,11 @@ $$
 Therefore, for the constraint convention $f-Lle0$,
 $$
 \oxed{
-\frac{\\\partial c}{\\\partial x_i}
+\frac{\partial c}{\partial x_i}
 =
 d\frac{x_{i+1}-z}{h^2},
-\\qquad
-\frac{\\\partial c}{\\\partial x_{i+1}}
+\qquad
+\frac{\partial c}{\partial x_{i+1}}
 =
 d\frac{z-x_i}{h^2}.
 }
@@ -97,7 +97,7 @@ Both signs are positive. This is the sign convention used by the current impleme
 The direct trapezoidal objective contributes, for an interior breakpoint $x_j$,
 $$
 \oxed{
-\frac{\\\partial E}{\\\partial x_j}
+\frac{\partial E}{\partial x_j}
 =
 \frac{y_{j-1}-y_{j+1}}2.
 }
@@ -118,9 +118,9 @@ The current API exposes only $f(x)$, so $f'(x_j)$ is estimated by a centered fin
 
 Assume, locally in $X$, that the exact fixed-breakpoint problem has a finite active contact set with a primal-dual optimum satisfying the envelope/KKT hypotheses, and that the active set and multipliers admit a differentiable local continuation. Then
 $$
-\\nabla_XV(X)
+\nabla_XV(X)
 =
-\\nabla_Xmathcal L(X,y^*,\lambda^*,\mu^*)
+\nabla_Xmathcal L(X,y^*,\lambda^*,\mu^*)
 $$
 with $y^*,\lambda^*,\mu^*$ held fixed in the partial derivative.
 
@@ -189,18 +189,18 @@ The following statements follow directly from the implemented acceptance rule.
 
 For one seed, every accepted step satisfies
 $$
-V_{\\\mathrm{num}}(X_{k+1})
-\\\le
-V_{\\\mathrm{num}}(X_k)
+V_{\mathrm{num}}(X_{k+1})
+\le
+V_{\mathrm{num}}(X_k)
 +
-\sigma\alpha_k\\nabla V_{\\\mathrm{num}}(X_k)^Tp_k.
+\sigma\alpha_k\nabla V_{\mathrm{num}}(X_k)^Tp_k.
 $$
 
 Since the direction is required to satisfy
 $$
-\\nabla V_{\\\mathrm{num}}(X_k)^Tp_k<0,
+\nabla V_{\mathrm{num}}(X_k)^Tp_k<0,
 $$
-the right-hand side is strictly smaller than $V_{\\\mathrm{num}}(X_k)$ whenever $\sigma>0$ and $\alpha_k>0$.
+the right-hand side is strictly smaller than $V_{\mathrm{num}}(X_k)$ whenever $\sigma>0$ and $\alpha_k>0$.
 
 Hence accepted objective values are non-increasing.
 
@@ -216,7 +216,7 @@ The two quadratic cases used by the benchmark admit exact finite-$n$ formulas.
 
 For
 $$
-f(x)=x^2,\\qquad xin[0,1],
+f(x)=x^2,\qquad xin[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
@@ -240,7 +240,7 @@ $$
 Therefore
 $$
 E=\frac16sum_{i=0}^{n-1}h_i^3,
-\\qquad
+\qquad
 sum_i h_i=1.
 $$
 By Jensen's inequality,
@@ -253,11 +253,11 @@ with equality for $h_i=1/n$. Hence the formula. ∎
 
 For
 $$
-f(x)=-x^2,\\qquad xin[0,1],
+f(x)=-x^2,\qquad xin[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
-\\\boxed{E_n^*=\frac{1}{12n^2}}.
+\boxed{E_n^*=\frac{1}{12n^2}}.
 $$
 
 ### Proof
@@ -285,30 +285,30 @@ To see the one-cell lower bound directly, write the error polynomial as
 $
 q(t)=L(t)+t^2=t^2+At+B.
 $
-Feasibility is exactly $q(t)\ge0$ on $[0,h]$. If $-2h\\\le A\le0$, the minimum of $q$ is at the vertex, so $B\\\ge A^2/4$, and hence
+Feasibility is exactly $q(t)\ge0$ on $[0,h]$. If $-2h\le A\le0$, the minimum of $q$ is at the vertex, so $B\ge A^2/4$, and hence
 $
 \int_0^h q(t)\,dt
-\\\ge
+\ge
 \frac{h^3}{3}+\frac{Ah^2}{2}+\frac{A^2h}{4}
 =
 \frac{h\bigl(3(A+h)^2+h^2\bigr)}{12}
-\\\ge\frac{h^3}{12}.
+\ge\frac{h^3}{12}.
 $
-If $A\ge0$, feasibility gives $B\ge0$ and the integral is at least $h^3/3$. If $A\\\le-2h$, feasibility at $t=h$ gives $B\\\ge-Ah-h^2$, and the integral is at least
+If $A\ge0$, feasibility gives $B\ge0$ and the integral is at least $h^3/3$. If $A\le-2h$, feasibility at $t=h$ gives $B\ge-Ah-h^2$, and the integral is at least
 $
-\frac{h^2(-3A-4h)}6\\\ge\frac{h^3}{3}.
+\frac{h^2(-3A-4h)}6\ge\frac{h^3}{3}.
 $
 Thus every affine majorant has error at least $h^3/12$, with equality for the midpoint tangent.
 
 Therefore every $n$-segment feasible spline satisfies
 $$
-E\\\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
-\\\qquad
+E\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
+\qquad
 \sum_i h_i=1.
 $$
 Jensen's inequality gives
 $$
-\sum_i h_i^3\\\ge\frac1{n^2}.
+\sum_i h_i^3\ge\frac1{n^2}.
 $$
 Uniform breakpoints attain equality because the midpoint tangents join continuously. Thus
 $$
@@ -372,11 +372,11 @@ These last two formulas are benchmark references, not project-level global-optim
 
 ## 8. Complexity
 
-Let $d=n-1$, $S$ the number of seeds, $K$ the maximum outer iterations per seed, and $L$ the line-search budget. If one fixed-breakpoint solve costs $C_{\\\mathrm{DH}}(n,\varepsilon)$, then
+Let $d=n-1$, $S$ the number of seeds, $K$ the maximum outer iterations per seed, and $L$ the line-search budget. If one fixed-breakpoint solve costs $C_{\mathrm{DH}}(n,\varepsilon)$, then
 $$
-T_{\\\mathrm{outer}}
+T_{\mathrm{outer}}
 =
-O(SKLC_{\\\mathrm{DH}}(n,\varepsilon))
+O(SKLC_{\mathrm{DH}}(n,\varepsilon))
 $$
 plus $O(SKLd)$ vector/L-BFGS work per accepted/trial step.
 
@@ -396,13 +396,13 @@ A finite run has distinct error sources:
 6. floating-point error;
 7. nonconvex optimization error.
 
-For a numerical output $\\\widehat E$ and exact optimum $E_n^*$, it is therefore appropriate to decompose
+For a numerical output $\widehat E$ and exact optimum $E_n^*$, it is therefore appropriate to decompose
 $$
-|\\\widehat E-E_n^*|
-\\\le
-|\\\widehat E-V(X_{\\\mathrm{out}})|
+|\widehat E-E_n^*|
+\le
+|\widehat E-V(X_{\mathrm{out}})|
 +
-|V(X_{\\\mathrm{out}})-E_n^*|.
+|V(X_{\mathrm{out}})-E_n^*|.
 $$
 
 The first term is the inner/numerical error at the returned breakpoints. The second is the nonconvex outer optimization gap and cannot be bounded from the local stopping criteria alone.

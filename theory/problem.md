@@ -2,36 +2,14 @@
 
 Let $f:[a,b]\to\mathbb R$ be continuous, with $a<b$, and let $n\ge1$.
 
-An admissible $n$-segment majorant is a continuous piecewise-affine function $g:[a,b]\to\mathbb R$ with a representation
+Find a continuous piecewise-affine function $g:[a,b]\to\mathbb R$ with exactly $n$ segments such that
 
-$a=x_0<x_1<\cdots<x_n=b$
+$g(x)\ge f(x) \qquad (x\in[a,b]),$
 
-such that $g$ is affine on each $[x_i,x_{i+1}]$ and
+and
 
-$g(x)\ge f(x) \qquad (x\in[a,b]).$
+$$
+\int_a^b (g(x)-f(x))dx
+$$
 
-## Vertex representation
-
-Put
-
-$y_i=g(x_i).$
-
-Then the restriction of $g$ to $[x_i,x_{i+1}]$ is uniquely determined as
-
-$L_i(x) = \frac{x_{i+1}-x}{x_{i+1}-x_i}y_i + \frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.$
-
-Hence the majorant condition is
-
-$\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i + \frac{x-x_i}{x_{i+1}-x_i}y_{i+1} \ge f(x), \qquad x\in[x_i,x_{i+1}].$
-
-The error is
-
-$E(g) = \int_a^b (g(x)-f(x))dx.$
-
-## Objective
-
-The optimum value is
-
-$E_n^*=\min_{g\in\mathcal A_n}E(g)$
-
-where existence is proved in `existence.md`.
+is minimized.

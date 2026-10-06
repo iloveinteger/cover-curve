@@ -7,82 +7,33 @@ $$
 =
 \left\{
 g\in C[a,b]:
-g\text{ is piecewise-affine with at most }n
-\text{ nondegenerate segments}
-\right\}.
+g\text{ is piecewise-affine with at most }n\text{ nondegenerate segments}
+\right\},
 $$
 
-Define
-
-$$
-J(g)=\int_a^b (g-f)\,dx,
-$$
-
-and
+and define
 
 $$
 \mathcal F_n
 =
 \left\{
-g\in\mathcal S_n:
-g(x)\ge f(x)\text{ for all }x\in[a,b]
-\right\}.
+g\in\mathcal S_n:g(x)\ge f(x)\text{ for all }x\in[a,b]
+\right\},
 $$
 
-## Free-breakpoint problem
-
-The full free-breakpoint existence statement is
+with objective
 
 $$
-\exists\,g^*\in\mathcal F_n
-\quad\text{such that}\quad
-J(g^*)=\inf_{g\in\mathcal F_n}J(g).
+J(g)=\int_a^b(g(x)-f(x))\,dx.
 $$
 
-This statement is **not proved in this document**. In particular, we do not
-invoke a general free-knot approximation theorem unless its hypotheses and
-conclusion are verified to match the present one-sided problem exactly.
+## Fixed-breakpoint existence
 
-For every feasible $g$,
+The free-breakpoint problem is not needed to establish existence when the
+breakpoints are fixed. The following result is the existence statement that
+is proved here.
 
-$$
-g-f\ge0,
-$$
-
-so
-
-$$
-J(g)
-=
-\int_a^b |g-f|\,dx
-=
-\lVert g-f\rVert_{L^1}.
-$$
-
-Thus the problem is a one-sided $L^1$ approximation problem. However, an
-existence theorem for ordinary best $L^1$ approximation by free-knot
-splines does not by itself imply existence in the constrained majorant
-class.
-
-The following references establish relevant free-knot and one-sided spline
-approximation results, but they are **not used here as a direct proof of the
-combined free-knot majorant existence statement**:
-
-- R. B. Barrar and H. L. Loeb, “Existence of best spline approximations
-  with free knots,” *Journal of Mathematical Analysis and Applications*
-  31 (1970), 383--390,
-  DOI: 10.1016/0022-2476(70)90032-6.
-- Z. Ziegler, “One-sided $L^1$-approximation by splines of an arbitrary
-  degree,” in *Approximations with Special Emphasis on Spline Functions*,
-  Academic Press, 1969, pp. 405--413.
-
-A bounded objective also cannot be converted directly into $L^1$
-compactness: bounded subsets of $L^1$ need not be relatively compact in
-$L^1$. Consequently, a minimizing-sequence proof for free breakpoints needs
-an additional compactness argument that preserves the spline class and the
-majorant constraint.
-
-## Theorem — fixed breakpoints
+### Theorem
 
 Fix
 
@@ -91,48 +42,63 @@ a=x_0<x_1<\cdots<x_m=b,
 \qquad m\le n.
 $$
 
-Among continuous piecewise-affine functions whose breakpoints are contained
-in this fixed set, there exists a feasible minimizer.
+Among all continuous piecewise-affine functions whose breakpoints are
+contained in
+
+$$
+X=\{x_0,\ldots,x_m\},
+$$
+
+there exists a feasible function minimizing $J$.
 
 ### Proof
 
-The feasible set is nonempty: the constant function
+For
 
 $$
-g(x)\equiv\max_{x\in[a,b]}f(x)
+y=(y_0,\ldots,y_m)\in\mathbb R^{m+1},
 $$
 
-belongs to the class and satisfies $g\ge f$.
-
-Write
+let $g_y$ be the unique continuous piecewise-affine function satisfying
 
 $$
-y_i=g(x_i),
+g_y(x_i)=y_i,
 \qquad i=0,\ldots,m.
 $$
 
-The spline is uniquely determined by the vector
-
-$$
-y=(y_0,\ldots,y_m).
-$$
-
-The feasible set
+The feasible parameter set is
 
 $$
 \mathcal C_X
 =
 \left\{
 y\in\mathbb R^{m+1}:
-g_y(x)\ge f(x)
-\text{ for every }x\in[a,b]
-\right\}
+g_y(x)\ge f(x)\text{ for all }x\in[a,b]
+\right\}.
 $$
 
-is closed, because for each $x$ the value $g_y(x)$ is a continuous affine
-function of $y$.
+It is nonempty because
 
-On $[x_i,x_{i+1}]$,
+$$
+g_y(x)\equiv M,
+\qquad
+M=\max_{x\in[a,b]}f(x),
+$$
+
+is feasible.
+
+For each fixed $x\in[a,b]$, the map
+
+$$
+y\longmapsto g_y(x)
+$$
+
+is affine and continuous. Hence $mathcal C_X$ is closed: if
+$y^{(k)}\to y$ with $y^{(k)}\in\mathcal C_X$, then
+$g_{y^{(k)}}(x)\to g_y(x)$ for every $x$, and therefore
+$g_y(x)\ge f(x)$ for every $x$.
+
+On each interval $[x_i,x_{i+1}]$,
 
 $$
 \int_{x_i}^{x_{i+1}}g_y(x)\,dx
@@ -140,7 +106,7 @@ $$
 \frac{x_{i+1}-x_i}{2}(y_i+y_{i+1}).
 $$
 
-Therefore
+Thus
 
 $$
 J(g_y)
@@ -156,9 +122,7 @@ Equivalently,
 $$
 J(g_y)
 =
-c_0y_0+c_my_m
-+
-\sum_{i=1}^{m-1}c_i y_i
+\sum_{i=0}^{m}c_i y_i
 -
 \int_a^b f(x)\,dx,
 $$
@@ -179,36 +143,57 @@ c_i=\frac{x_{i+1}-x_{i-1}}{2}
 (1\le i\le m-1).
 $$
 
-All coefficients are strictly positive.
+Every coefficient $c_i$ is strictly positive.
 
-Feasibility implies
+Feasibility at the breakpoints gives
 
 $$
 y_i=g_y(x_i)\ge f(x_i)
+\qquad(i=0,\ldots,m).
 $$
 
-for every $i$. Thus no coordinate can tend to $-\infty$ along the
-feasible set. If any coordinate tends to $+\infty$, the positivity of its
-coefficient forces
-
-$$
-J(g_y)\to+\infty.
-$$
-
-Hence every sublevel set
+Therefore every feasible coordinate is bounded below. If a sequence in
+$​\mathcal C_X$ has $J(g_y)\le C$, then the positive coefficients $c_i$ and
+the lower bounds on all other coordinates give an upper bound for each
+$y_i$. Hence every sublevel set
 
 $$
 \left\{
-y\in\mathcal C_X:
-J(g_y)\le C
+y\in\mathcal C_X:J(g_y)\le C
 \right\}
 $$
 
-is bounded. It is also closed, and therefore compact.
+is bounded. It is closed because both $\mathcal C_X$ and $J$ are
+continuous. Thus it is compact in $\mathbb R^{m+1}$.
 
-A minimizing sequence eventually lies in one such compact sublevel set.
-By the Weierstrass theorem, $J$ attains its minimum on $\mathcal C_X$.
+Choose any feasible $y^{(0)}$. Every minimizing sequence eventually lies
+in the compact sublevel set
+
+$$
+\left\{
+y\in\mathcal C_X:J(g_y)\le J(g_{y^{(0)}})\right\}.
+$$
+
+By the Weierstrass theorem, $J(g_y)$ attains its minimum on this set.
+Therefore a feasible minimizer exists.
 
 $$
 \square
 $$
+
+## Free breakpoints
+
+The preceding theorem does **not** prove existence for the full free-
+breakpoint class $\mathcal F_n$. In that case the knot locations vary, and
+a minimizing sequence may contain intervals whose lengths tend to zero.
+The fixed-breakpoint compactness argument therefore cannot simply be
+extended by adding the knot locations as parameters.
+
+In particular, boundedness of $J$ does not by itself give the required
+compactness. Any proof of free-breakpoint existence must control degenerating
+knot intervals and show that the limiting object remains a continuous
+piecewise-affine majorant with at most $n$ segments.
+
+We therefore do not state a free-breakpoint existence theorem here without
+an independently verified theorem or a complete proof covering precisely
+this one-sided constrained problem.

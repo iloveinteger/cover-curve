@@ -5,9 +5,9 @@
 namespace cover_curve {
 
 struct CoordinateSearchOptions {
-    int maxSweeps = 4;
-    int samples = 7;
-    int refinements = 3;
+    int maxSweeps = 2;
+    int samples = 5;
+    int refinements = 1;
     double tolerance = 1e-7;
 };
 

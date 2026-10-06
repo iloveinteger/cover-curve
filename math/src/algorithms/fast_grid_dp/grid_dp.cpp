@@ -358,9 +358,6 @@ private:
         // convexity for an arbitrary user function, so curvature shortcuts
         // are deliberately not used by the general fast solver.
         //
-        // Do not duplicate the initial sampling here: adaptiveSupportMaximum
-        // performs the same global sampling itself. The seed above is the
-        // only extra candidate that is useful across neighboring transitions.
         const auto support =
             numerical::adaptiveSupportMaximum(
                 ratio,

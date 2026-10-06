@@ -293,7 +293,7 @@ bool validInterior(
 
 }
 
-Result envelopeSQPSolve(
+EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
     const Function& f,
     double a,
     double b,
@@ -334,6 +334,9 @@ Result envelopeSQPSolve(
     }
 
     Result globalBest{};
+    std::vector<double> globalGradient;
+    int globalIterations = 0;
+    int globalStart = 0;
     bool haveBest = false;
 
     for (const auto& seed : seeds) {
@@ -455,11 +458,29 @@ Result envelopeSQPSolve(
         if (!haveBest ||
             current.result.value < globalBest.value) {
             globalBest = std::move(current.result);
+            globalGradient = std::move(current.gradient);
+            globalIterations = iteration;
+            globalStart = static_cast<int>(&seed - &seeds.front());
             haveBest = true;
         }
     }
 
-    return globalBest;
+    return {
+        std::move(globalBest),
+        std::move(globalGradient),
+        globalIterations,
+        globalStart
+    };
+}
+
+Result envelopeSQPSolve(
+    const Function& f,
+    double a,
+    double b,
+    int n,
+    const EnvelopeSQPOptions& options
+) {
+    return envelopeSQPSolveDetailed(f, a, b, n, options).result;
 }
 
 }

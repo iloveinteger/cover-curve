@@ -126,8 +126,7 @@ int main() {
         ? std::vector<int>{8, 16, 32, 64, 128}
         : std::vector<int>{8, 16, 32, 64};
     std::cout << "large_n,func,n,value,expected_or_limit,rel_error,violation,ms\n";
-    // Periodic mixed-curvature validation. For sin on [0,2pi], f'' changes
-    // sign at pi; test feasibility and convergence to the mixed-curvature constant.
+    // Validate mixed-curvature asymptotics, feasibility, and convergence.
     std::cout << "large_n_periodic,func,n,value,n2_value,asymptotic,rel_error,violation,ms\n";
     const double halfSinIntegral = std::sqrt(3.141592653589793) *
         std::tgamma(2.0 / 3.0) / std::tgamma(7.0 / 6.0);

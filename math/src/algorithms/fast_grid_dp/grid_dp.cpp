@@ -1,4 +1,4 @@
-#include "fast_grid_dp.hpp"
+#include "grid_dp.hpp"
 
 #include "../../numerical/integration.hpp"
 #include "../../numerical/support_max.hpp"

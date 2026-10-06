@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 using Clock = std::chrono::steady_clock;
 
@@ -28,24 +29,37 @@ int main() {
         {"sin_n2", sinf}
     }) {
         const double a = 0.0;
-        const double b = c.first[0] == 'x' ? 1.0 : 2.0 * 3.141592653589793;
+        const double b =
+            c.first[0] == 'x' ? 1.0 : 2.0 * 3.141592653589793;
         const int n = c.first[0] == 'x' ? 1 : 2;
 
-        double fv=0, av=0, dv=0;
+        double fv = 0.0;
+        double av = 0.0;
+        double dv = 0.0;
+
         const double fm = measure(
-            [](const auto& f,double a,double b,int n){
+            [](const auto& f,double a,double b,int n) {
                 return cover_curve::fastGridDP(f,a,b,n);
             }, c.second,a,b,n,fv);
+
         const double am = measure(
-            [](const auto& f,double a,double b,int n){
+            [](const auto& f,double a,double b,int n) {
                 return cover_curve::adaptiveGridDP(f,a,b,n);
             }, c.second,a,b,n,av);
-        const double dm = measure(
-            [](const auto& f,double a,double b,int n){
-                return cover_curve::directHeightSolve(f,a,b,n);
-            }, c.second,a,b,n,dv);
 
-        std::cout << c.first << ',' << fm << ',' << am << ',' << dm << ','
-                  << std::abs(fv-dv) << '\n';
+        std::cout << c.first << ',' << fm << ',' << am
+                  << ",direct_start\n" << std::flush;
+
+        try {
+            const double dm = measure(
+                [](const auto& f,double a,double b,int n) {
+                    return cover_curve::directHeightSolve(f,a,b,n);
+                }, c.second,a,b,n,dv);
+
+            std::cout << c.first << ',' << fm << ',' << am << ','
+                      << dm << ',' << std::abs(fv-dv) << '\n';
+        } catch (const std::exception& e) {
+            std::cout << c.first << ",direct_error," << e.what() << '\n';
+        }
     }
 }

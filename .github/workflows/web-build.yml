@@ -21,3 +21,16 @@ jobs:
         run: cmake --build build-web --parallel
       - name: Verify web output
         run: test -f web/cover_curve.js && test -f web/cover_curve.wasm && test -f web/solver-worker.js && test -f web/expression.js
+
+      - name: Install browser test dependencies
+        run: |
+          npm init -y
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser smoke test
+        run: |
+          python3 -m http.server 8080 --directory . >/tmp/cover-curve-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          node web/browser-smoke.mjs

@@ -78,3 +78,10 @@ add_executable(cover_curve_benchmark
 )
 
 target_link_libraries(cover_curve_benchmark PRIVATE cover_curve)
+
+add_executable(cover_curve_direct_height_test
+    tests/direct_height.cpp
+)
+
+target_link_libraries(cover_curve_direct_height_test PRIVATE cover_curve)
+add_test(NAME cover_curve_direct_height COMMAND cover_curve_direct_height_test)

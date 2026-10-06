@@ -354,9 +354,9 @@ Result directHeightSolve(
                     x0,
                     x1,
                     0.0,
-                    12,
-                    4,
-                    4
+                    16,
+                    5,
+                    5
                 );
 
             if (!std::isfinite(support.value))

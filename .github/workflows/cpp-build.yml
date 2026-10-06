@@ -19,3 +19,6 @@ jobs:
 
       - name: Benchmark solver
         run: ./build/cover_curve_benchmark
+
+      - name: Known optimum test
+        run: timeout 60 ./build/cover_curve_coordinate_search_test

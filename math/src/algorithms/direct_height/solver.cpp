@@ -346,7 +346,7 @@ DirectHeightDetailedResult directHeightSolveDetailed(
         );
         std::vector<double> dualB(dimension);
         for (int j = 0; j < dimension; ++j)
-            dualB[j] = -objective[j];
+            dualB[j] = objective[j];
 
         for (int r = 0; r < m; ++r)
             for (int j = 0; j < dimension; ++j)

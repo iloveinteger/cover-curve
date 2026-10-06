@@ -15,7 +15,25 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-        const auto result = cover_curve::fastGridDP(f, a, b, n);
+        const auto baseline = cover_curve::fastGridDP(f, a, b, n);
+
+        cover_curve::BreakpointSearchOptions options;
+        if (n <= 3) {
+            options.maxDepth = 5;
+            options.maxEvaluations = 32;
+        } else if (n <= 5) {
+            options.maxDepth = 4;
+            options.maxEvaluations = 16;
+        } else {
+            options.maxDepth = 3;
+            options.maxEvaluations = 8;
+        }
+
+        const auto searched =
+            cover_curve::breakpointSearch(f, a, b, n, options);
+
+        const auto& result =
+            searched.value < baseline.value ? searched : baseline;
 
         val output = val::object();
         output.set("value", result.value);

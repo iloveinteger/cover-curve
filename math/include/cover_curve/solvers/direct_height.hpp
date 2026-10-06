@@ -6,13 +6,15 @@
 namespace cover_curve {
 
 struct DirectHeightOptions {
+    // Maximum cutting-plane rounds are maxSweeps * number of heights.
     int maxSweeps = 20;
     double tolerance = 1e-8;
 };
 
-// Direct fixed-breakpoint height relaxation. This solver deliberately does
-// not use breakpoint/grid DP. It minimizes each vertex height subject to the
-// two adjacent majorant constraints, starting from a globally feasible height.
+// Solve the fixed-breakpoint continuous-height problem without breakpoint
+// DP. The implementation uses a cutting-plane LP: solve a finite LP,
+// separate the resulting piecewise-linear majorant against f on every
+// segment, add violated contact constraints, and repeat.
 Result directHeightSolve(
     const Function& f,
     const std::vector<double>& points,

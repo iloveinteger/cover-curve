@@ -585,7 +585,7 @@ private:
     double upper_ = 0.0;
 
     std::unordered_map<StateKey, StateValue, StateKeyHash, StateKeyEqual> memo_;
-    mutable mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;
+    mutable std::unordered_map<TransitionKey, Transition, TransitionKeyHash, TransitionKeyEqual> transitionCache_;
     mutable mutable std::unordered_map<LowerHeightKey, double, LowerHeightKeyHash, LowerHeightKeyEqual> lowerHeightCache_;
 };
 

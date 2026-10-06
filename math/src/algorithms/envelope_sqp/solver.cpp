@@ -160,12 +160,7 @@ std::vector<double> envelopeGradient(
         const double lambda = contact.multiplier;
         const double dy = y[i + 1] - y[i];
 
-        // For c(x)=f(z)-L(z)<=0, the sign depends on which endpoint
-        // moves. With dy=y[i+1]-y[i]:
-        //   dc/dx_i     = +dy*(x1-z)/h^2,
-        //   dc/dx_{i+1} = +dy*(z-x0)/h^2.
-        // An interior breakpoint is the right endpoint of the segment on
-        // its left and the left endpoint of the segment on its right.
+        // For c=f(z)-L(z), both endpoint derivatives are positive.
         if (i > 0)
             gradient[i] +=
                 lambda * dy * (x1 - contact.x) / (h * h);

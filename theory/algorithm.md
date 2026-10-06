@@ -39,7 +39,7 @@ The initial condition is
 $$
 F_0(0,q)=
 \begin{cases}
-0,&q\ge f(a),\\
+0,&q\ge f(a),\
 +\infty,&q<f(a),
 \end{cases}
 \qquad

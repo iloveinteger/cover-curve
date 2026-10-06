@@ -1,7 +1,7 @@
 #include <cover_curve/solvers/coordinate_search.hpp>
 
 #include "../fast_grid_dp/grid_dp.hpp"
-#include "../direct_height/solver.hpp"
+#include <cover_curve/solvers/direct_height.hpp>
 
 #include <algorithm>
 #include <cmath>

@@ -19,19 +19,13 @@ $
 and shared vertex heights $y_i=g(x_i)$. Each segment is
 
 $
-L_i(x)
-=
-\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i
-+
-\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.
+L_i(x)=\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.
 $
 
 The shared vertex heights enforce continuity automatically. The constraint is
 
 $
-L_i(x)\ge f(x)
-\qquad
-(x\in[x_i,x_{i+1}]).
+L_i(x)\ge f(x)\qquad(x\in[x_i,x_{i+1}]).
 $
 
 For fixed breakpoints, the problem is a linear semi-infinite program in the shared heights. The exact Bellman formulation uses the current breakpoint height as its state, so continuity is enforced inside the optimization rather than by post-processing.
@@ -43,39 +37,36 @@ The theory is organized as one logical chain:
 1. `theory/problem.md` — precise definition of the free-breakpoint majorant problem.
 2. `theory/existence.md` — existence of an optimal spline.
 3. `theory/fixed-breakpoint.md` — exact fixed-breakpoint formulation and existence.
-4. `theory/dynamic-programming.md` — exact shared-height Bellman formulation.
-5. `theory/algorithm.md` — finite breakpoint/height discretization, exact finite DP, and convergence to the original optimum.
+4. `theory/dynamic-programming.md` — exact continuous-height shared-height Bellman formulation.
+5. `theory/algorithm.md` — breakpoint-only discretization, continuous-height DP, and convergence to the original optimum.
 
-The main convergence statement is
+The main mathematical convergence statement is
 
 $
-E_{n,N,\eta}^*\longrightarrow E_n^*
+E_{n,N}^*\longrightarrow E_n^*
 $
 
-when the breakpoint-grid mesh and height-grid mesh both tend to zero.
-
-The free-breakpoint existence theorem uses standard spline approximation results; the fixed-breakpoint and discretization arguments are proved directly in the repository.
+when the breakpoint-grid mesh tends to zero. No height-grid convergence parameter is required by the mathematical formulation.
 
 ## Numerical implementation
 
 The implementation is separate from the mathematical convergence theorem. In particular, numerical evaluation of $f$, the support function
 
 $
-T_{u,v}(p)
-=
-\sup_{u<x\le v}
-\frac{(v-u)f(x)-(v-x)p}{x-u},
+T_{u,v}(p)=\sup_{u<x\le v}\frac{(v-u)f(x)-(v-x)p}{x-u},
 $
 
-and the integral must eventually be controlled so that their numerical errors vanish under refinement.
+and the integral must be controlled separately.
 
-The baseline implementation now uses the shared-height DP with breakpoint/height discretization and finite transition constraints. Its transition constraints are sampled numerically, so they are not global feasibility certificates for arbitrary continuous black-box functions.
+The current baseline implementation still uses a finite height grid together with sampled transition constraints. It is therefore a numerical approximation to the continuous-height theory, not an implementation of the exact continuous-height DP and not a global feasibility certificate for arbitrary continuous black-box functions.
+
+The implementation specification in `implementation/adaptive-grid-dp.md` describes the required height-grid-free target and the remaining numerical issues.
 
 ## Status
 
-The theory has been reorganized around the exact continuous shared-height problem. The old independent one-segment-cost DP is not part of the mathematical solution, because independently optimized segments do not enforce continuity.
+The theory is organized around the exact continuous shared-height problem. The old independent one-segment-cost DP is not part of the mathematical solution, because independently optimized segments do not enforce continuity.
 
-Curvature-based breakpoint heuristics are also not part of the current correctness theorem. They may be investigated later as numerical acceleration or grid-design heuristics, but they are not needed for the convergence result above.
+Curvature-based breakpoint heuristics are also not part of the correctness theorem. They may be used as numerical acceleration or grid-design heuristics, but the mathematical convergence result needs only breakpoint meshes with vanishing mesh size.
 
 ## Build
 

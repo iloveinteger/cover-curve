@@ -11,15 +11,13 @@ Result solveGridDP(
     double a,
     double b,
     int n,
-    int N,
-    int heightLevels = 64
+    int N
 );
 
 Result solveGridDPOnGrid(
     const Function& f,
     const std::vector<double>& points,
-    int n,
-    int heightLevels = 64
+    int n
 );
 
 }

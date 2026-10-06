@@ -96,7 +96,7 @@ int main() {
         },
         fixedFunction, fixedPoints, 2, fixedDirect
     );
-    std::cout << "fixed_sin_2_uniform," << fixedFastMs << ','
-              << fixedDirectMs << ','
-              << std::abs(fixedFast - fixedDirect) << '\n';
+    std::cout << "fixed_sin_2_uniform," << fixedFastMs
+              << ",NA," << fixedDirectMs
+              << ",NA," << std::abs(fixedFast - fixedDirect) << '\n';
 }

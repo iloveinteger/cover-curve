@@ -197,6 +197,36 @@ int main() {
     );
     expectContinuous(rpFast, 1e-10, "fast piecewise curvature");
 
+    cover_curve::CoordinateSearchOptions coordinateOptions;
+    coordinateOptions.maxSweeps = 3;
+    coordinateOptions.samples = 5;
+    coordinateOptions.refinements = 2;
+
+    const auto rCoordinate =
+        cover_curve::coordinateSearch(
+            square,
+            0.0,
+            1.0,
+            2,
+            coordinateOptions
+        );
+    expectNear(
+        rCoordinate.value,
+        1.0 / 24.0,
+        2e-3,
+        "coordinate search square n=2"
+    );
+    expectContinuous(
+        rCoordinate,
+        1e-10,
+        "coordinate search square"
+    );
+
+    if (rCoordinate.value > rf.value + 1e-10) {
+        std::cerr << "coordinate search degraded fastGridDP result\n";
+        return 1;
+    }
+
     const auto r4 =
         cover_curve::curvatureAdaptive(square, 0.0, 1.0, 2);
     expectNear(

@@ -4,256 +4,394 @@
 
 For strict breakpoints
 $$
-X=(x_0,\ldots,x_n),\qquad a=x_0<\cdots<x_n=b,
+X=(x_0,ldots,x_n),qquad a=x_0<cdots<x_n=b,
 $$
 define
 $$
-V(X)=\min_{y\in\mathcal F_X}
-\left[
-\sum_{i=0}^{n-1}\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
--\int_a^b f
-\right].
+V(X)=min_{yinmathcal F_X}
+left[
+sum_{i=0}^{n-1}rac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
+-int_a^b f(x),dx
+ight].
 $$
 
-For fixed $X$, this is a linear semi-infinite program in $y$. The implementation directHeightSolveDetailed is a numerical cutting-plane method for this inner problem.
+For fixed $X$, this is a linear semi-infinite program in the shared heights. The free-breakpoint problem is
+$$
+E_n^*=min_{a<x_1<cdots<x_{n-1}<b}V(X).
+$$
 
-The free-breakpoint problem is
-$$
-E_n^*=\min_{a<x_1<\cdots<x_{n-1}<b}V(X).
-$$
-It is generally nonconvex. Therefore the Envelope-SQP implementation is a local numerical optimizer, not a globally correct algorithm for arbitrary $f$.
+The outer problem is generally nonconvex. Envelope-SQP is therefore a local numerical method, not a global solver.
 
 ## 2. Fixed-breakpoint oracle
 
-For a finite set of contact points, the LP is
+For a finite retained contact set $S$, the cutting-plane LP is
 $$
-\min_y c(X)^Ty-\int_a^b f,
+min_y c(X)^Ty-int_a^b f(x),dx
 $$
 subject to
 $$
-f(z)-w_i(z;X)^Ty\le0,
+f(z)-w_i(z;X)^Tyle0,qquad zin S,
 $$
-where $w_i$ contains the two linear interpolation weights on segment $i$.
+where $w_i$ contains the two interpolation weights on the segment containing $z$.
 
-The separation oracle searches
+The separation problem is
 $$
-\max_{z\in[x_i,x_{i+1}]}\{f(z)-L_i(z)\}.
-$$
-If the maximum is at most $\varepsilon$, then the returned spline is an $\varepsilon$-majorant.
-
-## 3. Envelope derivative
-
-Assume $V$ is differentiable at $X$, and let $(y,\lambda,\mu)$ be a primal/dual optimum satisfying the usual LP regularity conditions. Here $\lambda_k\ge0$ are multipliers for contact constraints
-$$
-f(z_k)-L(z_k)\le0,
-$$
-and $\mu_j\ge0$ are endpoint multipliers for
-$$
-f(x_j)-y_j\le0.
+M_i=max_{zin[x_i,x_{i+1}]}{f(z)-L_i(z)}.
 $$
 
-The Lagrangian is
+If a certified global separation pass establishes
 $$
-\mathcal L
-=E(X,y)+\sum_k\lambda_k(f(z_k)-L(z_k))
-+\sum_j\mu_j(f(x_j)-y_j).
+M_ilearepsilon
+qquad	ext{for every }i,
+$$
+then the returned spline is an $arepsilon$-majorant. For an exact finite LP optimum $LB$,
+$$
+LBle V(X)le LB+arepsilon(b-a).
 $$
 
-At a differentiability point, the envelope theorem gives
-$$
-\nabla_XV=\nabla_X\mathcal L
-$$
-with the optimal primal/dual variables held fixed.
+The C++ support search is numerical rather than certified, so this inequality is a conditional numerical certificate.
 
-For a contact $z\in[x_i,x_{i+1}]$, $h=x_{i+1}-x_i$,
+## 3. Envelope sensitivity
+
+The sensitivity formula is valid only at a differentiability point of the exact value function and under a valid primal-dual envelope/KKT representation. It is not an unconditional formula at active-set changes.
+
+Let
 $$
-\frac{\partial(f(z)-L(z))}{\partial x_i}
+c(z;X,y)=f(z)-L_i(z)
+$$
+for a contact $zin[x_i,x_{i+1}]$, and put
+$$
+h=x_{i+1}-x_i,qquad d=y_{i+1}-y_i.
+$$
+
+Because
+$$
+L_i(z)=y_i+drac{z-x_i}{h},
+$$
+direct differentiation gives
+$$
+rac{partial L_i(z)}{partial x_i}
 =
-\frac{(y_{i+1}-y_i)(x_{i+1}-z)}{h^2},
-$$
-$$
-\frac{\partial(f(z)-L(z))}{\partial x_{i+1}}
+-drac{x_{i+1}-z}{h^2},
+qquad
+rac{partial L_i(z)}{partial x_{i+1}}
 =
-\frac{(y_{i+1}-y_i)(z-x_i)}{h^2}.
+-drac{z-x_i}{h^2}.
 $$
 
-Both signs are positive: differentiating the interpolation line with respect to either endpoint gives a negative contribution to $L$, hence a positive contribution to $f-L$.
+Therefore, for the constraint convention $f-Lle0$,
+$$
+oxed{
+rac{partial c}{partial x_i}
+=
+drac{x_{i+1}-z}{h^2},
+qquad
+rac{partial c}{partial x_{i+1}}
+=
+drac{z-x_i}{h^2}.
+}
+$$
 
-The direct objective contributes, for an interior breakpoint,
+Both signs are positive. This is the sign convention used by the current implementation.
+
+The direct trapezoidal objective contributes, for an interior breakpoint $x_j$,
 $$
-\frac{\partial E}{\partial x_j}
-=\frac{y_{j-1}-y_{j+1}}2.
+oxed{
+rac{partial E}{partial x_j}
+=
+rac{y_{j-1}-y_{j+1}}2.
+}
 $$
 
-For the endpoint constraint $f(x_j)-y_j\le0$,
+If an endpoint constraint
 $$
-\frac{\partial}{\partial x_j}[f(x_j)-y_j]=f'(x_j).
+f(x_j)-y_jle0
 $$
-The current API accepts only a value function $f(x)$, so the implementation estimates this term by a centered finite difference.
+is active with multiplier $\mu_j$, its direct breakpoint derivative is
+$$
+\mu_j f'(x_j).
+$$
 
-At active-set transitions $V$ can be nonsmooth and the LP dual can be nonunique. The computed vector is then a numerical sensitivity direction, not an everywhere-valid classical gradient.
+The current API exposes only $f(x)$, so $f'(x_j)$ is estimated by a centered finite difference. Consequently the implemented gradient is a numerical sensitivity direction even when the exact value function is differentiable.
+
+### Proposition — finite-contact envelope formula
+
+Assume, locally in $X$, that the exact fixed-breakpoint problem has a finite active contact set with a primal-dual optimum satisfying the envelope/KKT hypotheses, and that the active set and multipliers admit a differentiable local continuation. Then
+$$
+
+abla_XV(X)
+=
+
+abla_Xmathcal L(X,y^*,lambda^*,mu^*)
+$$
+with $y^*,lambda^*,mu^*$ held fixed in the partial derivative.
+
+In particular, each active contact contributes the two boxed terms above, the trapezoidal objective contributes $(y_{j-1}-y_{j+1})/2$, and active endpoint constraints contribute $\mu_j f'(x_j)$.
+
+### Proof
+
+Under the stated differentiability and KKT/envelope assumptions, the value function is the optimal value of a parameterized constrained optimization problem whose local optimizer and multipliers satisfy the envelope theorem. Differentiating the Lagrangian with respect to the parameter $X$ while holding the optimal primal and dual variables fixed gives the derivative of the value. The displayed contact derivatives follow by direct differentiation of the interpolation formula, and the objective and endpoint derivatives follow from the product rule and the chain rule. ∎
+
+At active-set transitions the hypotheses can fail. The value function may be nonsmooth and the dual multipliers may be nonunique. The implementation therefore treats the computed vector as a search direction, not as a globally valid classical gradient.
 
 ## 4. Outer algorithm
 
-The implementation is L-BFGS-style rather than textbook SQP: it does not solve a quadratic-program subproblem. The name Envelope-SQP describes the envelope-based constrained outer architecture.
+The current implementation is L-BFGS-style rather than textbook SQP: it does not solve a quadratic-program subproblem.
 
-Pseudocode:
+~~~text
+for each selected seed:
+    x <- seed
+    current <- DirectHeight(x)
+    history <- empty
 
-    for each selected seed:
-        x <- seed
-        current <- DirectHeight(x)
-        history <- empty
+    repeat at most maxIterations:
+        g <- envelopeSensitivity(x, current)
 
-        repeat at most maxIterations:
-            g <- envelopeSensitivity(x, current)
-            if ||g||_infinity <= gradientTolerance:
-                break
+        if ||g||_infinity <= gradientTolerance:
+            stop
 
-            p <- L-BFGS(g, history)
-            if g dot p >= 0:
-                p <- -g
+        p <- L-BFGS(g, history)
+        if g dot p >= 0:
+            p <- -g
 
-            alpha <- largest ordering-preserving step
+        alpha <- largest ordering-preserving step
 
-            backtrack:
-                trial <- x + alpha*p
-                if trial is invalid:
-                    alpha <- alpha/2
-                    continue
+        repeat at most lineSearchSteps:
+            trial <- x + alpha * p
 
-                candidate <- DirectHeight(trial)
+            if trial is invalid:
+                alpha <- alpha / 2
+                continue
 
-                if V(trial) <= V(x)
+            candidate <- DirectHeight(trial)
+
+            if candidate.value <= current.value
                     + sufficientDecrease * alpha * (g dot p):
-                    accept trial
-                    update history
-                    x <- trial
-                    current <- candidate
-                    break
-
-                alpha <- alpha/2
-
-            if no trial is accepted:
+                accept trial
+                update L-BFGS history
+                x <- trial
+                current <- candidate
                 break
 
-        return the best result over all seeds
+            alpha <- alpha / 2
 
-Every accepted step is reevaluated by the fixed-breakpoint solver.
+        if no trial was accepted:
+            stop
 
-## 5. Convergence statement
+return the best result over all seeds
+~~~
 
-There is no general global-convergence theorem for this implementation.
+Every accepted breakpoint vector is re-solved by the fixed-breakpoint inner solver.
 
-What follows directly from the code is conditional:
+## 5. What is actually guaranteed
 
-1. every accepted step satisfies the configured sufficient-decrease test;
-2. therefore objective values along one seed are non-increasing;
-3. the objective is bounded below by zero;
-4. if infinitely many accepted steps occur, the objective values converge to a finite limit.
+The following statements follow directly from the implemented acceptance rule.
 
-This does not imply convergence of the breakpoint vector, stationarity, or global optimality. Those conclusions require additional assumptions that are not enforced by the implementation.
+### Proposition — monotone accepted values
 
-## 6. Curvature-density seed
-
-On a constant-sign $C^2$ interval, the local majorant error is
+For one seed, every accepted step satisfies
 $$
-c(x)|f''(x)|h^3+o(h^3),
-\qquad
+V_{mathrm{num}}(X_{k+1})
+le
+V_{mathrm{num}}(X_k)
++
+\sigma\alpha_k
+abla V_{mathrm{num}}(X_k)^Tp_k.
+$$
+
+Since the direction is required to satisfy
+$$
+
+abla V_{mathrm{num}}(X_k)^Tp_k<0,
+$$
+the right-hand side is strictly smaller than $V_{mathrm{num}}(X_k)$ whenever $\sigma>0$ and $\alpha_k>0$.
+
+Hence accepted objective values are non-increasing.
+
+Because every returned majorant has nonnegative error up to numerical roundoff, the exact objective is bounded below by zero. Therefore, if infinitely many accepted steps occur and the numerical evaluations are finite, the sequence of accepted objective values has a finite limit.
+
+This does **not** imply convergence of the breakpoint vector, stationarity, or global optimality.
+
+## 6. Exact quadratic reference problems
+
+The two quadratic cases used by the benchmark admit exact finite-$n$ formulas.
+
+### Theorem — convex quadratic
+
+For
+$$
+f(x)=x^2,qquad xin[0,1],
+$$
+the exact optimum with $n$ segments is
+$$
+oxed{E_n^*=rac{1}{6n^2}}.
+$$
+
+### Proof
+
+For any fixed breakpoints, feasibility at the endpoints forces
+$$
+y_ige f(x_i)=x_i^2.
+$$
+The chord through the endpoint values is a majorant because $x^2$ is convex. Any other feasible affine segment has endpoint values no smaller than the chord endpoints, so it lies pointwise above that chord. Thus the optimal segment is the chord.
+
+For a segment of length $h_i$, the chord error is
+$$
+int_0^{h_i}left(h_i t-t^2ight),dt
+=
+rac{h_i^3}{6}.
+$$
+Therefore
+$$
+E=rac16sum_{i=0}^{n-1}h_i^3,
+qquad
+sum_i h_i=1.
+$$
+By Jensen's inequality,
+$$
+sum_i h_i^3ge nleft(rac1night)^3=rac1{n^2},
+$$
+with equality for $h_i=1/n$. Hence the formula. ∎
+
+### Theorem — concave quadratic
+
+For
+$$
+f(x)=-x^2,qquad xin[0,1],
+$$
+the exact optimum with $n$ segments is
+$$
+oxed{E_n^*=rac{1}{12n^2}}.
+$$
+
+### Proof
+
+On an interval of length $h$ the optimal affine majorant of $-x^2$ is the tangent at the midpoint. After translating the interval to $[0,h]$, it is
+$$
+L(t)=-rac h2t+rac{h^2}{8}.
+$$
+The error is
+$$
+L(t)+rac{t^2}{2}
+=
+rac12left(t-rac h2ight)^2,
+$$
+so its integral is
+$$
+rac{h^3}{24}.
+$$
+
+For consecutive equal-length intervals, the tangent lines have the same excess
+$$
+rac{h^2}{8}
+$$
+above $f$ at every common breakpoint, so they join continuously. Conversely, every feasible affine segment has error at least $h^3/24$, which gives
+$$
+Egerac1{24}sum_i h_i^3
+gerac1{24n^2}.
+$$
+
+The factor in the lower bound must use $f''=-2$: the displayed translated quadratic is $-t^2$, hence its midpoint tangent error integrates to $h^3/12$. Equivalently, writing $f(t)=-t^2$ directly gives
+$$
+L(t)=-ht+rac{h^2}{4},
+qquad
+int_0^h(L(t)+t^2),dt=rac{h^3}{12}.
+$$
+Thus
+$$
+Egerac1{12}sum_i h_i^3gerac1{12n^2},
+$$
+and uniform breakpoints attain equality. ∎
+
+## 7. Curvature-density model
+
+The following local calculation is rigorous, but its use as a global free-breakpoint asymptotic law requires additional approximation-theory arguments and is **not** used as a correctness theorem for Envelope-SQP.
+
+For a constant-sign quadratic model on an interval of length $h$,
+$$
+f(x_0+t)=f(x_0)+f'(x_0)t+rac12q t^2,
+$$
+the best affine majorant has leading error
+$$
+egin{cases}
+q h^3/12,&q>0,\\
+|q| h^3/24,&q<0.
+end{cases}
+$$
+
+Hence the local density model is
+$$
+w(x)=c(x)^{1/3}|f''(x)|^{1/3},
+$$
+where
+$$
 c(x)=
-\begin{cases}
+egin{cases}
 1/12,&f''(x)>0,\\
 1/24,&f''(x)<0.
-\end{cases}
+end{cases}
 $$
 
-Balancing the leading term over $n$ cells gives
-$$
-\boxed{\rho(x)\propto c(x)^{1/3}|f''(x)|^{1/3}}.
-$$
+Equal increments of $\int w$ are therefore a principled asymptotic seed. They are not a finite-$n$ optimality certificate.
 
-The implementation estimates $f''$ by a centered three-point difference, integrates this density numerically, and inverts its cumulative distribution. This is an initializer, not a finite-$n$ optimality theorem.
-
-## 7. Local asymptotic constant
-
-If $f\in C^2$ and $f''$ has one strict sign on $[a,b]$, then
+For $x^4$ on $[0,1]$, the corresponding formal asymptotic reference is
 $$
-\boxed{
-\lim_{n\to\infty}n^2E_n^*
+n^2E_n^*\sim
+left(int_0^1x^{2/3},dxight)^3
 =
+rac{27}{125}.
+$$
+
+For $\sin x$ on $[0,2\pi]$, the mixed-curvature reference used by the benchmark is
+$$
+n^2E_n^*\sim
+left[
+\left(int_0^\pi \sin(x)^{1/3},dx\right)
 \left(
-\int_a^b c^{1/3}|f''(x)|^{1/3}\,dx
-\right)^3.
-}
+\left(\frac1{12}\right)^{1/3}
++
+\left(\frac1{24}\right)^{1/3}
+\right)
+\right]^3.
 $$
 
-For one cell of length $h$, Taylor expansion reduces the leading problem to an affine majorant of $qt^2/2$. For $q>0$, the optimal majorant is $qt/2$, with error $q/12$. For $q=-\kappa<0$, the optimal majorant is the midpoint tangent
-$$
--\kappa t/2+\kappa/8,
-$$
-with error $\kappa/24$.
+These last two formulas are benchmark references, not project-level global-optimality theorems.
 
-Put $w=c^{1/3}|f''|^{1/3}$. The discrete leading term is $\sum_i w_i^3h_i^3$. Hölder gives
-$$
-\sum_i w_i^3h_i^3
-\ge
-\frac{\left(\sum_i w_i h_i\right)^3}{n^2}.
-$$
-For fine partitions $\sum_i w_i h_i\to\int_a^b w$, giving the lower bound. Equal increments of
-$$
-\Phi(x)=\int_a^xw(t)\,dt
-$$
-give the matching upper bound. Hence the displayed limit.
+## 8. Complexity
 
-## 8. Mixed curvature
-
-A completely unconditional mixed-sign theorem is not claimed for arbitrary $C^2$ functions.
-
-A sufficient assumption for the formula used in the large-$n$ benchmark is:
-
-- $f\in C^3([a,b])$;
-- $f''$ has finitely many isolated zeros.
-
-Then
-$$
-\boxed{
-\lim_{n\to\infty}n^2E_n^*
-=
-\left(
-\int_a^b
-c(x)^{1/3}|f''(x)|^{1/3}\,dx
-\right)^3,
-}
-$$
-where $c=1/12$ on $f''>0$ and $c=1/24$ on $f''<0$.
-
-Proof idea with the required estimates: remove the finitely many cells crossing zeros of $f''$. On every remaining cell the constant-sign expansion applies. Near an isolated zero, $f''(x)=O(|x-x_0|)$ because $f\in C^3$; the quadratic term therefore vanishes to first order and the local majorant error is $O(h^4)$. The density quantile construction makes the finitely many crossing-cell contributions $o(n^{-2})$, while their density mass is $o(1)$. Applying the constant-sign lower bound to the remaining cells and the density construction for the upper bound yields the same liminf and limsup.
-
-This proof is intentionally stated with these explicit regularity assumptions. No universal finite-$n$ $O(n^{-3})$ remainder is claimed.
-
-## 9. Complexity
-
-Let $d=n-1$, $S$ be the number of seeds, $K$ the maximum accepted outer iterations per seed, and $L$ the line-search budget. If one fixed-breakpoint solve costs $C_{\mathrm{DH}}(n,\varepsilon)$, then
+Let $d=n-1$, $S$ the number of seeds, $K$ the maximum outer iterations per seed, and $L$ the line-search budget. If one fixed-breakpoint solve costs $C_{\mathrm{DH}}(n,\varepsilon)$, then
 $$
 T_{\mathrm{outer}}
 =
 O(SKLC_{\mathrm{DH}}(n,\varepsilon))
 $$
-plus $O(SKnd)$ vector/L-BFGS work.
+plus $O(SKLd)$ vector/L-BFGS work per accepted/trial step.
 
-The implementation has no polynomial worst-case bound: the inner simplex method has no polynomial worst-case guarantee, and the separation oracle is numerical.
+The curvature seed costs $O(M+n)$ arithmetic work for $M$ samples, apart from function evaluations.
 
-The curvature seed costs $O(M+n)$ arithmetic work for $M$ samples, apart from the cost of evaluating $f$.
+There is no polynomial worst-case bound for the complete implementation: the dense simplex inner solver has no polynomial worst-case guarantee, the separation oracle is numerical, and the outer problem is nonconvex.
 
-## 10. Error budget
+## 9. Numerical error budget
 
-A finite numerical result contains several distinct errors:
+A finite run has distinct error sources:
 
-- cutting-plane/LP error;
-- separation-oracle error;
-- numerical integration error;
-- finite-difference error in endpoint sensitivities;
-- outer stopping/optimization error;
-- floating-point error;
-- and nonconvex outer optimization error.
+1. finite LP/cutting-plane error;
+2. separation-oracle error;
+3. numerical integration error;
+4. finite-difference error in endpoint sensitivities;
+5. outer line-search/stopping error;
+6. floating-point error;
+7. nonconvex optimization error.
 
-The asymptotic $n^{-2}$ formula is a theorem about the exact optimum $E_n^*$; it is not a finite-run error bound.
+For a numerical output $\widehat E$ and exact optimum $E_n^*$, it is therefore appropriate to decompose
+$$
+|\widehat E-E_n^*|
+\le
+|\widehat E-V(X_{\mathrm{out}})|
++
+|V(X_{\mathrm{out}})-E_n^*|.
+$$
+
+The first term is the inner/numerical error at the returned breakpoints. The second is the nonconvex outer optimization gap and cannot be bounded from the local stopping criteria alone.
+
+The asymptotic curvature references are not finite-run error bounds.

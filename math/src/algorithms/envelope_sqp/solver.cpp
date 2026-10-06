@@ -33,6 +33,68 @@ std::vector<double> heightsFromResult(const Result& result) {
     return heights;
 }
 
+std::vector<double> curvatureSeed(
+    const Function& f,
+    double a,
+    double b,
+    int n,
+    int samples
+) {
+    samples = std::max(samples, 17);
+    if ((samples & 1) == 0)
+        ++samples;
+
+    std::vector<double> xs(samples), density(samples, 0.0), cdf(samples, 0.0);
+    const double h = (b - a) / (samples - 1);
+    for (int i = 0; i < samples; ++i)
+        xs[i] = a + i * h;
+
+    // Three-point curvature estimate.  The asymptotic theory gives knot
+    // density proportional to c^(1/3)|f''|^(1/3), where c=1/12 on convex
+    // pieces and c=1/24 on concave pieces.  A small floor prevents a zero
+    // curvature/inflection point from creating an unusably large gap.
+    const double floor = 1e-8;
+    for (int i = 1; i + 1 < samples; ++i) {
+        const double d2 =
+            (f(xs[i + 1]) - 2.0 * f(xs[i]) + f(xs[i - 1])) / (h * h);
+        const double k = std::abs(d2);
+        const double c = d2 >= 0.0 ? 1.0 / 12.0 : 1.0 / 24.0;
+        density[i] = std::max(floor, std::cbrt(c * k));
+    }
+    density.front() = density[1];
+    density.back() = density[samples - 2];
+
+    for (int i = 1; i < samples; ++i)
+        cdf[i] = cdf[i - 1] +
+            0.5 * h * (density[i - 1] + density[i]);
+
+    const double total = cdf.back();
+    if (!(total > 0.0) || !std::isfinite(total)) {
+        std::vector<double> uniform(n + 1);
+        for (int i = 0; i <= n; ++i)
+            uniform[i] = a + (b - a) * i / n;
+        return uniform;
+    }
+
+    std::vector<double> result(n + 1);
+    result.front() = a;
+    result.back() = b;
+    for (int j = 1; j < n; ++j) {
+        const double target = total * j / n;
+        const auto it = std::lower_bound(cdf.begin(), cdf.end(), target);
+        const int k = static_cast<int>(std::distance(cdf.begin(), it));
+        if (k <= 0) {
+            result[j] = xs[0];
+            continue;
+        }
+        const double c0 = cdf[k - 1];
+        const double c1 = cdf[k];
+        const double u = (target - c0) / std::max(c1 - c0, 1e-30);
+        result[j] = xs[k - 1] + u * (xs[k] - xs[k - 1]);
+    }
+    return result;
+}
+
 std::vector<double> numericalDerivative(
     const Function& f,
     const std::vector<double>& x,
@@ -337,23 +399,27 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         seeds.push_back(uniform);
     }
 
-    // Cheap deterministic alternatives. These change the gap distribution
-    // without invoking the expensive global grid solver. They are useful
-    // because V(x) is nonconvex and a single uniform seed can be stationary
-    // at a poor local configuration.
+    // The second independent seed is theory-driven: distribute breakpoints
+    // according to the asymptotic L1 majorant density. This replaces the old
+    // arbitrary power-law seeds and usually gives a much better starting point
+    // at essentially negligible cost compared with one inner LP solve.
+    if (options.useCurvatureSeed &&
+        static_cast<int>(seeds.size()) < options.seeds) {
+        seeds.push_back(curvatureSeed(
+            f, a, b, n, options.curvatureSamples
+        ));
+    }
+
+    // If more seeds are explicitly requested, retain cheap deterministic
+    // alternatives rather than invoking the expensive global grid solver.
     for (int s = 1;
          static_cast<int>(seeds.size()) < options.seeds;
          ++s) {
-        const double power =
-            s % 2 == 1
-                ? 2.0
-                : 0.5;
+        const double power = s % 2 == 1 ? 2.0 : 0.5;
         std::vector<double> candidate(n + 1);
         for (int i = 0; i <= n; ++i) {
-            const double u =
-                static_cast<double>(i) / n;
-            candidate[i] =
-                a + (b - a) * std::pow(u, power);
+            const double u = static_cast<double>(i) / n;
+            candidate[i] = a + (b - a) * std::pow(u, power);
         }
         seeds.push_back(std::move(candidate));
     }

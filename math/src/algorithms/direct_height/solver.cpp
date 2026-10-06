@@ -12,53 +12,160 @@
 namespace cover_curve {
 namespace {
 
-struct Oracle {
-    const Function& f;
-    const std::vector<double>& x;
-    double fmax;
+class Simplex {
+public:
+    Simplex(
+        const std::vector<std::vector<double>>& A,
+        const std::vector<double>& b,
+        const std::vector<double>& c
+    )
+        : m_(static_cast<int>(b.size())),
+          n_(static_cast<int>(c.size())),
+          B_(m_),
+          N_(n_ + 1),
+          D_(m_ + 2, std::vector<double>(n_ + 2, 0.0)) {
+        for (int i = 0; i < m_; ++i)
+            for (int j = 0; j < n_; ++j)
+                D_[i][j] = A[i][j];
 
-    double requiredRight(int i, double p) const {
-        const double u = x[i];
-        const double v = x[i + 1];
-        const double width = v - u;
-        const double eps = std::max(1e-12 * width, 1e-14);
-        double q = std::max(f(u), f(v));
-
-        if (u + eps < v) {
-            const auto ratio = [&](double z) {
-                return (f(z) - p) / (z - u);
-            };
-            const auto support =
-                numerical::adaptiveSupportMaximum(
-                    ratio, u + eps, v, 0.0, 8, 3, 3
-                );
-            if (std::isfinite(support.value))
-                q = std::max(q, p + width * support.value);
+        for (int i = 0; i < m_; ++i) {
+            B_[i] = n_ + i;
+            D_[i][n_] = -1.0;
+            D_[i][n_ + 1] = b[i];
         }
-        return q;
+
+        for (int j = 0; j < n_; ++j)
+            D_[m_][j] = -c[j];
+
+        N_[n_] = -1;
+        D_[m_ + 1][n_] = 1.0;
     }
 
-    double requiredLeft(int i, double q) const {
-        const double u = x[i];
-        const double v = x[i + 1];
-        double lo = f(u);
-        double hi = fmax;
-
-        if (requiredRight(i, lo) <= q)
-            return lo;
-
-        if (requiredRight(i, hi) > q)
-            return std::numeric_limits<double>::infinity();
-
-        for (int it = 0; it < 45; ++it) {
-            const double mid = (lo + hi) / 2.0;
-            if (requiredRight(i, mid) <= q)
-                hi = mid;
-            else
-                lo = mid;
+    bool solve(std::vector<double>& x) {
+        if (m_ == 0) {
+            x.assign(n_, 0.0);
+            return true;
         }
-        return hi;
+
+        int r = 0;
+        for (int i = 1; i < m_; ++i)
+            if (D_[i][n_ + 1] < D_[r][n_ + 1])
+                r = i;
+
+        if (D_[r][n_ + 1] < -kEps) {
+            pivot(r, n_);
+            if (!simplex(2) || D_[m_ + 1][n_ + 1] < -kEps)
+                return false;
+
+            for (int i = 0; i < m_; ++i) {
+                if (B_[i] != -1)
+                    continue;
+
+                int s = 0;
+                for (int j = 1; j <= n_; ++j) {
+                    if (s == 0 ||
+                        D_[i][j] < D_[i][s] ||
+                        (D_[i][j] == D_[i][s] && N_[j] < N_[s])) {
+                        s = j;
+                    }
+                }
+                pivot(i, s);
+            }
+        }
+
+        if (!simplex(1))
+            return false;
+
+        x.assign(n_, 0.0);
+        for (int i = 0; i < m_; ++i)
+            if (B_[i] >= 0 && B_[i] < n_)
+                x[B_[i]] = std::max(0.0, D_[i][n_ + 1]);
+
+        return true;
     }
+
+private:
+    static constexpr double kEps = 1e-10;
+
+    void pivot(int r, int s) {
+        const double inv = 1.0 / D_[r][s];
+
+        for (int i = 0; i < m_ + 2; ++i) {
+            if (i == r)
+                continue;
+            const double factor = D_[i][s] * inv;
+            for (int j = 0; j < n_ + 2; ++j)
+                if (j != s)
+                    D_[i][j] -= D_[r][j] * factor;
+            D_[i][s] = D_[r][s] * factor;
+        }
+
+        for (int j = 0; j < n_ + 2; ++j)
+            if (j != s)
+                D_[r][j] *= inv;
+
+        for (int i = 0; i < m_ + 2; ++i)
+            if (i != r)
+                D_[i][s] *= -inv;
+
+        D_[r][s] = inv;
+        std::swap(B_[r], N_[s]);
+    }
+
+    bool simplex(int phase) {
+        const int objective = m_ + phase - 1;
+
+        for (;;) {
+            int s = -1;
+            for (int j = 0; j <= n_; ++j) {
+                if (N_[j] == -phase)
+                    continue;
+                if (s == -1 ||
+                    D_[objective][j] < D_[objective][s] - kEps ||
+                    (std::abs(D_[objective][j] - D_[objective][s]) <= kEps &&
+                     N_[j] < N_[s])) {
+                    s = j;
+                }
+            }
+
+            if (s == -1 || D_[objective][s] >= -kEps)
+                return true;
+
+            int r = -1;
+            for (int i = 0; i < m_; ++i) {
+                if (D_[i][s] <= kEps)
+                    continue;
+
+                const double ratio =
+                    D_[i][n_ + 1] / D_[i][s];
+
+                if (r == -1 ||
+                    ratio < D_[r][n_ + 1] / D_[r][s] - kEps ||
+                    (std::abs(
+                         ratio - D_[r][n_ + 1] / D_[r][s]
+                     ) <= kEps &&
+                     B_[i] < B_[r])) {
+                    r = i;
+                }
+            }
+
+            if (r == -1)
+                return false;
+
+            pivot(r, s);
+        }
+    }
+
+    int m_;
+    int n_;
+    std::vector<int> B_;
+    std::vector<int> N_;
+    std::vector<std::vector<double>> D_;
+};
+
+struct Constraint {
+    std::vector<double> a;
+    double rhs;
 };
 
 Result buildResult(
@@ -89,7 +196,21 @@ Result buildResult(
             std::numeric_limits<double>::quiet_NaN()
         });
     }
+
+    result.value = std::max(0.0, result.value);
     return result;
+}
+
+double lineValue(
+    const std::vector<double>& points,
+    const std::vector<double>& heights,
+    std::size_t segment,
+    double x
+) {
+    const double x0 = points[segment];
+    const double x1 = points[segment + 1];
+    const double t = (x - x0) / (x1 - x0);
+    return (1.0 - t) * heights[segment] + t * heights[segment + 1];
 }
 
 }
@@ -107,7 +228,7 @@ Result directHeightSolve(
             "At least two breakpoints are required."
         );
 
-    if (options.maxSweeps < 0 ||
+    if (options.maxSweeps <= 0 ||
         !std::isfinite(options.tolerance) ||
         options.tolerance <= 0.0) {
         throw std::invalid_argument("Invalid direct-height options.");
@@ -123,71 +244,188 @@ Result directHeightSolve(
         }
     }
 
-    const auto maximum =
-        numerical::adaptiveSupportMaximum(
-            f, points.front(), points.back(), 0.0, 16, 4, 4
+    const int dimension = static_cast<int>(points.size());
+    std::vector<double> lower(dimension);
+
+    for (int i = 0; i < dimension; ++i) {
+        lower[i] = f(points[i]);
+        if (!std::isfinite(lower[i]))
+            throw std::runtime_error(
+                "Function returned a non-finite value."
+            );
+    }
+
+    // Write y = lower + z, z >= 0.  For a sample/contact x in segment i,
+    //
+    //   (1-t)y_i + t y_{i+1} >= f(x)
+    //
+    // becomes one linear inequality in z.  The objective is linear in z.
+    // We solve the resulting finite LP and add violated continuous
+    // constraints until every segment's separation oracle is satisfied.
+    std::vector<Constraint> constraints;
+
+    const auto addConstraint = [&](std::size_t segment, double x) {
+        const double x0 = points[segment];
+        const double x1 = points[segment + 1];
+        const double t = (x - x0) / (x1 - x0);
+
+        Constraint c;
+        c.a.assign(dimension, 0.0);
+        c.a[segment] = -(1.0 - t);
+        c.a[segment + 1] = -t;
+        c.rhs =
+            -(f(x) -
+              ((1.0 - t) * lower[segment] +
+               t * lower[segment + 1]));
+
+        constraints.push_back(std::move(c));
+    };
+
+    // Endpoints are already enforced by z >= 0.  Midpoints give the first
+    // LP a useful nontrivial relaxation instead of starting completely
+    // unconstrained above the endpoint values.
+    for (std::size_t i = 0; i + 1 < points.size(); ++i)
+        addConstraint(i, (points[i] + points[i + 1]) / 2.0);
+
+    std::vector<double> widths(points.size() - 1);
+    std::vector<double> objective(dimension, 0.0);
+    for (std::size_t i = 0; i + 1 < points.size(); ++i) {
+        widths[i] = points[i + 1] - points[i];
+        objective[i] += widths[i] / 2.0;
+        objective[i + 1] += widths[i] / 2.0;
+    }
+
+    double integralF = 0.0;
+    for (std::size_t i = 0; i + 1 < points.size(); ++i)
+        integralF += numerical::adaptiveIntegral(
+            f, points[i], points[i + 1]
         );
-    if (!std::isfinite(maximum.value))
-        throw std::runtime_error(
-            "Failed to determine a finite feasible height."
-        );
 
-    Oracle oracle{f, points, maximum.value};
+    std::vector<double> heights(dimension);
+    const int maxIterations = std::max(
+        4,
+        options.maxSweeps * static_cast<int>(points.size())
+    );
 
-    std::vector<double> heights(points.size(), maximum.value);
-    for (std::size_t i = 0; i < points.size(); ++i)
-        heights[i] = std::max(heights[i], f(points[i]));
+    for (int iteration = 0; iteration < maxIterations; ++iteration) {
+        std::vector<std::vector<double>> A;
+        std::vector<double> b;
+        A.reserve(constraints.size());
+        b.reserve(constraints.size());
 
-    for (int sweep = 0; sweep < options.maxSweeps; ++sweep) {
-        const double oldValue =
-            buildResult(f, points, heights).value;
-
-        for (std::size_t i = 1; i + 1 < points.size(); ++i) {
-            const double fromLeft =
-                oracle.requiredRight(
-                    static_cast<int>(i - 1), heights[i - 1]
-                );
-            const double fromRight =
-                oracle.requiredLeft(
-                    static_cast<int>(i), heights[i + 1]
-                );
-
-            const double next = std::max({
-                f(points[i]), fromLeft, fromRight
-            });
-
-            // The old vector is feasible, so the coordinate-wise minimum
-            // cannot be above the current height except for numerical noise.
-            heights[i] = std::min(heights[i], next);
+        for (const auto& constraint : constraints) {
+            A.push_back(constraint.a);
+            b.push_back(constraint.rhs);
         }
 
-        heights.front() =
-            std::min(
-                heights.front(),
-                oracle.requiredLeft(0, heights[1])
-            );
-        heights.back() =
-            std::min(
-                heights.back(),
-                oracle.requiredRight(
-                    static_cast<int>(points.size() - 2),
-                    heights[points.size() - 2]
-                )
+        // Minimize objective*z == maximize -objective*z.
+        std::vector<double> maximizeObjective(dimension);
+        for (int j = 0; j < dimension; ++j)
+            maximizeObjective[j] = -objective[j];
+
+        Simplex lp(A, b, maximizeObjective);
+        std::vector<double> z;
+        if (!lp.solve(z))
+            throw std::runtime_error(
+                "Direct height LP became infeasible."
             );
 
-        for (std::size_t i = 0; i < heights.size(); ++i)
-            heights[i] = std::max(heights[i], f(points[i]));
+        for (int j = 0; j < dimension; ++j)
+            heights[j] = lower[j] + std::max(0.0, z[j]);
 
-        const double newValue =
-            buildResult(f, points, heights).value;
-        const double scale =
-            std::max({1.0, std::abs(oldValue), std::abs(newValue)});
+        bool added = false;
+        double worstViolation = 0.0;
 
-        if ((oldValue - newValue) / scale < options.tolerance)
+        for (std::size_t i = 0; i + 1 < points.size(); ++i) {
+            const double x0 = points[i];
+            const double x1 = points[i + 1];
+
+            const auto violation = [&](double x) {
+                return f(x) - lineValue(
+                    points, heights, i, x
+                );
+            };
+
+            const auto support =
+                numerical::adaptiveSupportMaximum(
+                    violation,
+                    x0,
+                    x1,
+                    0.0,
+                    12,
+                    4,
+                    4
+                );
+
+            if (!std::isfinite(support.value))
+                throw std::runtime_error(
+                    "Failed to separate a segment constraint."
+                );
+
+            worstViolation =
+                std::max(worstViolation, support.value);
+
+            const double scale =
+                std::max({
+                    1.0,
+                    std::abs(f(x0)),
+                    std::abs(f(x1)),
+                    std::abs(heights[i]),
+                    std::abs(heights[i + 1])
+                });
+
+            if (support.value > options.tolerance * scale) {
+                addConstraint(i, support.x);
+                added = true;
+            }
+        }
+
+        if (!added)
             break;
     }
 
-    return buildResult(f, points, heights);
+    // One final separation pass makes the stopping criterion explicit.
+    for (std::size_t i = 0; i + 1 < points.size(); ++i) {
+        const auto violation = [&](double x) {
+            return f(x) - lineValue(
+                points, heights, i, x
+            );
+        };
+        const auto support =
+            numerical::adaptiveSupportMaximum(
+                violation,
+                points[i],
+                points[i + 1],
+                0.0,
+                16,
+                5,
+                5
+            );
+
+        const double scale =
+            std::max({
+                1.0,
+                std::abs(f(points[i])),
+                std::abs(f(points[i + 1])),
+                std::abs(heights[i]),
+                std::abs(heights[i + 1])
+            });
+
+        if (!std::isfinite(support.value) ||
+            support.value > options.tolerance * scale) {
+            throw std::runtime_error(
+                "Direct height solver did not reach continuous feasibility."
+            );
+        }
+    }
+
+    Result result = buildResult(f, points, heights);
+    if (result.value < -options.tolerance)
+        throw std::runtime_error(
+            "Direct height solver produced a negative majorant cost."
+        );
+
+    return result;
 }
 
 Result directHeightSolve(
@@ -202,6 +440,7 @@ Result directHeightSolve(
         a >= b) {
         throw std::invalid_argument("Require finite a < b.");
     }
+
     if (n < 1)
         throw std::invalid_argument("n must be positive.");
 

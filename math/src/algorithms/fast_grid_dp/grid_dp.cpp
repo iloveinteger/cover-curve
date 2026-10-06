@@ -21,6 +21,8 @@ constexpr double kHeightTolerance = 1e-7;
 
 // Numerical search controls. Heights remain continuous; these parameters
 // only reduce repeated one-dimensional objective evaluations.
+constexpr int kGlobalSamples = 3;
+constexpr int kLocalIntervals = 1;
 constexpr int kGoldenIterations = 20;
 constexpr int kTransitionGoldenIterations = 30;
 constexpr int kTransitionSamples = 8;
@@ -451,18 +453,104 @@ private:
         return result;
     }
 
-    // The fixed-grid DP value F_{k,j}(q) is convex in the terminal
-    // height q. Indeed, convex combinations of two feasible height vectors
-    // are feasible for the corresponding convex-combination terminal height,
-    // and the area objective is linear. Consequently every inner objective
-    //
-    //   F_{k-1,i}(p) + (x_j-x_i)(p+q)/2
-    //
-    // is convex in p, and the final objective is convex in q as well.
-    // Therefore a single golden-section search over the whole feasible
-    // interval is globally valid; the old implementation spent extra work
-    // on a global sample grid plus local refinement.
     SearchResult minimizeGlobal(
+        double lo,
+        double hi,
+        const std::function<double(double)>& objective
+    ) {
+        std::unordered_map<double, double> evaluations;
+        const auto eval = [&](double x) {
+            const auto it = evaluations.find(x);
+            if (it != evaluations.end())
+                return it->second;
+            const double y = objective(x);
+            evaluations.emplace(x, y);
+            return y;
+        };
+
+        if (!(lo <= hi))
+            return {lo, std::numeric_limits<double>::infinity()};
+
+        if (hi - lo <= kHeightTolerance)
+            return {lo, eval(lo)};
+
+        std::vector<double> x(kGlobalSamples);
+        std::vector<double> y(kGlobalSamples);
+
+        for (int s = 0; s < kGlobalSamples; ++s) {
+            x[s] =
+                lo + (hi - lo) * s /
+                (kGlobalSamples - 1);
+            y[s] = eval(x[s]);
+        }
+
+        int best = 0;
+        for (int s = 1; s < kGlobalSamples; ++s)
+            if (y[s] < y[best])
+                best = s;
+
+        SearchResult result{x[best], y[best]};
+
+        const int left =
+            std::max(0, best - kLocalIntervals);
+        const int right =
+            std::min(kGlobalSamples - 1, best + kLocalIntervals);
+
+        for (int s = left; s < right; ++s) {
+            const double a = x[s];
+            const double b = x[s + 1];
+
+            const double fa = eval(a);
+            const double fb = eval(b);
+
+            const double phi =
+                (1.0 + std::sqrt(5.0)) / 2.0;
+
+            double l = a;
+            double r = b;
+            double x1 = r - (r - l) / phi;
+            double x2 = l + (r - l) / phi;
+            double f1 = eval(x1);
+            double f2 = eval(x2);
+
+            for (int it = 0; it < kGoldenIterations; ++it) {
+                if (f1 <= f2) {
+                    r = x2;
+                    x2 = x1;
+                    f2 = f1;
+                    x1 = r - (r - l) / phi;
+                    f1 = eval(x1);
+                } else {
+                    l = x1;
+                    x1 = x2;
+                    f1 = f2;
+                    x2 = l + (r - l) / phi;
+                    f2 = eval(x2);
+                }
+            }
+
+            const double candidateX =
+                (l + r) / 2.0;
+            const double candidateY =
+                eval(candidateX);
+
+            if (candidateY < result.value)
+                result = {candidateX, candidateY};
+
+            if (fa < result.value)
+                result = {a, fa};
+            if (fb < result.value)
+                result = {b, fb};
+        }
+
+        return result;
+    }
+
+    // With the parent grid index fixed, the inner objective is convex in p:
+    // it is the sum of the convex continuation value F_{k-1,i}(p) and a
+    // linear segment-area term. Hence golden-section search is globally
+    // valid on the whole feasible interval for this inner minimization.
+    SearchResult minimizeConvex(
         double lo,
         double hi,
         const std::function<double(double)>& objective
@@ -475,8 +563,6 @@ private:
             return {lo, flo};
 
         const double fhi = objective(hi);
-        if (fhi < flo)
-            return {hi, fhi};
 
         const double phi =
             (1.0 + std::sqrt(5.0)) / 2.0;
@@ -582,7 +668,7 @@ private:
                 continue;
 
             const SearchResult inner =
-                minimizeGlobal(
+                minimizeConvex(
                     pLo,
                     upper_,
                     [&](double p) {

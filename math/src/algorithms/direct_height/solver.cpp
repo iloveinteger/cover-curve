@@ -259,10 +259,8 @@ DirectHeightDetailedResult directHeightSolveDetailed(
             );
     }
 
-    // Write y = lower + z, z >= 0.  For a sample/contact x in segment i,
-    //
-    //   (1-t)y_i + t y_{i+1} >= f(x)
-    //
+    // Shift heights so the LP variables are nonnegative.
+
     // becomes one linear inequality in z.  The objective is linear in z.
     // We solve the resulting finite LP and add violated continuous
     // constraints until every segment's separation oracle is satisfied.

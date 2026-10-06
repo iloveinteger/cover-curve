@@ -128,10 +128,14 @@ int main() {
         const double fd = (vp - vm) / (2.0 * h);
         require(gd.gradient.size() == 3,
                 "envelope gradient has invalid dimension.");
-        require(
-            std::abs(gd.gradient[1] - fd) < 1e-2,
-            "envelope gradient disagrees with fixed-breakpoint finite difference."
-        );
+        if (std::abs(gd.gradient[1] - fd) >= 1e-2) {
+            std::cerr
+                << "gradient=" << gd.gradient[1]
+                << " finite_difference=" << fd << std::endl;
+            throw std::runtime_error(
+                "envelope gradient disagrees with fixed-breakpoint finite difference."
+            );
+        }
 
         const Result sin =
             envelopeSQPSolve(

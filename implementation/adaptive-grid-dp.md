@@ -5,37 +5,37 @@ This implementation uses the mathematical breakpoint-only formulation.
 ## 1. State representation
 
 Breakpoint locations are discretized by
-\[
+$$
 G_N=\{z_0<\cdots<z_m\}.
-\]
+$$
 
 Vertex heights are **not** stored on a finite grid. A DP state is evaluated at an arbitrary real height q:
-\[
+$$
 F_k(j,q).
-\]
+$$
 
 The recursive evaluator implements
-\[
+$$
 F_{k+1}(j,q)=\min_{i<j}\inf_{\substack{p\ge f(z_i)\\q\ge T_{z_i,z_j}(p)}}\left[F_k(i,p)+\frac{z_j-z_i}{2}(p+q)\right].
-\]
+$$
 
 The implementation memoizes values at the real heights actually requested by the optimizer. These are adaptive evaluation points, not a uniform height grid and there is no heightLevels parameter.
 
 ## 2. Continuous height bound
 
 The mathematical optimum can be searched inside
-\[
+$$
 [m_f,B_N],\qquad B_N=m_f+\frac{4(b-a)(M_f-m_f)}{\rho_N}.
-\]
+$$
 
 The implementation estimates m_f and M_f numerically and uses this bound. This bound controls the search domain; it does not discretize that domain.
 
 ## 3. Transition evaluation
 
 For a candidate left height p, the implementation evaluates
-\[
+$$
 T_{u,v}(p)=\sup_{u<x\le v}\frac{(v-u)f(x)-(v-x)p}{x-u}
-\]
+$$
 using adaptive numerical sampling/support search.
 
 This is still a numerical approximation. For arbitrary continuous black-box f, finite numerical sampling cannot certify the exact supremum.
@@ -75,9 +75,9 @@ However, because T is numerically approximated, the result is not a certified gl
 ## 8. Convergence status
 
 The theory proves convergence of the exact continuous-height breakpoint-grid optimum as
-\[
+$$
 \delta_N\to0.
-\]
+$$
 
 The current C++ implementation additionally has numerical errors from transition evaluation, continuous-height global search, numerical integration, and numerical estimation of the function range. Those errors are not yet covered by a full numerical convergence theorem.
 

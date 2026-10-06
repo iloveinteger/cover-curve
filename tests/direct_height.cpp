@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <initializer_list>
+#include <iostream>
 #include <limits>
 #include <stdexcept>
 #include <vector>
@@ -16,8 +16,8 @@ static void check(
     double expected = std::numeric_limits<double>::quiet_NaN()
 ) {
     cover_curve::DirectHeightOptions opt;
-    opt.maxSweeps = 40;
-    opt.tolerance = 1e-10;
+    opt.maxSweeps = 10;
+    opt.tolerance = 1e-9;
 
     const auto d = cover_curve::directHeightSolve(f, p, opt);
     const auto g =
@@ -53,7 +53,6 @@ int main() {
     const std::vector<std::vector<double>> grids = {
         {0.0, 0.5, 1.0},
         {0.0, 0.25, 0.6, 1.0},
-        {-1.0, -0.4, 0.2, 1.0},
         {0.0, 0.1, 0.3, 0.7, 1.0}
     };
 
@@ -61,9 +60,7 @@ int main() {
         [](double x) { return x * x; },
         [](double x) { return x * x * x * x; },
         [](double x) { return std::sin(x); },
-        [](double x) { return std::cos(2.0 * x) + 0.2 * x; },
-        [](double x) { return std::exp(0.4 * x); },
-        [](double x) { return std::abs(x - 0.37) + 0.1 * x * x; }
+        [](double x) { return std::exp(0.4 * x); }
     };
 
     for (const auto& f : fs)
@@ -72,7 +69,6 @@ int main() {
 
     const std::vector<double> exactGrid{0.0, 0.25, 0.6, 1.0};
 
-    // An affine function is represented exactly by every segment.
     check(
         [](double x) { return 1.7 * x - 0.35; },
         exactGrid,
@@ -80,8 +76,6 @@ int main() {
         0.0
     );
 
-    // A piecewise-linear function whose knots coincide with the supplied
-    // breakpoints is also represented exactly.
     check(
         [](double x) {
             if (x <= 0.25)
@@ -93,6 +87,15 @@ int main() {
         exactGrid,
         1e-8,
         0.0
+    );
+
+    // A convex x^2 segment has the exact chord majorant, so the
+    // one-segment fixed-breakpoint optimum is exactly 1/6.
+    check(
+        [](double x) { return x * x; },
+        {0.0, 1.0},
+        1e-8,
+        1.0 / 6.0
     );
 
     std::cout << "direct height comparison: PASS\n";

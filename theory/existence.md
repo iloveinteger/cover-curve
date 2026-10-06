@@ -15,85 +15,52 @@ J(g)=\int_a^b(g-f),
 \mathcal F_n=\{g\in\mathcal S_n:g\ge f\text{ on }[a,b]\}.
 \]
 
-The use of **at most** $n$ segments is essential when free breakpoints are
-allowed: a sequence of breakpoints may coalesce, and the limiting spline
-may then have fewer nondegenerate segments.
+## Free-breakpoint problem
 
-## Theorem 1 — existence
+The full free-breakpoint existence statement is
 
-There exists $g^*\in\mathcal F_n$ such that
 \[
-J(g^*)=\min_{g\in\mathcal F_n}J(g).
+\exists\,g^*\in\mathcal F_n
+\quad\text{such that}\quad
+J(g^*)=\inf_{g\in\mathcal F_n}J(g).
 \]
 
-For fixed breakpoints this follows by an elementary finite-dimensional
-compactness argument, given below. For free breakpoints, the existence
-statement is taken from the established free-knot one-sided $L^1$
-approximation theory. It is used here as an external theorem; it is **not**
-deduced from an $L^1$-boundedness argument.
+This statement is **not proved in this document**. In particular, we do not
+invoke a general free-knot approximation theorem unless its hypotheses and
+conclusion are verified to match the present one-sided problem exactly.
 
-### External free-knot existence input
-
-The required external result is the existence theory for best one-sided
-$L^1$ approximation by splines with free knots. In the present degree-one
-case it applies to continuous piecewise-affine splines with a bounded
-number of free knots, with coalescing knots allowed in the limiting
-representation.
-
-For every feasible $g$,
+For a feasible $g$,
 \[
 g-f\ge0,
 \]
-so the one-sided objective is exactly the ordinary $L^1$ error:
+so
 \[
-J(g)
-=
-\int_a^b|g-f|
-=
-\|g-f\|_{L^1}.
+J(g)=\int_a^b|g-f|=\|g-f\|_{L^1}.
 \]
+Thus the problem is a one-sided $L^1$ approximation problem. However, an
+existence theorem for ordinary best $L^1$ approximation by free-knot
+splines does not by itself imply existence in the constrained majorant
+class.
 
-The classical literature relevant to this existence input includes:
+The following references establish relevant free-knot and one-sided spline
+approximation results, but they are **not used here as a direct proof of the
+combined free-knot majorant existence statement**:
 
 - R. B. Barrar and H. L. Loeb, “Existence of best spline approximations
   with free knots,” *Journal of Mathematical Analysis and Applications*
   31 (1970), 383--390,
-  DOI: 10.1016/0022-247X(70)90032-6.
-- N. Richter-Dyn, “On Best Nonlinear Approximation in Sign-Monotone Norms
-  and in Norms Induced by Inner Products,” *SIAM Journal on Numerical
-  Analysis* 16 (1979), 612--622,
-  DOI: 10.1137/0716046.
+  DOI: 10.1016/0022-2476(70)90032-6.
 - Z. Ziegler, “One-sided $L^1$-approximation by splines of an arbitrary
   degree,” in *Approximations with Special Emphasis on Spline Functions*,
   Academic Press, 1969, pp. 405--413.
 
-These references are cited for the external existence input only. No
-uniqueness statement is used.
+A bounded objective also cannot be converted directly into $L^1$
+compactness: bounded subsets of $L^1$ need not be relatively compact in
+$L^1$. Consequently, a minimizing-sequence proof for free breakpoints needs
+an additional compactness argument that preserves the spline class and the
+majorant constraint.
 
-### Why the naive $L^1$ compactness argument is invalid
-
-It is not enough to take a minimizing sequence and say that it is
-$L^1$-bounded, hence has an $L^1$-convergent subsequence. A bounded sequence
-in $L^1$ need not be relatively compact in $L^1$; narrow, high spikes give
-a standard counterexample. Therefore the free-knot existence theorem must
-supply the required compactness/attainment result. It cannot be replaced
-by the assertion
-\[
-\{J(g_j)\}\text{ bounded}
-\quad\Longrightarrow\quad
-\{g_j\}\text{ has an }L^1\text{-convergent subsequence}.
-\]
-
-If $g_j\to g$ in $L^1$ and the limit is known to belong to the spline
-class, then the majorant constraint is closed: from $g_j\ge f$ we obtain
-$g\ge f$ almost everywhere, and continuity of $g-f$ then gives
-\[
-g(x)\ge f(x)\qquad\forall x\in[a,b].
-\]
-The issue is therefore the compactness and preservation of the free-knot
-spline class, not the passage of the inequality itself.
-
-## Theorem 2 — existence for fixed breakpoints
+## Theorem — fixed breakpoints
 
 Fix
 \[
@@ -104,6 +71,12 @@ Among continuous piecewise-affine functions whose breakpoints are contained
 in this fixed set, there exists a feasible minimizer.
 
 ### Proof
+
+The feasible set is nonempty: the constant function
+\[
+g(x)\equiv \max_{x\in[a,b]}f(x)
+\]
+belongs to the class and satisfies $g\ge f$.
 
 Write
 \[
@@ -172,29 +145,3 @@ By the Weierstrass theorem, $J$ attains its minimum on $\mathcal C_X$.
 \[
 \square
 \]
-
-## Breakpoint collisions
-
-For free breakpoints, the strictly ordered parameter set
-\[
-a<x_1<\cdots<x_{m-1}<b
-\]
-is not compact. It is therefore incorrect to prove free-knot existence by
-claiming that this open simplex is compact.
-
-If
-\[
-x_i^{(j)}-x_{i-1}^{(j)}\to0,
-\]
-the two neighboring affine pieces may merge in the limit. The resulting
-function simply has fewer nondegenerate segments. This is why the problem
-is formulated with **at most $n$** segments.
-
-No claim is made that an optimizer must use exactly $n$ effective segments.
-
-## Uniqueness
-
-No uniqueness is asserted. In particular, different breakpoint
-representations can describe the same affine function, and free-knot
-one-sided $L^1$ problems need not have a unique optimizer under the
-assumptions used here.

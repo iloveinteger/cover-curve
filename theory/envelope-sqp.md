@@ -69,15 +69,15 @@ For a contact \(z\in[x_i,x_{i+1}]\), \(h=x_{i+1}-x_i\),
 \[
 \frac{\partial(f(z)-L(z))}{\partial x_i}
 =
--\frac{(y_{i+1}-y_i)(x_{i+1}-z)}{h^2},
+\frac{(y_{i+1}-y_i)(x_{i+1}-z)}{h^2},
 \]
 \[
 \frac{\partial(f(z)-L(z))}{\partial x_{i+1}}
 =
--\frac{(y_{i+1}-y_i)(z-x_i)}{h^2}.
+\frac{(y_{i+1}-y_i)(z-x_i)}{h^2}.
 \]
 
-The negative signs are essential: the constraint is \(f-L\le0\).
+Both signs are positive: differentiating the interpolation line with respect to either endpoint gives a negative contribution to \(L\), hence a positive contribution to \(f-L\).
 
 The direct objective contributes, for an interior breakpoint,
 \[

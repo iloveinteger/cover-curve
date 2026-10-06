@@ -323,6 +323,27 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         uniform[i] = a + (b - a) * i / n;
     seeds.push_back(uniform);
 
+    // Cheap deterministic alternatives. These change the gap distribution
+    // without invoking the expensive global grid solver. They are useful
+    // because V(x) is nonconvex and a single uniform seed can be stationary
+    // at a poor local configuration.
+    for (int s = 1;
+         static_cast<int>(seeds.size()) < options.seeds;
+         ++s) {
+        const double power =
+            s % 2 == 1
+                ? 2.0
+                : 0.5;
+        std::vector<double> candidate(n + 1);
+        for (int i = 0; i <= n; ++i) {
+            const double u =
+                static_cast<double>(i) / n;
+            candidate[i] =
+                a + (b - a) * std::pow(u, power);
+        }
+        seeds.push_back(std::move(candidate));
+    }
+
     if (options.includeFastGridSeed &&
         static_cast<int>(seeds.size()) < options.seeds) {
         const Result coarse =
@@ -339,7 +360,10 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
     int globalStart = 0;
     bool haveBest = false;
 
-    for (const auto& seed : seeds) {
+    for (std::size_t seedIndex = 0;
+         seedIndex < seeds.size();
+         ++seedIndex) {
+        const auto& seed = seeds[seedIndex];
         std::vector<double> x = seed;
         Evaluation current =
             evaluate(f, x, options, a, b);
@@ -462,7 +486,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
             globalBest = std::move(current.result);
             globalGradient = std::move(current.gradient);
             globalIterations = iterationsDone;
-            globalStart = static_cast<int>(&seed - &seeds.front());
+            globalStart = static_cast<int>(seedIndex);
             haveBest = true;
         }
     }

@@ -22,6 +22,10 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
         // improvements, so it cannot worsen the returned objective.
         if (n <= 3) {
             cover_curve::CoordinateSearchOptions options;
+            options.maxSweeps = 1;
+            options.samples = 3;
+            options.refinements = 0;
+            options.tolerance = 1e-6;
             options.useDirectHeightOracle = true;
 
             const auto refined =

@@ -11,23 +11,36 @@ try {
     {timeout: 30000}
   );
 
-  await page.getByRole("button", {name: "Solve curve"}).click();
-  await page.waitForFunction(
-    () => document.getElementById("value").textContent !== "—",
-    null,
-    {timeout: 120000}
-  );
+  const cases = [
+    {expression: "x^2", a: 0, b: 1, n: 2},
+    {expression: "sin(x)", a: 0, b: 6.283185307179586, n: 3},
+    {expression: "ln(x)", a: 0.1, b: 2, n: 3},
+    {expression: "x^4 - 2*x^2 + x", a: -1, b: 1, n: 3},
+    {expression: "x + sin(x)", a: 0, b: 3, n: 2}
+  ];
 
-  const status = await page.locator("#status").textContent();
-  const value = await page.locator("#value").textContent();
-  const details = await page.locator("#details").textContent();
+  for (const test of cases) {
+    await page.locator("#expression").fill(test.expression);
+    await page.locator("#a").fill(String(test.a));
+    await page.locator("#b").fill(String(test.b));
+    await page.locator("#n").fill(String(test.n));
 
-  if (!status || !status.includes("Solved."))
-    throw new Error("Unexpected solver status: " + status);
-  if (!value || value === "—" || !details.includes("Breakpoints:"))
-    throw new Error("Solver result was not rendered.");
+    await page.getByRole("button", {name: "Solve curve"}).click();
+    await page.waitForFunction(
+      () => document.getElementById("value").textContent !== "—" &&
+            document.getElementById("status").textContent.includes("Solved."),
+      null,
+      {timeout: 120000}
+    );
 
-  console.log("Web smoke test passed:", {status, value});
+    const value = await page.locator("#value").textContent();
+    const details = await page.locator("#details").textContent();
+
+    if (!value || value === "—" || !details.includes("Breakpoints:"))
+      throw new Error("Solver result was not rendered for " + test.expression);
+
+    console.log("Web solver passed:", {expression: test.expression, value});
+  }
 } finally {
   await browser.close();
 }

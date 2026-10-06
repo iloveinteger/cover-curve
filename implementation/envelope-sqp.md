@@ -29,7 +29,7 @@ fastGridDP is useful as a global/coarse search method but its fixed-grid recurre
 
 A coarse-DP seed remains available through EnvelopeSQPOptions::includeFastGridSeed, but it is deliberately disabled by default.
 
-## Outer iteration
+## Curvature-density initialization\n\nFor sufficiently fine partitions the proven asymptotic density is\n\\[\\rho(x)\\propto c(x)^{1/3}|f''(x)|^{1/3}.\\]\nThe implementation estimates the second derivative on 129 uniform samples, forms a cumulative density, and inverts it to obtain the second seed. A small density floor prevents zero curvature from producing degenerate cells. This is an initializer, not a finite-n optimality claim.\n\n## Outer iteration
 
 For a current breakpoint vector x:
 

@@ -22,3 +22,6 @@ jobs:
 
       - name: Known optimum test
         run: timeout 60 ./build/cover_curve_coordinate_search_test
+
+      - name: Envelope SQP test
+        run: timeout 60 ./build/cover_curve_envelope_sqp_test

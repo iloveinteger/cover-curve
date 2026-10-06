@@ -44,9 +44,9 @@ $$
 M_i\le\varepsilon
 \qquad\ext{for every }i,
 $$
-then the returned spline is an $\arepsilon$-majorant. For an exact finite LP optimum $LB$,
+then the returned spline is an $\varepsilon$-majorant. For an exact finite LP optimum $LB$,
 $$
-LBle V(X)\le LB+\arepsilon(b-a).
+LBle V(X)\le LB+\varepsilon(b-a).
 $$
 
 The C++ support search is numerical rather than certified, so this inequality is a conditional numerical certificate.

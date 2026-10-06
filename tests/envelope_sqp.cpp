@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <chrono>
 #include <stdexcept>
 #include <vector>
 
@@ -94,6 +95,7 @@ int main() {
         require(!detailed.contacts.empty(),
                 "dual contact set is unexpectedly empty.");
 
+        const auto t0 = std::chrono::steady_clock::now();
         const Result sin =
             envelopeSQPSolve(
                 sine,
@@ -102,6 +104,27 @@ int main() {
                 2,
                 options
             );
+        const auto t1 = std::chrono::steady_clock::now();
+        const double envelopeMs =
+            std::chrono::duration<double, std::milli>(t1 - t0).count();
+
+        CoordinateSearchOptions coordinateOptions;
+        coordinateOptions.maxSweeps = 1;
+        coordinateOptions.samples = 3;
+        coordinateOptions.refinements = 0;
+        coordinateOptions.useDirectHeightOracle = true;
+        const auto t2 = std::chrono::steady_clock::now();
+        const Result coordinate =
+            coordinateSearch(
+                sine,
+                0.0,
+                2.0 * std::acos(-1.0),
+                2,
+                coordinateOptions
+            );
+        const auto t3 = std::chrono::steady_clock::now();
+        const double coordinateMs =
+            std::chrono::duration<double, std::milli>(t3 - t2).count();
         require(
             denseViolation(sin, sine) <= 2e-5,
             "sin envelope is not a majorant."
@@ -112,6 +135,9 @@ int main() {
             << " x2_value=" << x2.value
             << " x2_mid=" << x2.breakpoints[1]
             << " sin_value=" << sin.value
+            << " envelope_ms=" << envelopeMs
+            << " coordinate_value=" << coordinate.value
+            << " coordinate_ms=" << coordinateMs
             << std::endl;
         return 0;
     } catch (const std::exception& e) {

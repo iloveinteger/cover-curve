@@ -1,94 +1,116 @@
 # Envelope-SQP implementation
 
-## Components
+## 1. Architecture
 
-The solver is split into two numerical layers.
+The solver has two numerical layers.
 
 1. directHeightSolveDetailed
-   - solves the fixed-breakpoint semi-infinite LP by cutting planes;
-   - returns endpoint heights;
-   - retains positive dual multipliers associated with sampled/contact constraints.
+   - solves the fixed-breakpoint continuous-height problem by a cutting-plane LP;
+   - searches continuously for violated constraints on each segment;
+   - returns endpoint heights and positive finite-LP dual multipliers.
 
 2. envelopeSQPSolve
-   - treats breakpoints as the outer variables;
-   - computes the Lagrangian envelope gradient from the fixed-x primal/dual solution;
-   - uses an L-BFGS direction with a feasibility-preserving line search;
-   - re-solves the fixed-x LP after each accepted breakpoint step.
+   - optimizes the interior breakpoints;
+   - computes an envelope-based sensitivity vector;
+   - uses an L-BFGS-style direction;
+   - preserves strict breakpoint ordering;
+   - backtracks using complete inner solves.
 
-The implementation is in:
-- math/src/algorithms/direct_height/solver.cpp
-- math/src/algorithms/envelope_sqp/solver.cpp
+Despite the historical name, the current outer implementation does not solve a classical SQP quadratic-program subproblem. It is an envelope-gradient + safeguarded L-BFGS method.
 
-Public interfaces:
-- math/include/cover_curve/solvers/direct_height.hpp
-- math/include/cover_curve/solvers/envelope_sqp.hpp
+## 2. Outer pseudocode
 
-## Why the solver is independent of fastGridDP
+    for each seed:
+        x <- seed
+        current <- DirectHeight(x)
 
-fastGridDP is useful as a global/coarse search method but its fixed-grid recurrence repeatedly performs expensive support searches. The envelope solver therefore defaults to a uniform breakpoint seed and does not call fastGridDP.
+        repeat:
+            g <- envelopeSensitivity(x, current)
+            if ||g||_infinity <= tolerance:
+                stop
 
-A coarse-DP seed remains available through EnvelopeSQPOptions::includeFastGridSeed, but it is deliberately disabled by default.
+            p <- L-BFGS(g)
+            if g dot p >= 0:
+                p <- -g
 
-## Curvature-density initialization\n\nFor sufficiently fine partitions the proven asymptotic density is\n\\[\\rho(x)\\propto c(x)^{1/3}|f''(x)|^{1/3}.\\]\nThe implementation estimates the second derivative on 129 uniform samples, forms a cumulative density, and inverts it to obtain the second seed. A small density floor prevents zero curvature from producing degenerate cells. This is an initializer, not a finite-n optimality claim.\n\n## Outer iteration
+            alpha <- largest ordering-preserving step
 
-For a current breakpoint vector x:
+            while line-search budget remains:
+                trial <- x + alpha*p
+                if trial is invalid:
+                    alpha <- alpha/2
+                    continue
 
-1. solve the fixed-x LP;
-2. recover y and dual contact multipliers;
-3. evaluate the envelope gradient;
-4. compute an L-BFGS direction;
-5. limit the step so breakpoint ordering is maintained;
-6. backtrack until the LP objective decreases sufficiently;
-7. update the L-BFGS history.
+                candidate <- DirectHeight(trial)
 
-The LP is always re-solved at the accepted breakpoint vector, so the returned result remains a feasible fixed-breakpoint majorant subject to the direct-height separation tolerance.
+                if sufficient decrease holds:
+                    accept
+                    break
 
-## Numerical derivative
+                alpha <- alpha/2
 
-The continuous-function API only supplies f(x). The endpoint part of the envelope gradient requires f'(x_j), so the implementation currently obtains that term by a centered finite difference.
+            if no step accepted:
+                stop
 
-This does not finite-difference the whole value function. The expensive dependence of the LP optimum on x is handled analytically through the dual multipliers.
+    return best seed result
 
-A future differentiable-function interface can replace this endpoint finite difference directly.
+## 3. Inner oracle
 
-## Ordering constraint
-
-Interior breakpoints must satisfy
+The finite cutting-plane LP is a relaxation of the continuous fixed-breakpoint problem. After each LP solve, the implementation searches
 \[
-a<x_1<\cdots<x_{n-1}<b.
+v_i(x)=f(x)-L_i(x)
+\]
+on every segment and adds a violating contact.
+
+If a certified separation pass establishes
+\[
+\max_i\max_{x\in[x_i,x_{i+1}]}v_i(x)\le\varepsilon,
+\]
+then shifting the majorant upward by \(\varepsilon\) gives
+\[
+LB\le V(X)\le LB+\varepsilon(b-a)
+\]
+for an exact finite LP. With the current scale-relative stopping rule, use the corresponding scaled epsilon from theory/direct-height.md.
+
+The present support search is numerical, so this is a conditional certificate, not an unconditional black-box theorem.
+
+## 4. Sensitivity formula
+
+The implementation uses the constraint convention
+\[
+f(z)-L(z)\le0.
 \]
 
-The line search computes a feasible step limit and additionally checks the candidate vector before solving the LP. If the sufficient-decrease condition is not met, the step is halved.
-
-## Dual contacts
-
-directHeightDetailedResult::contacts contains the positive multipliers of retained cutting-plane constraints.
-
-For a contact z in segment i, the interpolation weights are
+For \(z\in[x_i,x_{i+1}]\), \(h=x_{i+1}-x_i\), the contact contribution is
 \[
-w_i=\frac{x_{i+1}-z}{x_{i+1}-x_i},
-\qquad
-w_{i+1}=\frac{z-x_i}{x_{i+1}-x_i}.
+-\lambda\frac{(y_{i+1}-y_i)(x_{i+1}-z)}{h^2}
 \]
+to \(x_i\), and
+\[
+-\lambda\frac{(y_{i+1}-y_i)(z-x_i)}{h^2}
+\]
+to \(x_{i+1}\).
 
-These weights are used in the envelope derivative and in reconstruction of endpoint multipliers.
+The direct objective contributes
+\[
+\frac{y_{j-1}-y_{j+1}}2
+\]
+to interior breakpoint \(x_j\).
 
-The contact list is numerical: it is the active set returned by the finite cutting-plane LP at the current tolerance. It is not a proof that every continuous active measure has been represented exactly.
+Endpoint constraints contribute \(\mu_j f'(x_j)\). Since Function exposes values only, the implementation estimates \(f'\) by a centered finite difference.
 
-## Validation
+The contact signs are regression-tested against finite differences at a nonsingular active set.
 
-tests/envelope_sqp.cpp checks:
-- compilation and linkage;
-- the exact quadratic family at n=2;
-- recovery of the uniform breakpoint 1/2;
-- dense majorant feasibility;
-- existence of nonzero dual contacts;
-- continuous majorant feasibility for sin on [0,2pi].
+## 5. Guarantees
 
-The solver is also built in the normal C++ CI target.
+The implementation guarantees only conditional numerical properties:
 
-## Performance interpretation
+- accepted steps pass the configured sufficient-decrease test;
+- breakpoint ordering is preserved;
+- each accepted point is re-solved by the fixed-breakpoint oracle;
+- objective values along accepted steps are non-increasing;
+- the outer method has no general global-optimality guarantee.
 
-fastGridDP performs a global grid search and pays for many fixed-breakpoint states. Envelope-SQP instead performs a small number of fixed-breakpoint LP solves.
+## 6. Complexity
 
-It is therefore expected to be advantageous when the number of breakpoints is small and a good local solution is sufficient, while fastGridDP remains useful when stronger global-search behavior is required.
+With \(S\) seeds, at most \(K\) accepted outer iterations per seed, and \(L\) line-search trials, the number of inner solves is \(O(SKL)\). If one inner solve costs \(C_{\rm DH}\), total dominant work is \(O(SKLC_{\rm DH})\).

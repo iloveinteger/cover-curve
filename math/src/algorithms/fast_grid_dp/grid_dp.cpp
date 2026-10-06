@@ -546,72 +546,6 @@ private:
         return result;
     }
 
-    // With the parent grid index fixed, the inner objective is convex in p:
-    // it is the sum of the convex continuation value F_{k-1,i}(p) and a
-    // linear segment-area term. Hence golden-section search is globally
-    // valid on the whole feasible interval for this inner minimization.
-    SearchResult minimizeConvex(
-        double lo,
-        double hi,
-        const std::function<double(double)>& objective
-    ) {
-        if (!(lo <= hi))
-            return {lo, std::numeric_limits<double>::infinity()};
-
-        const double flo = objective(lo);
-        if (hi - lo <= kHeightTolerance)
-            return {lo, flo};
-
-        const double fhi = objective(hi);
-
-        const double phi =
-            (1.0 + std::sqrt(5.0)) / 2.0;
-
-        double l = lo;
-        double r = hi;
-        double x1 = r - (r - l) / phi;
-        double x2 = l + (r - l) / phi;
-        double f1 = objective(x1);
-        double f2 = objective(x2);
-
-        SearchResult result =
-            f1 <= f2 ? SearchResult{x1, f1}
-                      : SearchResult{x2, f2};
-
-        for (int it = 0; it < kGoldenIterations; ++it) {
-            if (f1 <= f2) {
-                r = x2;
-                x2 = x1;
-                f2 = f1;
-                x1 = r - (r - l) / phi;
-                f1 = objective(x1);
-            } else {
-                l = x1;
-                x1 = x2;
-                f1 = f2;
-                x2 = l + (r - l) / phi;
-                f2 = objective(x2);
-            }
-
-            if (f1 < result.value)
-                result = {x1, f1};
-            if (f2 < result.value)
-                result = {x2, f2};
-        }
-
-        const double mid = (l + r) / 2.0;
-        const double fmid = objective(mid);
-        if (fmid < result.value)
-            result = {mid, fmid};
-
-        if (flo < result.value)
-            result = {lo, flo};
-        if (fhi < result.value)
-            result = {hi, fhi};
-
-        return result;
-    }
-
     double value(int k, int j, double q) {
         const StateKey key{k, j, q};
         const auto found = memo_.find(key);
@@ -668,7 +602,7 @@ private:
                 continue;
 
             const SearchResult inner =
-                minimizeConvex(
+                minimizeGlobal(
                     pLo,
                     upper_,
                     [&](double p) {

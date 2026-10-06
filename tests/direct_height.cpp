@@ -1,8 +1,10 @@
 #include <cover_curve/cover_curve.hpp>
+#include "../math/src/algorithms/fast_grid_dp/grid_dp.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <initializer_list>
 #include <limits>
 #include <stdexcept>
 #include <vector>

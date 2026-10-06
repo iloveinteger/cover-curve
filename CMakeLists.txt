@@ -93,3 +93,11 @@ add_executable(cover_curve_coordinate_search_test
 
 target_link_libraries(cover_curve_coordinate_search_test PRIVATE cover_curve)
 add_test(NAME cover_curve_coordinate_search COMMAND cover_curve_coordinate_search_test)
+
+
+add_executable(cover_curve_direct_height_smoke
+    tests/direct_height_smoke.cpp
+)
+
+target_link_libraries(cover_curve_direct_height_smoke PRIVATE cover_curve)
+add_test(NAME cover_curve_direct_height_smoke COMMAND cover_curve_direct_height_smoke)

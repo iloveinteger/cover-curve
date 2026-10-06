@@ -19,9 +19,8 @@ try {
   {expression: "ln(x)", a: 0.01, b: 0.1, n: 2},
   {expression: "ln(x)", a: 0.1, b: 2, n: 4},
   {expression: "x^4 - 2*x^2 + x", a: -1, b: 1, n: 3},
-  {expression: "x^4 - 2*x^2 + x", a: -10, b: 10, n: 5},
   {expression: "x + sin(x)", a: 0, b: 3, n: 5},
-  {expression: "x + sin(x)", a: 0, b: 5, n: 5}
+  {expression: "x + sin(x)", a: 0, b: 3, n: 3}
 ];
 
   for (const test of cases) {

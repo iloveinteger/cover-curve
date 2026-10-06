@@ -5,21 +5,21 @@ This module is a numerical primitive and reference calculation, not the global o
 ## 1. Independent one-segment problem
 
 For a single interval ([u,v]), an affine line
-\[
+$$
 L(x)=\alpha+\beta x
-\]
+$$
 is feasible when
-\[
+$$
 \alpha\ge\max_{x\in[u,v]}(f(x)-\beta x).
-\]
+$$
 
 For fixed (eta), the smallest feasible intercept is
-\[
+$$
 \alpha(\beta)=\max_{x\in[u,v]}(f(x)-\beta x).
-\]
+$$
 
 Thus the independent one-segment objective is
-\[
+$$
 \Phi(\beta)
 =
 (v-u)\alpha(\beta)
@@ -27,7 +27,7 @@ Thus the independent one-segment objective is
 \beta\frac{v^2-u^2}{2}
 -
 \int_u^v f(x)\,dx.
-\]
+$$
 
 The support term is convex in (eta), so the exact scalar objective is convex.
 
@@ -58,8 +58,8 @@ Because the support maximum is numerical, the returned value is a numerical appr
 ## 4. Required invariant
 
 No result from this module may be interpreted as
-\[
+$$
 C(u,v)
-\]
+$$
 for a shared-height DP unless the left and right endpoint heights are explicitly retained as part of the state.
 

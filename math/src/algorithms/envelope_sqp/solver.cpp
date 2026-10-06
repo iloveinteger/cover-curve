@@ -389,10 +389,7 @@ EnvelopeSQPDetailedResult envelopeSQPSolveDetailed(
         seeds.push_back(uniform);
     }
 
-    // The second independent seed is theory-driven: distribute breakpoints
-    // according to the asymptotic L1 majorant density. This replaces the old
-    // arbitrary power-law seeds and usually gives a much better starting point
-    // at essentially negligible cost compared with one inner LP solve.
+    // Use the asymptotic majorant density as an independent starting point.
     if (options.useCurvatureSeed &&
         static_cast<int>(seeds.size()) < options.seeds) {
         seeds.push_back(curvatureSeed(

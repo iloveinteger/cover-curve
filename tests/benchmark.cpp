@@ -109,7 +109,7 @@ int main() {
               << ",NA," << fixedDirectMs << ",NA,"
               << std::abs(fixedFast - fixedDirect) << '\n';
 
-    // Large-n accuracy stress test.  x^2 and -x^2 have exact finite-n
+    // Large-n accuracy stress test; CI executes this benchmark on every main push.  x^2 and -x^2 have exact finite-n
     // optima 1/(6 n^2) and 1/(12 n^2), respectively.  x^4 is also checked
     // against its asymptotic constant 27/125.
     cover_curve::EnvelopeSQPOptions options;

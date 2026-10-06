@@ -12,5 +12,5 @@ $$
 while minimizing
 
 $$
-\int_a^b \bigl(g(x)-f(x)\bigr)\,dx.
+\int_a^b \bigl(g(x)-f(x)\bigr)dx.
 $$

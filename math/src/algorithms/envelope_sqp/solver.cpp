@@ -106,7 +106,7 @@ std::vector<double> envelopeGradient(
                 lambda * dy * (x1 - contact.x) / (h * h);
 
         if (static_cast<std::size_t>(i + 1) < n)
-            gradient[i + 1] -=
+            gradient[i + 1] +=
                 lambda * dy * (contact.x - x0) / (h * h);
 
         dualWeight[i] += lambda * (1.0 - t);

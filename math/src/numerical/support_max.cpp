@@ -141,9 +141,7 @@ SupportMaximum adaptiveSupportMaximum(
                 static_cast<int>(scored.size())
             );
 
-        // Only the best 'count' intervals are refined. Full sorting is
-        // unnecessary; nth_element gives the same selected set in linear
-        // average time and avoids sorting every interval at every depth.
+        // Refine only the best intervals; nth_element avoids a full sort.
         if (count > 0 && count < static_cast<int>(scored.size())) {
             std::nth_element(
                 scored.begin(),

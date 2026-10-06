@@ -19,6 +19,8 @@ add_library(cover_curve
     math/src/algorithms/adaptive_grid_dp/one_segment_cost.cpp
     math/src/algorithms/adaptive_grid_dp/grid_dp.cpp
     math/src/algorithms/adaptive_grid_dp/solver.cpp
+    math/src/algorithms/fast_grid_dp/grid_dp.cpp
+    math/src/algorithms/fast_grid_dp/solver.cpp
     math/src/algorithms/curvature_adaptive/curvature_grid.cpp
     math/src/algorithms/curvature_adaptive/grid_dp.cpp
     math/src/algorithms/curvature_adaptive/solver.cpp

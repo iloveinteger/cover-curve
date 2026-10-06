@@ -89,12 +89,11 @@ int main() {
     };
 
     std::cout << std::fixed << std::setprecision(3);
-    std::cout << "case,fast_ms,adaptive_ms,coordinate_ms,adaptive_over_fast,abs_fast_coordinate_diff\n";
+    std::cout << "case,fast_ms,adaptive_ms,adaptive_over_fast,abs_fast_adaptive_diff\n";
 
     for (const Case& c : cases) {
         double fastValue = 0.0;
         double adaptiveValue = 0.0;
-        double coordinateValue = 0.0;
 
         const double fastMs = measure(
             [](const auto& f, double a, double b, int n) {
@@ -110,13 +109,6 @@ int main() {
             c.f, c.a, c.b, c.n, repeats, adaptiveValue
         );
 
-        const double coordinateMs = measure(
-            [](const auto& f, double a, double b, int n) {
-                return cover_curve::coordinateSearch(f, a, b, n);
-            },
-            c.f, c.a, c.b, c.n, 1, coordinateValue
-        );
-
         const double speedup =
             adaptiveMs > 0.0 ? adaptiveMs / fastMs : 0.0;
 
@@ -124,9 +116,8 @@ int main() {
             << c.name << ','
             << fastMs << ','
             << adaptiveMs << ','
-            << coordinateMs << ','
             << speedup << ','
-            << std::abs(fastValue - coordinateValue)
+            << std::abs(fastValue - adaptiveValue)
             << '\n';
     }
 

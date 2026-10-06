@@ -215,7 +215,7 @@ These are oracle-complexity bounds. Since the height state is continuous, an ord
 
 Direct enumeration of breakpoint sequences requires
 $$
-\b\in om{m-1}{n-1}
+\binom{m-1}{n-1}
 $$
 continuous-height subproblems. The dynamic program avoids this explicit enumeration.
 

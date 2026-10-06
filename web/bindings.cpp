@@ -17,23 +17,46 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
         const auto f = cover_curve::parseExpression(expression);
         const auto baseline = cover_curve::fastGridDP(f, a, b, n);
 
-        cover_curve::BreakpointSearchOptions options;
+        // Direct breakpoint-space search is useful for small n, but its
+        // non-DP cost grows quickly with breakpoint dimension. For the
+        // interactive web solver, keep that search to n <= 3 and use the
+        // optimized continuous-height DP otherwise.
         if (n <= 3) {
+            cover_curve::BreakpointSearchOptions options;
             options.maxDepth = 5;
             options.maxEvaluations = 32;
-        } else if (n <= 5) {
-            options.maxDepth = 4;
-            options.maxEvaluations = 16;
-        } else {
-            options.maxDepth = 3;
-            options.maxEvaluations = 8;
+
+            const auto searched =
+                cover_curve::breakpointSearch(f, a, b, n, options);
+
+            const auto& result =
+                searched.value < baseline.value ? searched : baseline;
+
+            val output = val::object();
+            output.set("value", result.value);
+
+            val breakpoints = val::array();
+            for (double x : result.breakpoints)
+                breakpoints.call<void>("push", x);
+            output.set("breakpoints", breakpoints);
+
+            val segments = val::array();
+            for (const auto& segment : result.segments) {
+                val item = val::object();
+                item.set("x0", segment.x0);
+                item.set("x1", segment.x1);
+                item.set("slope", segment.slope);
+                item.set("intercept", segment.intercept);
+                item.set("cost", segment.cost);
+                item.set("contact", segment.contact);
+                segments.call<void>("push", item);
+            }
+            output.set("segments", segments);
+            output.set("error", val::null());
+            return output;
         }
 
-        const auto searched =
-            cover_curve::breakpointSearch(f, a, b, n, options);
-
-        const auto& result =
-            searched.value < baseline.value ? searched : baseline;
+        const auto& result = baseline;
 
         val output = val::object();
         output.set("value", result.value);

@@ -65,6 +65,16 @@ Result solve(
 
 namespace cover_curve {
 
+Result fastGridDPOnGrid(
+    const Function& f,
+    const std::vector<double>& points,
+    int n
+) {
+    return algorithms::fast_grid_dp::solveFastGridDPOnGrid(
+        f, points, n
+    );
+}
+
 Result fastGridDP(
     const Function& f,
     double a,

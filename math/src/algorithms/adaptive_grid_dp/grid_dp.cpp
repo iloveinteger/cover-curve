@@ -22,7 +22,7 @@ constexpr double kHeightTolerance = 1e-7;
 // only reduce repeated one-dimensional objective evaluations.
 constexpr int kGlobalSamples = 3;
 constexpr int kLocalIntervals = 1;
-constexpr int kGoldenIterations = 6;
+constexpr int kGoldenIterations = 20;
 constexpr int kTransitionSamples = 8;
 constexpr int kTransitionDepth = 2;
 constexpr int kTransitionRefinements = 2;

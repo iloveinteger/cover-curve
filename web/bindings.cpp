@@ -20,7 +20,7 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
         // Refine the DP solution by optimizing breakpoints one at a time.\n        // For small n, use the continuous-height cutting-plane oracle so the\n        // breakpoint search is not limited by the height-grid approximation.
         // Coordinate search starts from the baseline and only accepts
         // improvements, so it cannot worsen the returned objective.
-        if (n <= 3) {
+        if (n <= 2) {
             cover_curve::CoordinateSearchOptions options;
             options.maxSweeps = 1;
             options.samples = 3;

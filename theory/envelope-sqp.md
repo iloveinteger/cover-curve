@@ -8,7 +8,7 @@ X=(x_0,\ldots,x_n),\qquad a=x_0<\cdots<x_n=b,
 $$
 define
 $$
-V(X)=\\min_{y\in \mathcal F_X}
+V(X)=\min_{y\in \mathcal F_X}
 \left[
 \sum_{i=0}^{n-1}\frac{x_{i+1}-x_i}{2}(y_i+y_{i+1})
 -\int_a^b f(x),dx
@@ -17,7 +17,7 @@ $$
 
 For fixed $X$, this is a linear semi-infinite program in the shared heights. The free-breakpoint problem is
 $$
-E_n^*=\\min_{a<x_1<\cdots<x_{n-1}<b}V(X).
+E_n^*=\min_{a<x_1<\cdots<x_{n-1}<b}V(X).
 $$
 
 The outer problem is generally nonconvex. Envelope-SQP is therefore a local numerical method, not a global solver.
@@ -36,7 +36,7 @@ where $w_i$ contains the two interpolation weights on the segment containing $z$
 
 The separation problem is
 $$
-M_i=\\max_{z\in[x_i,x_{i+1}]}{f(z)-L_i(z)}.
+M_i=\max_{z\in[x_i,x_{i+1}]}{f(z)-L_i(z)}.
 $$
 
 If a certified global separation pass establishes
@@ -79,7 +79,7 @@ $$
 -d\frac{z-x_i}{h^2}.
 $$
 
-Therefore, for the constraint convention $f-Lle0$,
+Therefore, for the constraint convention $f-L\le0$,
 $$
 \boxed{
 \frac{\partial c}{\partial x_i}
@@ -120,7 +120,7 @@ Assume, locally in $X$, that the exact fixed-breakpoint problem has a finite act
 $$
 \nabla_XV(X)
 =
-\nabla_Xmathcal L(X,y^*,\lambda^*,\mu^*)
+\nabla_X\mathcal{L}(X,y^*,\lambda^*,\mu^*)
 $$
 with $y^*,\lambda^*,\mu^*$ held fixed in the partial derivative.
 
@@ -216,7 +216,7 @@ The two quadratic cases used by the benchmark admit exact finite-$n$ formulas.
 
 For
 $$
-f(x)=x^2,\qquad xin[0,1],
+f(x)=x^2,\qquad x\in[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
@@ -227,7 +227,7 @@ $$
 
 For any fixed breakpoints, feasibility at the endpoints forces
 $$
-y_ige f(x_i)=x_i^2.
+y_i\ge f(x_i)=x_i^2.
 $$
 The chord through the endpoint values is a majorant because $x^2$ is convex. Any other feasible affine segment has endpoint values no smaller than the chord endpoints, so it lies pointwise above that chord. Thus the optimal segment is the chord.
 
@@ -245,7 +245,7 @@ E=\frac16\sum_{i=0}^{n-1}h_i^3,
 $$
 By Jensen's inequality,
 $$
-\sum_i h_i^3\ge nleft(\frac1n\right)^3=\frac1{n^2},
+\sum_i h_i^3\ge n\left(\frac1n\right)^3=\frac1{n^2},
 $$
 with equality for $h_i=1/n$. Hence the formula. ∎
 
@@ -253,7 +253,7 @@ with equality for $h_i=1/n$. Hence the formula. ∎
 
 For
 $$
-f(x)=-x^2,\qquad xin[0,1],
+f(x)=-x^2,\qquad x\in[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
@@ -302,7 +302,7 @@ Thus every affine majorant has error at least $h^3/12$, with equality for the mi
 
 Therefore every $n$-segment feasible spline satisfies
 $$
-E\ge\frac1{12}\\sum_{i=0}^{n-1}h_i^3,
+E\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
 \qquad
 \sum_i h_i=1.
 $$
@@ -326,7 +326,7 @@ f(x_0+t)=f(x_0)+f'(x_0)t+\frac12q t^2,
 $$
 the best affine majorant has leading error
 $$
-\egin{cases}
+\begin{cases}
 q h^3/12,&q>0,
 |q| h^3/24,&q<0.
 \end{cases}
@@ -339,7 +339,7 @@ $$
 where
 $$
 c(x)=
-\egin{cases}
+\begin{cases}
 1/12,&f''(x)>0,
 1/24,&f''(x)<0.
 \end{cases}

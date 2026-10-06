@@ -126,6 +126,7 @@ int main() {
         gradientOptions.lineSearchSteps = 1;
         gradientOptions.sufficientDecrease = 1e6;
         gradientOptions.gradientTolerance = 1e-12;
+        gradientOptions.seeds = 1;
         gradientOptions.initialBreakpoints = {
             0.0, 2.8, 2.0 * pi
         };

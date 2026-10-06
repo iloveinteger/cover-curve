@@ -17,8 +17,8 @@ jobs:
       - name: Direct height smoke
         run: /usr/bin/time -f '%e s' ./build/cover_curve_direct_height_smoke
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-
       - name: Benchmark solver
         run: ./build/cover_curve_benchmark
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

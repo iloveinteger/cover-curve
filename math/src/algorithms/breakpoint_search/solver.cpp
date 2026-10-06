@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <deque>
-#include <limits>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace cover_curve {

@@ -261,47 +261,45 @@ f(x)=-x^2,qquad xin[0,1],
 $$
 the exact optimum with $n$ segments is
 $$
-oxed{E_n^*=rac{1}{12n^2}}.
+\boxed{E_n^*=\frac{1}{12n^2}}.
 $$
 
 ### Proof
 
-On an interval of length $h$ the optimal affine majorant of $-x^2$ is the tangent at the midpoint. After translating the interval to $[0,h]$, it is
+On an interval of length $h$, translate the interval to $[0,h]$. The midpoint tangent to $-t^2$ is
 $$
-L(t)=-rac h2t+rac{h^2}{8}.
+L(t)=-ht+\frac{h^2}{4}.
 $$
-The error is
+Its error is
 $$
-L(t)+rac{t^2}{2}
+L(t)+t^2
 =
-rac12left(t-rac h2ight)^2,
+\left(t-\frac h2\right)^2,
 $$
-so its integral is
+so
 $$
-rac{h^3}{24}.
-$$
-
-For consecutive equal-length intervals, the tangent lines have the same excess
-$$
-rac{h^2}{8}
-$$
-above $f$ at every common breakpoint, so they join continuously. Conversely, every feasible affine segment has error at least $h^3/24$, which gives
-$$
-Egerac1{24}sum_i h_i^3
-gerac1{24n^2}.
+\int_0^h\bigl(L(t)+t^2\bigr),dt
+=
+\frac{h^3}{12}.
 $$
 
-The factor in the lower bound must use $f''=-2$: the displayed translated quadratic is $-t^2$, hence its midpoint tangent error integrates to $h^3/12$. Equivalently, writing $f(t)=-t^2$ directly gives
+At both endpoints the tangent has the same excess $h^2/4$ above $-t^2$. Hence for equal adjacent lengths the midpoint tangents agree at their common breakpoint and form a continuous feasible spline.
+
+For any affine majorant of $-t^2$, the integral error is at least the midpoint-tangent value $h^3/12$. Therefore every $n$-segment feasible spline satisfies
 $$
-L(t)=-ht+rac{h^2}{4},
-qquad
-int_0^h(L(t)+t^2),dt=rac{h^3}{12}.
+E\ge\frac1{12}\sum_{i=0}^{n-1}h_i^3,
+\qquad
+\sum_i h_i=1.
 $$
-Thus
+Jensen's inequality gives
 $$
-Egerac1{12}sum_i h_i^3gerac1{12n^2},
+\sum_i h_i^3\ge\frac1{n^2}.
 $$
-and uniform breakpoints attain equality. ∎
+Uniform breakpoints attain equality because the midpoint tangents join continuously. Thus
+$$
+E_n^*=\frac1{12n^2}.
+$$
+∎
 
 ## 7. Curvature-density model
 

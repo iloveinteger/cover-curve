@@ -206,7 +206,7 @@ Result breakpointSearch(
 
             try {
                 const Result candidate =
-                    algorithms::adaptive_grid_dp::solveGridDPOnGrid(
+                    algorithms::fast_grid_dp::solveFastGridDPOnGrid(
                         f,
                         points,
                         n

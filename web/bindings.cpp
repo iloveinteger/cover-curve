@@ -15,16 +15,17 @@ namespace {
 val solveWeb(const std::string& expression, double a, double b, int n) {
     try {
         const auto f = cover_curve::parseExpression(expression);
-        if (n <= 2) {
-            // The envelope solver is an independent continuous-height
-            // breakpoint refinement. It avoids the expensive global grid
-            // DP and coordinate-search sweep for the small-n web path.
+        if (n >= 1) {
+            // Theory-driven curvature-density initialization plus a uniform
+            // seed. Avoid the expensive global grid DP on the web path.
             cover_curve::EnvelopeSQPOptions options;
-            options.maxIterations = 12;
-            options.seeds = 3;
+            options.maxIterations = n <= 3 ? 10 : 8;
+            options.seeds = 2;
             options.includeFastGridSeed = false;
-            options.gradientTolerance = 1e-5;
-            options.innerOptions.maxSweeps = 60;
+            options.useCurvatureSeed = true;
+            options.curvatureSamples = 65;
+            options.gradientTolerance = 2e-5;
+            options.innerOptions.maxSweeps = n <= 3 ? 40 : 30;
             options.innerOptions.tolerance = 1e-8;
 
             const auto result =
@@ -56,9 +57,7 @@ val solveWeb(const std::string& expression, double a, double b, int n) {
             return output;
         }
 
-        const auto baseline = cover_curve::fastGridDP(f, a, b, n);
-
-        const auto& result = baseline;
+        const auto& result = result;
 
         val output = val::object();
         output.set("value", result.value);

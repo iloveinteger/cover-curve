@@ -27,6 +27,7 @@ add_library(cover_curve
     math/src/algorithms/breakpoint_search/solver.cpp
     math/src/algorithms/coordinate_search/solver.cpp
     math/src/algorithms/direct_height/solver.cpp
+    math/src/algorithms/envelope_sqp/solver.cpp
 )
 
 target_include_directories(cover_curve

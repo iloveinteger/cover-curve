@@ -77,9 +77,7 @@ Segment oneSegmentCost(
             slope
         );
 
-    // Reuse the support evaluation already performed at the final slope.
-    // Calling objective(slope) here would perform another expensive support
-    // maximization with exactly the same inputs.
+    // Reuse the final support evaluation.
     const double cost = std::max(
         0.0,
         (v - u) * support.value

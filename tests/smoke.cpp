@@ -154,6 +154,50 @@ int main() {
     );
     expectContinuous(rpFast, 1e-10, "fast piecewise curvature");
 
+    const auto rbSquare =
+        cover_curve::branchBoundGrid(square, 0.0, 1.0, 2);
+    expectNear(
+        rbSquare.value,
+        r3.value,
+        4e-3,
+        "branch-bound square n=2"
+    );
+    expectContinuous(
+        rbSquare,
+        1e-10,
+        "branch-bound square"
+    );
+
+    const auto rbSine =
+        cover_curve::branchBoundGrid(sine, 0.0, 2.0 * pi, 2);
+    expectNear(
+        rbSine.value,
+        rsReference.value,
+        3e-3,
+        "branch-bound sine n=2"
+    );
+    expectContinuous(
+        rbSine,
+        1e-10,
+        "branch-bound sine"
+    );
+
+    const auto rbPiecewise =
+        cover_curve::branchBoundGrid(piecewise, -1.0, 1.0, 2);
+    const auto rbPiecewiseReference =
+        cover_curve::adaptiveGridDP(piecewise, -1.0, 1.0, 2);
+    expectNear(
+        rbPiecewise.value,
+        rbPiecewiseReference.value,
+        3e-3,
+        "branch-bound piecewise"
+    );
+    expectContinuous(
+        rbPiecewise,
+        1e-10,
+        "branch-bound piecewise"
+    );
+
     const auto r4 =
         cover_curve::curvatureAdaptive(square, 0.0, 1.0, 2);
     expectNear(

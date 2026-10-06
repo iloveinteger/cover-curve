@@ -89,11 +89,12 @@ int main() {
     };
 
     std::cout << std::fixed << std::setprecision(3);
-    std::cout << "case,fast_ms,adaptive_ms,speedup,abs_value_diff\n";
+    std::cout << "case,fast_ms,adaptive_ms,branch_ms,fast_speedup,branch_speedup,fast_adaptive_diff,branch_adaptive_diff\n";
 
     for (const Case& c : cases) {
         double fastValue = 0.0;
         double adaptiveValue = 0.0;
+        double branchValue = 0.0;
 
         const double fastMs = measure(
             [](const auto& f, double a, double b, int n) {
@@ -109,15 +110,27 @@ int main() {
             c.f, c.a, c.b, c.n, repeats, adaptiveValue
         );
 
-        const double speedup =
+        const double branchMs = measure(
+            [](const auto& f, double a, double b, int n) {
+                return cover_curve::branchBoundGrid(f, a, b, n);
+            },
+            c.f, c.a, c.b, c.n, 1, branchValue
+        );
+
+        const double fastSpeedup =
             adaptiveMs > 0.0 ? adaptiveMs / fastMs : 0.0;
+        const double branchSpeedup =
+            adaptiveMs > 0.0 ? adaptiveMs / branchMs : 0.0;
 
         std::cout
             << c.name << ','
             << fastMs << ','
             << adaptiveMs << ','
-            << speedup << ','
-            << std::abs(fastValue - adaptiveValue)
+            << branchMs << ','
+            << fastSpeedup << ','
+            << branchSpeedup << ','
+            << std::abs(fastValue - adaptiveValue) << ','
+            << std::abs(branchValue - adaptiveValue)
             << '\n';
     }
 

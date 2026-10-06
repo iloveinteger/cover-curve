@@ -357,16 +357,10 @@ private:
         // sample of second differences cannot prove global concavity or
         // convexity for an arbitrary user function, so curvature shortcuts
         // are deliberately not used by the general fast solver.
-        for (int s = 1; s < kTransitionSamples; ++s) {
-            const double x =
-                lo + (v - lo) * s / kTransitionSamples;
-            const double r = ratio(x);
-            if (r > bestRatio) {
-                bestRatio = r;
-                bestX = x;
-            }
-        }
-
+        //
+        // Do not duplicate the initial sampling here: adaptiveSupportMaximum
+        // performs the same global sampling itself. The seed above is the
+        // only extra candidate that is useful across neighboring transitions.
         const auto support =
             numerical::adaptiveSupportMaximum(
                 ratio,
@@ -587,12 +581,14 @@ private:
                     pLo,
                     upper_,
                     [&](double p) {
-                        const double threshold =
-                            evaluateTransition(i, j, p).threshold;
-
-                        if (threshold > q + kHeightTolerance)
-                            return std::numeric_limits<double>::infinity();
-
+                        // feasibleLowerHeight() returns the smallest
+                        // height found on the feasible side of the monotone
+                        // transition condition. For every p >= pLo the
+                        // transition remains feasible because increasing the
+                        // starting height cannot increase the required ending
+                        // height. Therefore there is no need to recompute the
+                        // expensive support maximum at every golden-section
+                        // objective evaluation.
                         const double previous =
                             value(k - 1, i, p);
 

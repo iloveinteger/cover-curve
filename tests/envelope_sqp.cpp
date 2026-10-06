@@ -63,7 +63,7 @@ int main() {
 
     try {
         EnvelopeSQPOptions options;
-        options.maxIterations = 12;
+        options.maxIterations = 20;
         options.seeds = 1;
         options.includeFastGridSeed = false;
         options.gradientTolerance = 1e-5;

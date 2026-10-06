@@ -36,8 +36,8 @@ The shared-height solver instead needs the transition supremum
 $$
 T_{u,v}(p)
 =
-\sup_{u<x\le v}
-\left[
+\sup_{u<x\\\le v}
+\\left[
 p+\frac{v-u}{x-u}(f(x)-p)
 \right].
 $$

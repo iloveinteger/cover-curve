@@ -73,6 +73,19 @@ int main() {
         const Result x2 =
             envelopeSQPSolve(xSquared, 0.0, 1.0, 2, options);
 
+        EnvelopeSQPOptions x2n3Options = options;
+        x2n3Options.maxIterations = 12;
+        const Result x2n3 =
+            envelopeSQPSolve(xSquared, 0.0, 1.0, 3, x2n3Options);
+        require(
+            std::abs(x2n3.value - 1.0 / 54.0) < 2e-4,
+            "x^2 n=3 objective disagrees with 1/(6n^2)."
+        );
+        require(
+            denseViolation(x2n3, xSquared) <= 2e-5,
+            "x^2 n=3 envelope is not a majorant."
+        );
+
         require(x2.breakpoints.size() == 3,
                 "x^2 returned invalid breakpoint count.");
         require(std::abs(x2.breakpoints[1] - 0.5) < 5e-3,

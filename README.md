@@ -2,34 +2,23 @@
 
 **Numerical library for optimal continuous piecewise-linear upper approximation of a curve.**
 
-Given a continuous function $f:[a,b]\to\mathbb R$, find a continuous piecewise-linear majorant $g\ge f$ with $n$ segments minimizing
+Given a continuous function $f:[a,b]\to\mathbb R$, find a continuous piecewise-linear majorant $g\\\ge f$ with $n$ segments minimizing
 
-$$
-E(g)=\int_a^b (g(x)-f(x))\,dx.
-$$
+$$\nE(g)=\int_a^b (g(x)-f(x))\,dx.\n$$
 
 ## Problem
 
 Choose shared breakpoints and vertex heights
 
-$$
-a=x_0<x_1<\cdots<x_n=b,
-\qquad y_i=g(x_i).
-$$
+$$\na=x_0<x_1<\cdots<x_n=b,\n\\\qquad y_i=g(x_i).\n$$
 
 On each segment,
 
-$$
-L_i(x)=
-\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+
-\frac{x-x_i}{x_{i+1}-x_i}y_{i+1},
-$$
+$$\nL_i(x)=\n\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+\n\frac{x-x_i}{x_{i+1}-x_i}y_{i+1},\n$$
 
 with
 
-$$
-L_i(x)\ge f(x)\qquad (x\in[x_i,x_{i+1}]).
-$$
+$$\nL_i(x)\\\ge f(x)\\\qquad (x\in[x_i,x_{i+1}]).\n$$
 
 Shared vertex heights enforce continuity exactly.
 

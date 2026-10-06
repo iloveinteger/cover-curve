@@ -330,7 +330,7 @@ private:
             return lo;
         }
 
-        for (int it = 0; it < 18; ++it) {
+        for (int it = 0; it < 32; ++it) {
             const double mid = (lo + hi) / 2.0;
             if (evaluateTransition(i, j, mid).threshold <= q)
                 hi = mid;

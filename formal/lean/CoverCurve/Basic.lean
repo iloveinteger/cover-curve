@@ -2,7 +2,6 @@ import Mathlib
 
 namespace CoverCurve
 
-/-- A continuous function on a nonempty closed interval attains its minimum. -/
 theorem continuous_attains_min_on_Icc
     (f : ℝ → ℝ) {a b : ℝ} (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
@@ -11,7 +10,6 @@ theorem continuous_attains_min_on_Icc
     isCompact_Icc.exists_isMinOn (Set.nonempty_Icc.mpr hab) hf
   exact ⟨x, hx, hmin⟩
 
-/-- A continuous function on a nonempty closed interval attains its maximum. -/
 theorem continuous_attains_max_on_Icc
     (f : ℝ → ℝ) {a b : ℝ} (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
@@ -20,7 +18,6 @@ theorem continuous_attains_max_on_Icc
     isCompact_Icc.exists_isMaxOn (Set.nonempty_Icc.mpr hab) hf
   exact ⟨x, hx, hmax⟩
 
-/-- A continuous function on a closed interval has a constant majorant. -/
 theorem continuous_has_constant_majorant
     (f : ℝ → ℝ) {a b : ℝ} (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
@@ -28,11 +25,26 @@ theorem continuous_has_constant_majorant
   obtain ⟨x, hx, hmax⟩ := continuous_attains_max_on_Icc f hab hf
   exact ⟨f x, hmax⟩
 
-/-- A continuous function on a closed interval is uniformly continuous there. -/
 theorem continuous_uniformlyContinuousOn_Icc
     (f : ℝ → ℝ) {a b : ℝ}
     (hf : ContinuousOn f (Set.Icc a b)) :
     UniformContinuousOn f (Set.Icc a b) := by
   exact isCompact_Icc.uniformContinuousOn_of_continuous hf
+
+/-- The feasible objective gap is nonnegative for a continuous majorant. -/
+theorem integral_sub_nonneg
+    (f g : ℝ → ℝ) {a b : ℝ}
+    (hfg : ∀ x ∈ Set.Icc a b, f x ≤ g x)
+    (hf : IntervalIntegrable f volume a b)
+    (hg : IntervalIntegrable g volume a b) :
+    0 ≤ ∫ x in a..b, (g x - f x) := by
+  have hnonneg : ∀ x ∈ Set.uIcc a b, 0 ≤ g x - f x := by
+    intro x hx
+    have hx' : x ∈ Set.Icc a b := by
+      simpa [Set.uIcc_of_le] using hx
+    linarith [hfg x hx']
+  have hint : IntervalIntegrable (fun x => g x - f x) volume a b :=
+    hg.sub hf
+  exact intervalIntegral.integral_nonneg_of_ae (Filter.Eventually.of_forall hnonneg)
 
 end CoverCurve

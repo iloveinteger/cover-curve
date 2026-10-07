@@ -8,8 +8,6 @@ $$
 E(g)=\int_a^b (g(x)-f(x))\,dx.
 $$
 
-The project separates the **exact mathematical problem** from the **finite numerical implementation**. The theory documents prove the statements that can be proved under the stated assumptions; implementation documents describe the approximations actually made by the C++ solvers.
-
 ## Mathematical problem
 
 Let
@@ -36,199 +34,92 @@ L_i(x)\ge f(x)
 (x\in[x_i,x_{i+1}]).
 $$
 
-The same $y_i$ is used by the two segments adjacent to an interior breakpoint, so continuity is built into the representation.
+The same $y_i$ is used by adjacent segments, so continuity is built into the representation.
 
 For fixed breakpoints, this is a convex linear semi-infinite program in the vertex heights. Free breakpoints make the outer problem nonconvex.
 
-## What is proved
+## Mathematical results
 
-### Fixed breakpoints
+The theory separates exact mathematical statements from numerical approximations.
 
-For every strict breakpoint sequence, the feasible height set is nonempty, closed and convex, and the fixed-breakpoint optimum is attained.
+- **Existence:** an optimal continuous piecewise-affine majorant exists.
+- **Fixed breakpoints:** the height problem is a linear semi-infinite program, with an attained optimum.
+- **Dynamic programming:** the fixed-breakpoint problem and breakpoint-grid problem admit exact continuous-height Bellman formulations.
+- **Breakpoint-grid convergence:** the exact grid-restricted optimum converges to the unrestricted optimum as the breakpoint mesh tends to zero, with the proved bound
+  $$
+  0\le E_{n,N}^*-E_n^*
+  \le2(b-a)K\delta_N
+  $$
+  for an optimal spline with Lipschitz constant $K$.
+- **Direct breakpoint search:** exhaustive subdivision converges globally in the exact-oracle model.
+- **Coordinate search:** exact cyclic coordinate minimization is monotone and has coordinatewise-minimal accumulation points under the stated assumptions.
+- **Envelope optimization:** the sensitivity formula is derived under the required differentiability and primal-dual envelope/KKT hypotheses. The practical method is a safeguarded L-BFGS-style local method.
+- **Curvature model:** the cube-root curvature density is justified as an asymptotic initialization principle, not as a finite-$n$ optimality theorem.
+- **Quadratic benchmarks:**
+  $$
+  f(x)=x^2\quad\Longrightarrow\quad E_n^*=\frac1{6n^2},
+  $$
+  $$
+  f(x)=-x^2\quad\Longrightarrow\quad E_n^*=\frac1{12n^2}.
+  $$
 
-The fixed-breakpoint problem has an exact continuous-height Bellman representation. The transition
+## Theory
 
-$$
-T_{u,v}(p)=
-\sup_{u<x\le v}
-\frac{(v-u)f(x)-(v-x)p}{x-u}
-$$
+The theory documents follow the mathematical structure of the project:
 
-satisfies
+1. [Problem](theory/problem.md) — formal optimization problem.
+2. [Existence](theory/existence.md) — existence of an optimal spline.
+3. [Fixed-breakpoint](theory/fixed-breakpoint.md) — fixed-breakpoint height formulation.
+4. [Dynamic programming](theory/dynamic-programming.md) — exact continuous-height Bellman formulation.
+5. [Breakpoint-discretized DP](theory/algorithm.md) — grid formulation, correctness, convergence, error and complexity.
+6. [Direct height](theory/direct-height.md) — cutting-plane formulation and numerical certification boundary.
+7. [Breakpoint search](theory/breakpoint-search.md) — exhaustive breakpoint-space search.
+8. [Coordinate search](theory/coordinate-search.md) — coordinate descent analysis.
+9. [Envelope optimization](theory/envelope-sqp.md) — envelope sensitivity, outer algorithm, convergence properties, error and complexity.
 
-$$
-q\ge T_{u,v}(p)
-$$
+Each algorithm document distinguishes:
 
-exactly when the segment joining $(u,p)$ and $(v,q)$ is feasible, together with $p\ge f(u)$.
+- the mathematical definition of the algorithm;
+- pseudocode or a natural-language algorithm description;
+- pure mathematical results;
+- correctness and convergence results;
+- numerical error terms;
+- time complexity.
 
-The vertex heights are continuous real variables. A finite height grid is **not** part of the mathematical formulation.
-
-### Breakpoint-grid convergence
-
-For a breakpoint grid $G_N$ with mesh
-
-$$
-\delta_N=\max_j(z_{j+1}-z_j),
-$$
-
-the exact grid-restricted optimum satisfies
-
-$$
-E_n^*\le E_{n,N}^*
-$$
-
-and, for an optimal spline with Lipschitz constant $K$,
-
-$$
-0\le E_{n,N}^*-E_n^*
-\le
-2(b-a)K\delta_N.
-$$
-
-Consequently,
-
-$$
-E_{n,N}^*\to E_n^*
-\qquad
-(\delta_N\to0).
-$$
-
-This is a theorem for the **exact continuous-height breakpoint-grid problem**. It is not a claim that a finite numerical run is globally optimal.
-
-### Direct breakpoint-space search
-
-The direct breakpoint-search theory proves global convergence under an exact fixed-breakpoint oracle and exhaustive subdivision of breakpoint space. The proof uses continuity of the fixed-breakpoint value function at a strict optimal breakpoint representation.
-
-It does not use independently optimized one-segment costs as a branch-and-bound certificate, because those segment optima can have incompatible shared vertex heights.
-
-### Coordinate search
-
-Exact cyclic coordinate minimization is monotone decreasing and, under compactness, continuity and exact coordinate minimization assumptions, accumulation points are coordinatewise minima. This is a **local nonconvex result**, not a global-optimality theorem.
-
-### Envelope/L-BFGS method
-
-The envelope method is a local numerical method. Its sensitivity formula is justified only at differentiability points where the required primal-dual envelope/KKT assumptions hold. Active-set changes can make the value function nonsmooth.
-
-The implementation therefore treats the computed sensitivity as a search direction and uses safeguarded line search rather than claiming a globally valid gradient.
-
-### Curvature model
-
-For constant-sign quadratic local models, the one-cell leading errors are
-
-$$
-\frac{q h^3}{12}
-\quad(q>0),
-\qquad
-\frac{|q|h^3}{24}
-\quad(q<0).
-$$
-
-This gives the cube-root curvature density
-
-$$
-w(x)\propto c(x)^{1/3}|f''(x)|^{1/3}.
-$$
-
-It is used for initialization. It is an asymptotic heuristic, **not** a finite-$n$ optimality theorem.
-
-## Exact benchmark references
-
-The theory includes exact finite-$n$ results for the quadratic benchmark functions on $[0,1]$:
-
-$$
-f(x)=x^2
-\quad\Longrightarrow\quad
-E_n^*=\frac{1}{6n^2},
-$$
-
-and
-
-$$
-f(x)=-x^2
-\quad\Longrightarrow\quad
-E_n^*=\frac{1}{12n^2}.
-$$
-
-These provide useful regression and convergence references for the numerical solvers.
-
-The theory also records asymptotic curvature-density reference formulas for smoother examples such as $x^4$ and $\sin x$. Those formulas are benchmark references, not finite-run error certificates.
+The C++ source under math/ is the implementation itself. There is no separate implementation-documentation layer.
 
 ## Solvers
 
 | Solver | Purpose | Mathematical status |
 |---|---|---|
 | adaptiveGridDP | breakpoint-grid dynamic programming with continuous heights | exact target on a fixed grid; grid-convergence theorem |
-| fastGridDP | optimized implementation of the same target | same mathematical target; numerical approximation |
+| fastGridDP | optimized implementation of the same target | numerical implementation of the same target |
 | directHeight | fixed-breakpoint continuous-height cutting-plane solver | exact/conditional theory; numerical separation in practice |
-| breakpointSearch | direct subdivision of breakpoint space | global convergence in exact-oracle model |
+| breakpointSearch | direct subdivision of breakpoint space | global convergence in the exact-oracle model |
 | coordinateSearch | cyclic breakpoint optimization | local coordinate descent |
 | envelopeSQP | envelope sensitivity + safeguarded L-BFGS-style search | local numerical method |
 | curvatureAdaptive | curvature-guided breakpoint initialization | heuristic/asymptotic acceleration |
 | slope-minimization | independent one-segment reference calculation | diagnostic only |
 
-<code>directHeight</code> is the shared fixed-breakpoint inner solver for the outer local methods. Independent one-segment optimization must not be substituted for this inner problem when $n>1$, because internal vertex heights have to be shared.
+directHeight is the shared fixed-breakpoint inner solver for the outer local methods. Independent one-segment optimization is not a substitute for this shared-height problem when $n>1$.
 
-## Numerical correctness boundary
+## Numerical boundary
 
-The exact theory assumes exact or certified oracles where required. The current implementation uses finite-precision arithmetic and numerical procedures including:
+The mathematical theory uses exact or certified oracles where required. The implementation uses finite-precision arithmetic and numerical procedures such as numerical integration, finite cutting-plane iterations, numerical separation, finite optimization budgets, and finite-difference sensitivities.
 
-- numerical integration;
-- finite cutting-plane iterations;
-- numerical support/separation searches;
-- finite continuous-height searches;
-- finite breakpoint-search budgets;
-- finite coordinate/L-BFGS iterations;
-- finite-difference derivatives for the envelope method.
+For a black-box continuous function, finite sampling alone cannot certify a global supremum on an unsampled interval. Numerical feasibility is therefore evidence unless a certified separation bound is available.
 
-For a black-box continuous function, finite sampling alone cannot certify a global supremum on an unsampled interval. Therefore sampled feasibility is numerical evidence unless an independent certified separation bound is available.
-
-The numerical error should be separated from the mathematical breakpoint error. Conceptually,
+For a numerical output $\widehat E$,
 
 $$
 |\widehat E-E_n^*|
 \le
-|\widehat E-E_{n,N}^*|
+|\widehat E-V(X_{\mathrm{out}})|
 +
-|E_{n,N}^*-E_n^*|.
+|V(X_{\mathrm{out}})-E_n^*|.
 $$
 
-The second term has the proved $O(\delta_N)$ bound above under the stated assumptions. The first term contains implementation-specific numerical and optimization errors and is not automatically bounded by the mathematical convergence theorem.
-
-## Documentation
-
-### Theory
-
-Start with [Problem](theory/problem.md), which fixes the notation and formal optimization problem.
-
-Then read:
-
-1. [Existence](theory/existence.md) — existence of optimal splines and the literature input used for free knots.
-2. [Fixed-breakpoint](theory/fixed-breakpoint.md) — height formulation and linear semi-infinite programming.
-3. [Dynamic programming](theory/dynamic-programming.md) — exact continuous-height Bellman formulation.
-4. [Algorithm](theory/algorithm.md) — breakpoint-grid DP, correctness, convergence and error bound.
-5. [Direct height](theory/direct-height.md) — cutting-plane/separation formulation.
-6. [Breakpoint search](theory/breakpoint-search.md) — exhaustive breakpoint-space convergence.
-7. [Coordinate search](theory/coordinate-search.md) — coordinatewise descent and limit-point result.
-8. [Envelope-SQP](theory/envelope-sqp.md) — sensitivity derivation, local optimization and benchmark theorems.
-
-The theory deliberately distinguishes proved results from numerical heuristics and conditional certificates.
-
-### Implementation
-
-[Implementation documentation](implementation/README.md) describes the actual C++ architecture, state representation, numerical procedures, tolerances, complexity and guarantee boundaries.
-
-The implementation documentation includes separate descriptions of:
-
-- continuous-height DP;
-- numerical integration and transition evaluation;
-- support maximization;
-- breakpoint subdivision;
-- coordinate search;
-- envelope/L-BFGS-style optimization;
-- curvature initialization;
-- interpolation;
-- one-segment slope minimization.
+The first term is the numerical/inner error at the returned breakpoints. The second is the outer nonconvex optimization gap. The breakpoint-grid theorem gives an additional explicit discretization bound when a grid-based method is used.
 
 ## Build
 
@@ -240,285 +131,24 @@ cmake --build build
 ## Repository structure
 
 ~~~text
-theory/          exact mathematical formulation and proofs
-implementation/ concrete numerical algorithms and their limitations
-math/            mathematical/solver support code
-tests/           regression and numerical tests
-web/             web-facing interface
+theory/    mathematical definitions, algorithms, proofs and analysis
+math/      C++ implementation
+tests/     regression and numerical tests
+web/       web-facing interface
 ~~~
 
 ## Markdown math convention
 
-All repository documentation uses GitHub-compatible Markdown math:
+Use GitHub-compatible Markdown math:
 
 - inline: $f(x)$
 - display:
 
 $$
-f(x)=\frac{1}{2}x^2.
+f(x)=\frac12x^2.
 $$
 
-Use only `$...# Cover Curve
-
-**Numerical library for optimal continuous piecewise-linear upper approximation of a continuous curve.**
-
-Given a continuous function $f:[a,b]\to\mathbb R$ and a segment budget $n\ge1$, the problem is to find a continuous piecewise-affine majorant $g\ge f$ with at most $n$ segments that minimizes
-
-$$
-E(g)=\int_a^b (g(x)-f(x))\,dx.
-$$
-
-The project separates the **exact mathematical problem** from the **finite numerical implementation**. The theory documents prove the statements that can be proved under the stated assumptions; implementation documents describe the approximations actually made by the C++ solvers.
-
-## Mathematical problem
-
-Let
-
-$$
-a=x_0<x_1<\cdots<x_n=b,
-\qquad
-y_i=g(x_i).
-$$
-
-On each segment,
-
-$$
-L_i(x)=
-\frac{x_{i+1}-x}{x_{i+1}-x_i}y_i+
-\frac{x-x_i}{x_{i+1}-x_i}y_{i+1}.
-$$
-
-The constraints are
-
-$$
-L_i(x)\ge f(x)
-\qquad
-(x\in[x_i,x_{i+1}]).
-$$
-
-The same $y_i$ is used by the two segments adjacent to an interior breakpoint, so continuity is built into the representation.
-
-For fixed breakpoints, this is a convex linear semi-infinite program in the vertex heights. Free breakpoints make the outer problem nonconvex.
-
-## What is proved
-
-### Fixed breakpoints
-
-For every strict breakpoint sequence, the feasible height set is nonempty, closed and convex, and the fixed-breakpoint optimum is attained.
-
-The fixed-breakpoint problem has an exact continuous-height Bellman representation. The transition
-
-$$
-T_{u,v}(p)=
-\sup_{u<x\le v}
-\frac{(v-u)f(x)-(v-x)p}{x-u}
-$$
-
-satisfies
-
-$$
-q\ge T_{u,v}(p)
-$$
-
-exactly when the segment joining $(u,p)$ and $(v,q)$ is feasible, together with $p\ge f(u)$.
-
-The vertex heights are continuous real variables. A finite height grid is **not** part of the mathematical formulation.
-
-### Breakpoint-grid convergence
-
-For a breakpoint grid $G_N$ with mesh
-
-$$
-\delta_N=\max_j(z_{j+1}-z_j),
-$$
-
-the exact grid-restricted optimum satisfies
-
-$$
-E_n^*\le E_{n,N}^*
-$$
-
-and, for an optimal spline with Lipschitz constant $K$,
-
-$$
-0\le E_{n,N}^*-E_n^*
-\le
-2(b-a)K\delta_N.
-$$
-
-Consequently,
-
-$$
-E_{n,N}^*\to E_n^*
-\qquad
-(\delta_N\to0).
-$$
-
-This is a theorem for the **exact continuous-height breakpoint-grid problem**. It is not a claim that a finite numerical run is globally optimal.
-
-### Direct breakpoint-space search
-
-The direct breakpoint-search theory proves global convergence under an exact fixed-breakpoint oracle and exhaustive subdivision of breakpoint space. The proof uses continuity of the fixed-breakpoint value function at a strict optimal breakpoint representation.
-
-It does not use independently optimized one-segment costs as a branch-and-bound certificate, because those segment optima can have incompatible shared vertex heights.
-
-### Coordinate search
-
-Exact cyclic coordinate minimization is monotone decreasing and, under compactness, continuity and exact coordinate minimization assumptions, accumulation points are coordinatewise minima. This is a **local nonconvex result**, not a global-optimality theorem.
-
-### Envelope/L-BFGS method
-
-The envelope method is a local numerical method. Its sensitivity formula is justified only at differentiability points where the required primal-dual envelope/KKT assumptions hold. Active-set changes can make the value function nonsmooth.
-
-The implementation therefore treats the computed sensitivity as a search direction and uses safeguarded line search rather than claiming a globally valid gradient.
-
-### Curvature model
-
-For constant-sign quadratic local models, the one-cell leading errors are
-
-$$
-\frac{q h^3}{12}
-\quad(q>0),
-\qquad
-\frac{|q|h^3}{24}
-\quad(q<0).
-$$
-
-This gives the cube-root curvature density
-
-$$
-w(x)\propto c(x)^{1/3}|f''(x)|^{1/3}.
-$$
-
-It is used for initialization. It is an asymptotic heuristic, **not** a finite-$n$ optimality theorem.
-
-## Exact benchmark references
-
-The theory includes exact finite-$n$ results for the quadratic benchmark functions on $[0,1]$:
-
-$$
-f(x)=x^2
-\quad\Longrightarrow\quad
-E_n^*=\frac{1}{6n^2},
-$$
-
-and
-
-$$
-f(x)=-x^2
-\quad\Longrightarrow\quad
-E_n^*=\frac{1}{12n^2}.
-$$
-
-These provide useful regression and convergence references for the numerical solvers.
-
-The theory also records asymptotic curvature-density reference formulas for smoother examples such as $x^4$ and $\sin x$. Those formulas are benchmark references, not finite-run error certificates.
-
-## Solvers
-
-| Solver | Purpose | Mathematical status |
-|---|---|---|
-| adaptiveGridDP | breakpoint-grid dynamic programming with continuous heights | exact target on a fixed grid; grid-convergence theorem |
-| fastGridDP | optimized implementation of the same target | same mathematical target; numerical approximation |
-| directHeight | fixed-breakpoint continuous-height cutting-plane solver | exact/conditional theory; numerical separation in practice |
-| breakpointSearch | direct subdivision of breakpoint space | global convergence in exact-oracle model |
-| coordinateSearch | cyclic breakpoint optimization | local coordinate descent |
-| envelopeSQP | envelope sensitivity + safeguarded L-BFGS-style search | local numerical method |
-| curvatureAdaptive | curvature-guided breakpoint initialization | heuristic/asymptotic acceleration |
-| slope-minimization | independent one-segment reference calculation | diagnostic only |
-
-<code>directHeight</code> is the shared fixed-breakpoint inner solver for the outer local methods. Independent one-segment optimization must not be substituted for this inner problem when $n>1$, because internal vertex heights have to be shared.
-
-## Numerical correctness boundary
-
-The exact theory assumes exact or certified oracles where required. The current implementation uses finite-precision arithmetic and numerical procedures including:
-
-- numerical integration;
-- finite cutting-plane iterations;
-- numerical support/separation searches;
-- finite continuous-height searches;
-- finite breakpoint-search budgets;
-- finite coordinate/L-BFGS iterations;
-- finite-difference derivatives for the envelope method.
-
-For a black-box continuous function, finite sampling alone cannot certify a global supremum on an unsampled interval. Therefore sampled feasibility is numerical evidence unless an independent certified separation bound is available.
-
-The numerical error should be separated from the mathematical breakpoint error. Conceptually,
-
-$$
-|\widehat E-E_n^*|
-\le
-|\widehat E-E_{n,N}^*|
-+
-|E_{n,N}^*-E_n^*|.
-$$
-
-The second term has the proved $O(\delta_N)$ bound above under the stated assumptions. The first term contains implementation-specific numerical and optimization errors and is not automatically bounded by the mathematical convergence theorem.
-
-## Documentation
-
-### Theory
-
-Start with [Problem](theory/problem.md), which fixes the notation and formal optimization problem.
-
-Then read:
-
-1. [Existence](theory/existence.md) — existence of optimal splines and the literature input used for free knots.
-2. [Fixed-breakpoint](theory/fixed-breakpoint.md) — height formulation and linear semi-infinite programming.
-3. [Dynamic programming](theory/dynamic-programming.md) — exact continuous-height Bellman formulation.
-4. [Algorithm](theory/algorithm.md) — breakpoint-grid DP, correctness, convergence and error bound.
-5. [Direct height](theory/direct-height.md) — cutting-plane/separation formulation.
-6. [Breakpoint search](theory/breakpoint-search.md) — exhaustive breakpoint-space convergence.
-7. [Coordinate search](theory/coordinate-search.md) — coordinatewise descent and limit-point result.
-8. [Envelope-SQP](theory/envelope-sqp.md) — sensitivity derivation, local optimization and benchmark theorems.
-
-The theory deliberately distinguishes proved results from numerical heuristics and conditional certificates.
-
-### Implementation
-
-[Implementation documentation](implementation/README.md) describes the actual C++ architecture, state representation, numerical procedures, tolerances, complexity and guarantee boundaries.
-
-The implementation documentation includes separate descriptions of:
-
-- continuous-height DP;
-- numerical integration and transition evaluation;
-- support maximization;
-- breakpoint subdivision;
-- coordinate search;
-- envelope/L-BFGS-style optimization;
-- curvature initialization;
-- interpolation;
-- one-segment slope minimization.
-
-## Build
-
-~~~bash
-cmake -S . -B build
-cmake --build build
-~~~
-
-## Repository structure
-
-~~~text
-theory/          exact mathematical formulation and proofs
-implementation/ concrete numerical algorithms and their limitations
-math/            mathematical/solver support code
-tests/           regression and numerical tests
-web/             web-facing interface
-~~~
-
-## Markdown math convention
-
-All repository documentation uses GitHub-compatible Markdown math:
-
-- inline: $f(x)$
-- display:
-
-$$
-f(x)=\frac{1}{2}x^2.
-$$
-
- for inline math and `$...$` for display math. Keep display equations outside fenced code blocks.
+Keep display equations outside fenced code blocks.
 
 ## License
 

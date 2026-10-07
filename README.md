@@ -103,6 +103,10 @@ The C++ source under math/ is the implementation itself. There is no separate im
 
 directHeight is the shared fixed-breakpoint inner solver for the outer local methods. Independent one-segment optimization is not a substitute for this shared-height problem when $n>1$.
 
+## Formal verification
+
+The pure mathematical theory is being formalized in Lean 4 + Mathlib under [formal/lean](formal/lean/). The formal development is the machine-checked correctness layer for existence, fixed-breakpoint results, dynamic programming, algorithmic coverage and convergence, and explicit error bounds. A statement is treated as formally verified only after Lean checks its proof; numerical implementation behavior and complexity remain separate analysis layers.
+
 ## Numerical boundary
 
 The mathematical theory uses exact or certified oracles where required. The implementation uses finite-precision arithmetic and numerical procedures such as numerical integration, finite cutting-plane iterations, numerical separation, finite optimization budgets, and finite-difference sensitivities.

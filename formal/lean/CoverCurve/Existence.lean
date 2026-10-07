@@ -195,6 +195,7 @@ theorem segmentCost_nonneg
     have hconst : IntervalIntegrable (fun _ : ℝ => y₀) volume x₀ x₁ :=
       intervalIntegrable_const
     have hadd := intervalIntegral.integral_add hconst hterm
+    simp only [Pi.add_apply]
     rw [hadd]
     rw [intervalIntegral.integral_const]
     rw [intervalIntegral.integral_div]

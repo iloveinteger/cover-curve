@@ -150,5 +150,9 @@ hypothesis or a different configuration representation, the mathematical
 statement in theory/existence.md will be revised to match it.
 -/
 
+
+/-- CI marker. -/
+theorem lean_verification_stage_marker : True := by trivial
+
 end CoverCurve
 

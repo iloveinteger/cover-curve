@@ -242,7 +242,7 @@ theorem segment_width_height_bound
     exact le_trans (hμ x₁ ⟨le_of_lt hxy, le_rfl⟩)
       (segmentFeasible_right f hfeas)
   have hlow :=
-    segmentCost_lower_bound f hxy hf hM
+    segmentCost_lower_bound f (y₀ := y₀) (y₁ := y₁) hxy hf hM
   nlinarith
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

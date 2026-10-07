@@ -120,6 +120,35 @@ theorem knotX_mono
   intro i
   exact P.2.2.2 i
 
+/-- A continuous function bounded above by M has integral at most the integral of M. -/
+theorem interval_integral_le_const
+    (f : ℝ → ℝ) {a b M : ℝ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M) :
+    ∫ x in a..b, f x ≤ (b - a) * M := by
+  have hgap : 0 ≤ ∫ x in a..b, (M - f x) := by
+    apply integral_sub_nonneg f (fun _ => M) hab
+    exact hM
+  have hfi : IntervalIntegrable f volume a b :=
+    hf.intervalIntegrable_of_Icc hab
+  rw [intervalIntegral.integral_sub hfi intervalIntegrable_const,
+    intervalIntegral.integral_const] at hgap
+  linarith
+
+/-- On a positive-width segment, its cost is bounded below by its
+endpoint-height average minus an upper bound for f. -/
+theorem segmentCost_lower_bound
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ M : ℝ}
+    (hxy : x₀ < x₁)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M) :
+    segmentCost f x₀ y₀ x₁ y₁ ≥
+      (x₁ - x₀) * ((y₀ + y₁) / 2 - M) := by
+  rw [segmentCost, if_pos hxy]
+  have hI := interval_integral_le_const f (le_of_lt hxy) hf hM
+  linarith
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

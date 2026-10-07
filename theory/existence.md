@@ -48,9 +48,10 @@ and set $I_i(P)=0$ for vertical segments. Then
 I(P)=\sum_{i=1}^n I_i(P),\qquad I_i(P)\ge0.
 ```
 
-Let $m_{\rm rel}$ be the infimum over the relaxed class. Every feasible
-configuration without vertical segments is admissible for the original
-problem, hence
+Let $m_{\rm rel}$ be the infimum over the relaxed class. We allow at most
+$n$ segments in the relaxed class, so configurations with fewer segments
+are included directly. Every feasible configuration without vertical
+segments is admissible for the original problem, hence
 
 ```math
 m_{\rm rel}\le
@@ -271,6 +272,8 @@ u+\frac d3+\frac23(\sigma_R-\sigma_L)\eta.
 Set $\varepsilon=d/6$. Choose $\eta>0$ small enough that
 
 ```math
+\eta<\min\left\{w_L,\frac{w_R}{2}\right\},
+\qquad
 2\eta<\delta,
 \qquad
 \left|\frac23(\sigma_R-\sigma_L)\eta\right|<\varepsilon,

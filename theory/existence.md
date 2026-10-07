@@ -149,16 +149,18 @@ coincide.
 Suppose an interior vertical segment at $c$ has distinct endpoint values.
 After reflection in $x=c$ if necessary, write
 
-```math
+
+$
 L(c)=u<R(c)=v,qquad d=v-u>0,qquad f(c)\le u,
-```
+$
 
 where $L,R$ are the adjacent regular pieces. Let their widths be
 $w_L,w_R>0$. Choose $\eta>0$ such that
 
-```math
+
+$
 \eta<\min\left\{w_L,\frac{w_R}{2}\right\},
-```
+$
 
 and set $s=c-\eta$, $t=c+2\eta$. Replace the vertical segment and the
 corresponding portions of $L,R$ by the affine segment $M$ joining
@@ -166,28 +168,31 @@ $(s,L(s))$ to $(t,R(t))$.
 
 Let $\sigma_L,\sigma_R$ be the slopes of $L,R$. Then
 
-```math
+
+$
 L(s)=u-\sigma_L\eta,\qquad
 R(t)=v+2\sigma_R\eta,
-```
+$
 
 and
 
-```math
+
+$
 M(c)=u+\frac d3+
 \frac23(\sigma_R-\sigma_L)\eta.
-```
+$
 
 Set $\varepsilon=d/6$. By continuity of $f$, choose $\delta>0$ such that
 $|x-c|<\delta$ implies $|f(x)-f(c)|<\varepsilon$. Choose $\eta$ smaller
 if necessary so that
 
-```math
+
+$
 2\eta<\delta,\qquad
 \left|\frac23(\sigma_R-\sigma_L)\eta\right|<\varepsilon,
 \qquad
 d+(\sigma_L+2\sigma_R)\eta>0.
-```
+$
 
 Then $M(c)>u+d/6$, and the last inequality makes $M$ increasing. Hence
 $M>f$ on $[c,t]$. On $[s,c]$, $M-L$ is affine, vanishes at $s$, and is
@@ -195,19 +200,21 @@ positive at $c$, so $M\ge L\ge f$. The replacement is therefore feasible.
 
 Its change in objective is
 
-```math
+
+$
 \Delta I
 =
 -\frac d2\eta+
 (\sigma_R-\sigma_L)\eta^2.
-```
+$
 
 The second smallness condition gives
 $|\sigma_R-\sigma_L|\eta<d/4$, hence
 
-```math
+
+$
 \Delta I<-\frac d4\eta<0,
-```
+$
 
 contradicting minimality. Thus no nontrivial interior vertical segment
 exists.

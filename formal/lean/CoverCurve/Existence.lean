@@ -62,6 +62,30 @@ def segmentFeasible
   else
     x₀ = x₁ ∧ f x₀ ≤ y₀ ∧ f x₀ ≤ y₁
 
+/-- A feasible segment has both endpoint heights above f at its endpoints. -/
+theorem segmentFeasible_left
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (h : segmentFeasible f x₀ y₀ x₁ y₁) :
+    f x₀ ≤ y₀ := by
+  by_cases hlt : x₀ < x₁
+  · rw [segmentFeasible, dif_pos hlt] at h
+    exact h x₀ ⟨le_rfl, le_of_lt hlt⟩
+  · rw [segmentFeasible, dif_neg hlt] at h
+    exact h.2.1
+
+/-- A feasible segment has both endpoint heights above f at its endpoints. -/
+theorem segmentFeasible_right
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (h : segmentFeasible f x₀ y₀ x₁ y₁) :
+    f x₁ ≤ y₁ := by
+  by_cases hlt : x₀ < x₁
+  · rw [segmentFeasible, dif_pos hlt] at h
+    have hx := h x₁ ⟨le_of_lt hlt, le_rfl⟩
+    simpa using hx
+  · rw [segmentFeasible, dif_neg hlt] at h
+    have heq : x₀ = x₁ := h.1
+    simpa [heq] using h.2.2
+
 /-- Feasibility of every segment of a relaxed configuration. -/
 def RelaxedFeasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
@@ -70,6 +94,36 @@ def RelaxedFeasible
     segmentFeasible f
       (knotX P i.castSucc) (knotY P i.castSucc)
       (knotX P i.succ) (knotY P i.succ)
+
+/-- Every knot of a feasible relaxed configuration lies above f. -/
+theorem relaxed_feasible_knot_lower_bound
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (P : OrderedKnots a b n)
+    (hP : RelaxedFeasible f P) :
+    ∀ i : Fin (n + 1), f (knotX P i) ≤ knotY P i := by
+  intro i
+  by_cases hi : i.val = 0
+  · have hi0 : i = 0 := Fin.ext hi
+    subst i
+    have hs := hP ⟨0, hn⟩
+    simpa [knotX, knotY] using
+      segmentFeasible_left f hs
+  · by_cases hilast : i.val = n
+    · have hilast' : i = Fin.last n := Fin.ext hilast
+      subst i
+      have hs := hP ⟨n - 1, by omega⟩
+      simpa [knotX, knotY] using
+        segmentFeasible_right f hs
+    · let j : Fin n := ⟨i.val - 1, by omega⟩
+      have hjcast : j.succ = i := by
+        apply Fin.ext
+        dsimp [j]
+        omega
+      have hs := hP j
+      rw [hjcast] at hs
+      simpa [knotX, knotY] using
+        segmentFeasible_right f hs
 
 /-- Objective contribution of one relaxed segment. -/
 def segmentCost
@@ -90,11 +144,10 @@ def relaxedObjective
 
 /-
 The full existence theorem is intentionally not asserted here yet. The next
-steps formalize the elementary consequences of RelaxedFeasible, then the
-bounded minimizing-sequence argument and the elimination of nontrivial
-interior degenerate segments. If a Lean proof requires a stronger hypothesis
-or a different configuration representation, the mathematical statement in
-theory/existence.md will be revised to match it.
+steps formalize the bounded minimizing-sequence argument and the elimination
+of nontrivial interior degenerate segments. If Lean requires a stronger
+hypothesis or a different configuration representation, the mathematical
+statement in theory/existence.md will be revised to match it.
 -/
 
 end CoverCurve

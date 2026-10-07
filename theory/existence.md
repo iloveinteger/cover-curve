@@ -1,7 +1,7 @@
 # Existence of an optimal piecewise-affine upper envelope
 
-**Theorem.** Let $fin C[a,b]$, $a<b$, and $nge1$. Among continuous
-piecewise-affine functions $gge f$ with at most $n$ nondegenerate affine
+**Theorem.** Let $f\in C[a,b]$, $a<b$, and $n\ge1$. Among continuous
+piecewise-affine functions $g\ge f$ with at most $n$ nondegenerate affine
 pieces, the functional
 
 $$
@@ -50,7 +50,7 @@ For a regular segment, put
 $$
 I_i(P)
 =
-\frac{x_i-x_{i-1}}2(y_{i-1}+y_i)
+\frac{x_i-x_{i-1}}{2}(y_{i-1}+y_i)
 -
 \int_{x_{i-1}}^{x_i}f(x)\,dx,
 $$
@@ -247,7 +247,7 @@ Therefore
 $$
 I(\bar P)
 =
-\sum_{i\,\mathrm{kept}}\lim_{k\to\infty}I_i(P^k)
+\sum_{\text{kept }i}\lim_{k\to\infty}I_i(P^k)
 \le
 \liminf_{k\to\infty}I(P^k)
 =

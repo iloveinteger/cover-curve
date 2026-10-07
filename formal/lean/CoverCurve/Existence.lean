@@ -190,6 +190,12 @@ theorem segmentCost_nonneg
     have hconst : IntervalIntegrable (fun _ : ℝ => y₀) volume x₀ x₁ :=
       intervalIntegrable_const
     have hadd := intervalIntegral.integral_add hconst hterm
+    have hxI_id : IntervalIntegrable (fun x : ℝ => x) volume x₀ x₁ := by
+      have hxc : ContinuousOn (fun x : ℝ => x) (Set.Icc x₀ x₁) := by
+        fun_prop
+      exact hxc.intervalIntegrable_of_Icc (le_of_lt hxy)
+    have hxI_x₀ : IntervalIntegrable (fun _ : ℝ => x₀) volume x₀ x₁ :=
+      intervalIntegrable_const
     calc
       (∫ x in x₀..x₁, L x)
           = (∫ x in x₀..x₁, y₀) +
@@ -204,9 +210,10 @@ theorem segmentCost_nonneg
       _ = (x₁ - x₀) * y₀ +
             ∫ x in x₀..x₁, (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
         rw [intervalIntegral.integral_const]
+        simp [smul_eq_mul]
     rw [intervalIntegral.integral_div]
     rw [intervalIntegral.integral_mul_const]
-    rw [intervalIntegral.integral_sub]
+    rw [intervalIntegral.integral_sub hxI_id hxI_x₀]
     rw [integral_id]
     rw [intervalIntegral.integral_const]
     field_simp [hne]

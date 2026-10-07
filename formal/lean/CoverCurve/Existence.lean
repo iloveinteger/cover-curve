@@ -158,42 +158,55 @@ theorem segmentCost_nonneg
     (hfeas : segmentFeasible f x₀ y₀ x₁ y₁) :
     0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
   rw [segmentCost, if_pos hxy]
-  have hmajor :
-      ∀ x ∈ Set.Icc x₀ x₁,
-        f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+  let L : ℝ → ℝ :=
+    fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)
+  have hmajor : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ L x := by
     rw [segmentFeasible, if_pos hxy] at hfeas
     exact hfeas
-  have hnonneg :
-      0 ≤ ∫ x in x₀..x₁,
-        (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) - f x) := by
-    exact intervalIntegral.integral_nonneg (le_of_lt hxy) (by
-      intro x hx
-      linarith [hmajor x hx])
+  have hfI : IntervalIntegrable f volume x₀ x₁ :=
+    hf.intervalIntegrable_of_Icc (le_of_lt hxy)
+  have hLI : IntervalIntegrable L volume x₀ x₁ := by
+    have hLc : ContinuousOn L (Set.Icc x₀ x₁) := by
+      dsimp [L]
+      fun_prop
+    exact hLc.intervalIntegrable_of_Icc (le_of_lt hxy)
+  have hnonneg : 0 ≤ ∫ x in x₀..x₁, (L x - f x) := by
+    apply intervalIntegral.integral_nonneg (le_of_lt hxy)
+    intro x hx
+    exact sub_nonneg.mpr (hmajor x hx)
   have hcalc :
-      ∫ x in x₀..x₁,
-        (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+      ∫ x in x₀..x₁, L x
         = (x₁ - x₀) / 2 * (y₀ + y₁) := by
     have hne : x₁ - x₀ ≠ 0 := ne_of_gt (sub_pos.mpr hxy)
-    rw [intervalIntegral.integral_add]
+    have hxI : IntervalIntegrable (fun x : ℝ => x - x₀) volume x₀ x₁ := by
+      have hxc : ContinuousOn (fun x : ℝ => x - x₀) (Set.Icc x₀ x₁) := by
+        fun_prop
+      exact hxc.intervalIntegrable_of_Icc (le_of_lt hxy)
+    have hterm :
+        IntervalIntegrable
+          (fun x : ℝ => (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+          volume x₀ x₁ :=
+      (hxI.mul_const (y₁ - y₀)).div_const (x₁ - x₀)
+    rw [show (fun x : ℝ => L x) =
+        (fun _ : ℝ => y₀) +
+          (fun x : ℝ => (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) by
+      funext x
+      rfl]
+    rw [intervalIntegral.integral_add intervalIntegrable_const hterm]
     rw [intervalIntegral.integral_const]
     rw [intervalIntegral.integral_div]
     rw [intervalIntegral.integral_mul_const]
     rw [intervalIntegral.integral_sub]
-    rw [intervalIntegral.integral_id]
+    rw [integral_id]
     rw [intervalIntegral.integral_const]
     field_simp [hne]
     ring
   have hdiff :
-      (∫ x in x₀..x₁,
-          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) - f x))
-        =
-      (∫ x in x₀..x₁,
-          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)))
-        - ∫ x in x₀..x₁, f x := by
-    rw [intervalIntegral.integral_sub]
+      (∫ x in x₀..x₁, (L x - f x))
+        = (∫ x in x₀..x₁, L x) - ∫ x in x₀..x₁, f x :=
+    intervalIntegral.integral_sub hLI hfI
   rw [hcalc] at hnonneg
   linarith
-
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible

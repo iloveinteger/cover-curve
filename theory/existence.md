@@ -77,7 +77,8 @@ y_i^k\to\bar y_i\in[\mu,+\infty]
 $$
 for every $i$.
 
-Call $i$ **finite** if $\bar y_i<\infty$.
+Call $i$ **finite** if $\bar y_i<\infty$ and **divergent** if
+$\bar y_i=+\infty$.
 
 For a regular segment, let
 $$
@@ -89,8 +90,8 @@ I_i(P^k)
 \ge
 w_i^k\left(\frac{y_{i-1}^k+y_i^k}{2}-M\right).
 $$
-Moreover $0\le I_i(P^k)\le I(P^k)\le C$. Hence, if either endpoint
-height tends to $+\infty$, then
+Moreover $0\le I_i(P^k)\le C$. Hence, if either endpoint height tends to
+$+\infty$, then
 $$
 w_i^k\to0.
 $$
@@ -108,33 +109,64 @@ $$
 i_1<\cdots<i_r.
 $$
 
-For consecutive finite knots $i_j<i_{j+1}$, if
-$$
-\bar x_{i_j}<\bar x_{i_{j+1}},
-$$
-then there is no infinite-height knot between them. Indeed, such a knot
-would force both adjacent widths to tend to zero, and hence
-$$
-\bar x_{i_j}=\bar x_{i_{j+1}}.
-$$
-Thus $i_{j+1}=i_j+1$, and the corresponding affine segment converges to the
-affine segment joining
-$$
-(\bar x_{i_j},\bar y_{i_j})
-\quad\text{and}\quad
-(\bar x_{i_{j+1}},\bar y_{i_{j+1}}).
-$$
+Consider consecutive finite knots $i_j<i_{j+1}$.
 
 If
 $$
+\bar x_{i_j}<\bar x_{i_{j+1}},
+$$
+then there is no divergent knot between them. Indeed, if $r$ is a divergent
+knot with $i_j<r<i_{j+1}$, then every knot between $i_j$ and $r$ except
+possibly $i_j$ is divergent, and every knot between $r$ and $i_{j+1}$ except
+possibly $i_{j+1}$ is divergent. Every segment in these two finite chains has
+a divergent endpoint, except possibly the two segments adjacent to the finite
+endpoints; those two also have a divergent endpoint. Hence all their widths
+tend to zero, and therefore
+$$
 \bar x_{i_j}=\bar x_{i_{j+1}},
 $$
-replace the intervening zero-width chain by a vertical segment joining the
-two limiting endpoint values. Consecutive zero-width vertical chains may be
-merged.
+a contradiction. Thus
+$$
+i_{j+1}=i_j+1.
+$$
 
-Every segment in the boundary run before $i_1$ has an infinite-height
-endpoint, so its width tends to zero. Hence
+The corresponding affine interpolants converge uniformly to the affine
+interpolant joining
+$$
+(\bar x_{i_j},\bar y_{i_j})
+\quad\text{and}\quad
+(\bar x_{i_{j+1}},\bar y_{i_{j+1}}),
+$$
+and the limiting segment is feasible.
+
+If
+$$
+\bar x_{i_j}=\bar x_{i_{j+1}}=:c,
+$$
+then every segment between these two finite knots has width tending to zero.
+Replace the whole chain by the vertical segment at $c$ joining
+$$
+(c,\bar y_{i_j})
+\quad\text{and}\quad
+(c,\bar y_{i_{j+1}}).
+$$
+Since
+$$
+\bar y_{i_j}
+=
+\lim_{k\to\infty}y_{i_j}^k
+\ge
+\lim_{k\to\infty}f(x_{i_j}^k)
+=f(c),
+$$
+and similarly
+$$
+\bar y_{i_{j+1}}\ge f(c),
+$$
+this vertical segment is feasible. Its cost is $0$.
+
+Every segment in the boundary run before $i_1$ has a divergent endpoint,
+except when $i_1=0$, so its width tends to zero. Hence
 $$
 \bar x_{i_1}
 =
@@ -154,30 +186,27 @@ $$
 \bar\ell_i\ge f.
 $$
 
-For every retained vertical segment at $c$,
-$$
-\bar y_i
-=
-\lim_{k\to\infty}y_i^k
-\ge
-\lim_{k\to\infty}f(x_i^k)
-=f(c).
-$$
-Thus the limiting configuration $\bar P$ is feasible.
+For every retained vertical segment at $c$, its endpoint values are at least
+$f(c)$ by the preceding argument. Thus the limiting configuration $\bar P$
+is feasible.
 
-For every retained regular segment,
+Let $J$ be the set of retained regular segments having positive limiting
+width. For each $i\in J$,
 $$
 I_i(P^k)\to I_i(\bar P).
 $$
-All discarded segments have nonnegative cost. Therefore
+All other segment costs are nonnegative, and the vertical segments in $\bar
+P$ have cost $0$. Therefore
 $$
 I(\bar P)
+=
+\sum_{i\in J}\lim_{k\to\infty}I_i(P^k)
 \le
 \liminf_{k\to\infty}I(P^k)
 =
 m_{\rm rel}.
 $$
-By feasibility,
+Since $\bar P$ is feasible,
 $$
 I(\bar P)\ge m_{\rm rel}.
 $$
@@ -191,9 +220,8 @@ Therefore the relaxed problem has a minimizer.
 ## 3. Removing vertical segments
 
 Normalize a relaxed minimizer by deleting coincident zero-length segments,
-merging consecutive vertical segments, and deleting vertical segments at
-$a$ or $b$. It remains feasible and its cost and segment count do not
-increase.
+merging consecutive vertical segments, and deleting vertical segments at $a$
+or $b$. It remains feasible and its cost and segment count do not increase.
 
 Suppose an isolated interior vertical segment at $c$ joins $u$ and $v$,
 with $d=|v-u|>0$. Reverse the orientation of the vertical segment if

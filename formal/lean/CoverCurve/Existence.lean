@@ -240,4 +240,79 @@ statement in theory/existence.md will be revised to match it.
 theorem lean_verification_stage_marker : True := by trivial
 
 end CoverCurve
+/-- A constant knot configuration is feasible. -/
+theorem exists_relaxed_feasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    ∃ P : OrderedKnots a b n, RelaxedFeasible f P := by
+  obtain ⟨M, hM⟩ := continuous_has_constant_majorant f hab hf
+  let P : Fin (n + 1) → ℝ × ℝ :=
+    fun i => (if i = Fin.last n then b else a, M)
+  have h0 : P 0 |>.1 = a := by
+    simp [P, hn.ne']
+  have hlast : P (Fin.last n) |>.1 = b := by
+    simp [P]
+  have hmono : ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1 := by
+    intro i
+    by_cases hlast : i.succ = Fin.last n
+    · simp [P, hlast]
+    · simp [P, hlast]
+  let Q : OrderedKnots a b n := ⟨P, h0, hlast, hmono⟩
+  refine ⟨Q, ?_⟩
+  intro i
+  have hxi : knotX Q i.castSucc = a := by
+    simp [knotX, Q, P, Fin.castSucc_ne_last]
+  by_cases hlast : i.succ = Fin.last n
+  · have hxj : knotX Q i.succ = b := by
+      simp [knotX, Q, P, hlast]
+    have hy0 : knotY Q i.castSucc = M := by rfl
+    have hy1 : knotY Q i.succ = M := by rfl
+    rw [hxi, hxj, hy0, hy1, segmentFeasible]
+    rw [dif_pos (lt_of_lt_of_le (lt_of_le_of_ne hab (by
+      intro h
+      exact hlast (Fin.ext (by simpa [h] using i.isLt))) ) hab)]
+    intro x hx
+    simpa using hM x ⟨hx.1, hx.2⟩
+  · have hxj : knotX Q i.succ = a := by
+      simp [knotX, Q, P, hlast]
+    have hy0 : knotY Q i.castSucc = M := by rfl
+    have hy1 : knotY Q i.succ = M := by rfl
+    rw [hxi, hxj, hy0, hy1, segmentFeasible, dif_neg]
+    exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
+
+/-- The relaxed feasible set is nonempty whenever the original problem is. -/
+theorem relaxed_feasible_nonempty
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    Set.Nonempty {P : OrderedKnots a b n | RelaxedFeasible f P} := by
+  obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
+  exact ⟨P, hP⟩
+
+/-- The relaxed objective is bounded below by zero on the feasible set. -/
+theorem relaxed_feasible_objective_lower_bound
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    {P : OrderedKnots a b n}
+    (hP : RelaxedFeasible f P) :
+    0 ≤ relaxedObjective f P :=
+  relaxedObjective_nonneg f P hP hf
+
+
+/-
+The full existence theorem is intentionally not asserted here yet. The next
+steps formalize the bounded minimizing-sequence argument and the elimination
+of nontrivial interior degenerate segments. If Lean requires a stronger
+hypothesis or a different configuration representation, the mathematical
+statement in theory/existence.md will be revised to match it.
+-/
+
+
+/-- CI marker. -/
+theorem lean_verification_stage_marker : True := by trivial
+
+end CoverCurve
 

@@ -43,17 +43,13 @@ $$
 I(P)=\sum_{i=1}^n I_i(P), \qquad I_i(P)\ge0.
 $$
 
-(1)
-
 Let $m_{\rm rel}$ be the infimum over this relaxed class. A feasible
 configuration without vertical segments is an admissible function for the
 original problem, so
 
 $$
-m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g).
+m_{\rm rel} \le \inf\{I(g): g\ge f,\ g\text{ admissible}\}.
 $$
-
-(2)
 
 ## 2. Existence of a relaxed minimizer
 
@@ -83,8 +79,6 @@ Hence, if either endpoint tends to $+\infty$,
 $$
 w_i^k\to0.
 $$
-
-(3)
 
 Since
 
@@ -168,8 +162,6 @@ $$
 M(c) = \frac23L(s)+\frac13R(t) = u+\frac d3+O(\eta).
 $$
 
-(4)
-
 For sufficiently small $\eta$, $M\ge L\ge f$ on $[s,c]$. Also $M$ is
 increasing because its endpoint difference is $d+O(\eta)>0$. By continuity
 of $f$ at $c$,
@@ -203,13 +195,13 @@ piecewise-affine $g\ge f$ with at most $n$ nondegenerate affine pieces.
 By (2),
 
 $$
-I(g) = m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g) \le I(g).
+I(g) = m_{\rm rel} \le \inf\{I(g): g\ge f,\ g\text{ admissible}\} \le I(g).
 $$
 
 Hence
 
 $$
-I(g) = \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g),
+I(g) = \inf\{I(g): g\ge f,\ g\text{ admissible}\},
 $$
 
 so the infimum is attained.

@@ -33,14 +33,68 @@ theorem exists_constant_majorant
   refine ⟨M, continuousOn_const, ?_⟩
   exact hM
 
-/-
-The remaining existence proof is deliberately developed below these
-foundational lemmas rather than asserted as an axiom.  The next formal layer
-will define finite-segment relaxed configurations and prove compactness of
-bounded minimizing sequences, including the degenerate-segment limit and the
-removal of interior vertical segments.
+/-- A finite list of ordered knots, with endpoints fixed at a and b. -/
+def OrderedKnots (a b : ℝ) (n : ℕ) : Type :=
+  {P : Fin (n + 1) → ℝ × ℝ //
+    P 0 |>.1 = a ∧
+    P (Fin.last n) |>.1 = b ∧
+    ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1}
 
-This file therefore does not yet contain the full existence theorem.
+/-- The horizontal coordinate of a knot. -/
+def knotX {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) (i : Fin (n + 1)) : ℝ :=
+  (P.1 i).1
+
+/-- The height coordinate of a knot. -/
+def knotY {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) (i : Fin (n + 1)) : ℝ :=
+  (P.1 i).2
+
+/-- Feasibility of one relaxed segment.
+
+For a nondegenerate segment this is the affine majorization condition.
+For a degenerate segment at c, both endpoint heights must dominate f(c). -/
+def segmentFeasible
+    (f : ℝ → ℝ) (x₀ y₀ x₁ y₁ : ℝ) : Prop :=
+  if h : x₀ < x₁ then
+    ∀ x ∈ Set.Icc x₀ x₁,
+      f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)
+  else
+    x₀ = x₁ ∧ f x₀ ≤ y₀ ∧ f x₀ ≤ y₁
+
+/-- Feasibility of every segment of a relaxed configuration. -/
+def RelaxedFeasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) : Prop :=
+  ∀ i : Fin n,
+    segmentFeasible f
+      (knotX P i.castSucc) (knotY P i.castSucc)
+      (knotX P i.succ) (knotY P i.succ)
+
+/-- Objective contribution of one relaxed segment. -/
+def segmentCost
+    (f : ℝ → ℝ) (x₀ y₀ x₁ y₁ : ℝ) : ℝ :=
+  if h : x₀ < x₁ then
+    (x₁ - x₀) / 2 * (y₀ + y₁) - ∫ x in x₀..x₁, f x
+  else
+    0
+
+/-- Objective of a relaxed finite-segment configuration. -/
+def relaxedObjective
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) : ℝ :=
+  ∑ i : Fin n,
+    segmentCost f
+      (knotX P i.castSucc) (knotY P i.castSucc)
+      (knotX P i.succ) (knotY P i.succ)
+
+/-
+The full existence theorem is intentionally not asserted here yet. The next
+steps formalize the elementary consequences of RelaxedFeasible, then the
+bounded minimizing-sequence argument and the elimination of nontrivial
+interior degenerate segments. If a Lean proof requires a stronger hypothesis
+or a different configuration representation, the mathematical statement in
+theory/existence.md will be revised to match it.
 -/
 
 end CoverCurve

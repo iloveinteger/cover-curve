@@ -81,6 +81,7 @@ theorem segmentFeasible_right
       f x₁ ≤ y₀ + (x₁ - x₀) * (y₁ - y₀) / (x₁ - x₀) := hx
       _ = y₁ := by
         field_simp [ne_of_gt (sub_pos.mpr hlt)]
+        ring
   · rw [segmentFeasible, if_neg hlt] at h
     rcases h with ⟨hxeq, hy₀, hy₁⟩
     simpa [hxeq] using hy₁
@@ -117,7 +118,7 @@ theorem knotX_mono
     (P : OrderedKnots a b n) :
     ∀ i : Fin n, knotX P i.castSucc ≤ knotX P i.succ := by
   intro i
-  exact P.2.2 i
+  exact P.2.2.2 i
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
@@ -130,7 +131,7 @@ theorem exists_relaxed_feasible
   let P : Fin (n + 1) → ℝ × ℝ :=
     fun i => (if i = Fin.last n then b else a, M)
   have h0 : (P 0).1 = a := by
-    simp [P, hn.ne']
+    simp [P, Nat.ne_of_gt hn]
   have hlast : (P (Fin.last n)).1 = b := by
     simp [P]
   have hmono : ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1 := by
@@ -150,14 +151,14 @@ theorem exists_relaxed_feasible
     by_cases hablt : a < b
     · rw [segmentFeasible, if_pos hablt]
       intro x hx
-      exact hM x hx
+      simpa [knotY, Q, P] using hM x hx
     · have heq : a = b := le_antisymm hab (le_of_not_gt hablt)
       subst heq
-      rw [segmentFeasible, if_neg]
+      rw [segmentFeasible, if_neg hablt]
       exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
   · have hxj : knotX Q i.succ = a := by
       simp [knotX, Q, P, hlast_i]
-    rw [hxi, hxj, segmentFeasible, if_neg]
+    rw [hxi, hxj, segmentFeasible, if_neg (by rfl)]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 
 /-- The relaxed feasible set is nonempty. -/

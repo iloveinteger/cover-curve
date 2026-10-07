@@ -142,6 +142,91 @@ def relaxedObjective
       (knotX P i.castSucc) (knotY P i.castSucc)
       (knotX P i.succ) (knotY P i.succ)
 
+/-- Adjacent knot coordinates are nondecreasing. -/
+theorem knotX_mono
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) :
+    ∀ i : Fin n,
+      knotX P i.castSucc ≤ knotX P i.succ := by
+  intro i
+  exact P.2.2 i
+
+/-- The total horizontal width of an ordered configuration is exactly b - a. -/
+theorem sum_knot_widths
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) :
+    ∑ i : Fin n, (knotX P i.succ - knotX P i.castSucc) = b - a := by
+  rw [← P.2.2.1, ← P.2.1]
+  exact Fin.sum_univ_succ_sub (fun i => knotX P i)
+
+/-- Each relaxed segment has nonnegative objective contribution when feasible. -/
+theorem segmentCost_nonneg
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (hseg : segmentFeasible f x₀ y₀ x₁ y₁)
+    (hf : ContinuousOn f (Set.uIcc x₀ x₁)) :
+    0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
+  by_cases hlt : x₀ < x₁
+  · rw [segmentCost, dif_pos hlt]
+    have hmajor : ∀ x ∈ Set.Icc x₀ x₁,
+        f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+      simpa [segmentFeasible, hlt] using hseg
+    have hcont : ContinuousOn
+        (fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+        (Set.Icc x₀ x₁) := by continuity
+    have hint : IntervalIntegrable
+        (fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) volume x₀ x₁ :=
+      hcont.intervalIntegrable
+    have hf' : IntervalIntegrable f volume x₀ x₁ := by
+      exact hf.intervalIntegrable
+    have hnonneg : ∀ x ∈ Set.uIcc x₀ x₁,
+        0 ≤ (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) - f x := by
+      intro x hx
+      have hx' : x ∈ Set.Icc x₀ x₁ := by
+        simpa [Set.uIcc_of_le (le_of_lt hlt)] using hx
+      linarith [hmajor x hx']
+    have hgap : 0 ≤ ∫ x in x₀..x₁,
+        ((y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) - f x) := by
+      exact intervalIntegral.integral_nonneg_of_ae
+        (Filter.Eventually.of_forall hnonneg)
+    have hline :
+        (∫ x in x₀..x₁,
+          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))) =
+        (x₁ - x₀) / 2 * (y₀ + y₁) := by
+      rw [intervalIntegral.integral_add]
+      · rw [intervalIntegral.integral_sub]
+        · simp
+          ring
+        · exact intervalIntegrable_const.sub intervalIntegrable_id
+        · exact intervalIntegrable_const.sub intervalIntegrable_id
+      · exact hint
+      · exact hf'
+    rw [← hline]
+    exact hgap
+  · rw [segmentCost, dif_neg hlt]
+    exact le_rfl
+
+/-- A feasible relaxed configuration has nonnegative total objective. -/
+theorem relaxedObjective_nonneg
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hP : RelaxedFeasible f P)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    0 ≤ relaxedObjective f P := by
+  unfold relaxedObjective
+  apply Finset.sum_nonneg
+  intro i hi
+  apply segmentCost_nonneg f (hP i)
+  exact hf.mono (by
+    intro x hx
+    have hleft : a ≤ knotX P i.castSucc := by
+      rw [← P.2.1]
+      exact (P.2.2).transitive (by omega)
+    have hright : knotX P i.succ ≤ b := by
+      rw [← P.2.2.1]
+      exact (P.2.2).transitive (by omega)
+    exact ⟨le_trans hleft hx.1, le_trans hx.2 hright⟩)
+
+
 /-
 The full existence theorem is intentionally not asserted here yet. The next
 steps formalize the bounded minimizing-sequence argument and the elimination

@@ -249,6 +249,7 @@ theorem segment_width_height_bound
 theorem width_lt_of_height_gt
     {w y A B δ : ℝ}
     (hw : 0 ≤ w)
+    (hB : 0 ≤ B)
     (hδ : 0 < δ)
     (hbound : w * (y - A) ≤ B)
     (hy : A + B / δ < y) :
@@ -256,11 +257,12 @@ theorem width_lt_of_height_gt
   by_contra hnot
   have hδw : δ ≤ w := le_of_not_gt hnot
   have hpos : 0 < y - A := by
-    linarith [div_nonneg (le_of_lt hδ) (le_of_lt hδ)]
+    have hdiv : 0 ≤ B / δ := div_nonneg hB (le_of_lt hδ)
+    linarith
   have hmul : δ * (y - A) ≤ w * (y - A) := by
     gcongr
   have hupper : B < δ * (y - A) := by
-    have : B / δ < y - A := by
+    have hdiv : B / δ < y - A := by
       linarith
     have hδne : δ ≠ 0 := ne_of_gt hδ
     calc

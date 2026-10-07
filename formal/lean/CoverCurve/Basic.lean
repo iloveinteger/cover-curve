@@ -33,18 +33,12 @@ theorem continuous_uniformlyContinuousOn_Icc
 
 /-- The feasible objective gap is nonnegative for a continuous majorant. -/
 theorem integral_sub_nonneg
-    (f g : ℝ → ℝ) {a b : ℝ}
-    (hfg : ∀ x ∈ Set.Icc a b, f x ≤ g x)
-    (hf : IntervalIntegrable f volume a b)
-    (hg : IntervalIntegrable g volume a b) :
+    (f g : ℝ → ℝ) {a b : ℝ} (hab : a ≤ b)
+    (hfg : ∀ x ∈ Set.Icc a b, f x ≤ g x) :
     0 ≤ ∫ x in a..b, (g x - f x) := by
   have hnonneg : ∀ x ∈ Set.Icc a b, 0 ≤ g x - f x := by
     intro x hx
     linarith [hfg x hx]
-  have hint : IntervalIntegrable (fun x => g x - f x) volume a b :=
-    hg.sub hf
-  exact intervalIntegral.integral_nonneg_of_ae
-    (Filter.Eventually.of_forall (fun x hx => by
-      exact hnonneg x (by
-        simpa [Set.uIcc_of_le] using hx)))
+  exact intervalIntegral.integral_nonneg hab hnonneg
+
 end CoverCurve

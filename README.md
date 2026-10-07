@@ -71,20 +71,20 @@ The theory documents follow the mathematical structure of the project:
 2. [Existence](theory/existence.md) — existence of an optimal spline.
 3. [Fixed-breakpoint](theory/fixed-breakpoint.md) — fixed-breakpoint height formulation.
 4. [Dynamic programming](theory/dynamic-programming.md) — exact continuous-height Bellman formulation.
-5. [Breakpoint-discretized DP](theory/algorithm.md) — grid formulation, correctness, convergence, error and complexity.
-6. [Direct height](theory/direct-height.md) — cutting-plane formulation and numerical certification boundary.
-7. [Breakpoint search](theory/breakpoint-search.md) — exhaustive breakpoint-space search.
-8. [Coordinate search](theory/coordinate-search.md) — coordinate descent analysis.
-9. [Envelope optimization](theory/envelope-sqp.md) — envelope sensitivity, outer algorithm, convergence properties, error and complexity.
+5. [Breakpoint-discretized DP](theory/breakpoint-grid/) — algorithm, analysis, error and complexity.
+6. [Direct height](theory/direct-height/) — algorithm, analysis, error and complexity.
+7. [Breakpoint search](theory/breakpoint-search/) — algorithm, analysis, error and complexity.
+8. [Coordinate search](theory/coordinate-search/) — algorithm, analysis, error and complexity.
+9. [Envelope optimization](theory/envelope-sqp/) — algorithm, analysis, error and complexity.
 
-Each algorithm document distinguishes:
+Each algorithm has its own directory containing four documents:
 
-- the mathematical definition of the algorithm;
-- pseudocode or a natural-language algorithm description;
-- pure mathematical results;
-- correctness and convergence results;
-- numerical error terms;
-- time complexity.
+- `algorithm.md` — mathematical definition and pseudocode;
+- `analysis.md` — coverage, assumptions, correctness and convergence;
+- `error.md` — discretization, numerical and optimization error;
+- `complexity.md` — time, space and oracle complexity.
+
+Pure mathematical foundations remain directly under `theory/`.
 
 The C++ source under math/ is the implementation itself. There is no separate implementation-documentation layer.
 

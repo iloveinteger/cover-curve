@@ -158,7 +158,7 @@ theorem exists_relaxed_feasible
       exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
   · have hxj : knotX Q i.succ = a := by
       simp [knotX, Q, P, hlast_i]
-    rw [hxi, hxj, segmentFeasible, if_neg (by rfl)]
+    rw [hxi, hxj, segmentFeasible, if_neg (lt_irrefl a)]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 
 /-- The relaxed feasible set is nonempty. -/

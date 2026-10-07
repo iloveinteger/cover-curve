@@ -18,6 +18,12 @@ $$
 
 The constant function $g\equiv M$ is admissible, so the infimum is finite.
 
+## Formal verification status
+
+The foundational analytic steps of this proof are machine-checked in [`formal/lean/CoverCurve/Basic.lean`](../formal/lean/CoverCurve/Basic.lean) and [`formal/lean/CoverCurve/Existence.lean`](../formal/lean/CoverCurve/Existence.lean). In particular, compact-interval extrema, existence of a constant majorant, uniform continuity, and nonnegativity of the objective gap are formally verified.
+
+The full existence theorem above is **not yet claimed as formally verified**. Its remaining formalization covers the relaxed finite-segment configuration, subsequence/limit construction, treatment of coincident knots, and elimination of nontrivial interior vertical segments. These steps will be formalized before the theorem is marked verified. If the formal proof requires additional hypotheses or a different formulation, this statement and the proof above will be revised together.
+
 ## 1. Relaxed class
 
 Represent a configuration by

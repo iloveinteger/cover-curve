@@ -195,8 +195,12 @@ theorem segmentCost_nonneg
     have hconst : IntervalIntegrable (fun _ : ℝ => y₀) volume x₀ x₁ :=
       intervalIntegrable_const
     have hadd := intervalIntegral.integral_add hconst hterm
-    simp only [Pi.add_apply]
-    rw [hadd]
+    have hsplit :
+        (∫ x in x₀..x₁, L x)
+          = (∫ x in x₀..x₁, y₀) +
+            ∫ x in x₀..x₁, (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+      simpa only [Pi.add_apply] using hadd
+    rw [hsplit]
     rw [intervalIntegral.integral_const]
     rw [intervalIntegral.integral_div]
     rw [intervalIntegral.integral_mul_const]

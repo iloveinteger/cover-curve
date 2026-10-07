@@ -64,10 +64,10 @@ theorem segmentFeasible_left
     (h : segmentFeasible f x₀ y₀ x₁ y₁) :
     f x₀ ≤ y₀ := by
   by_cases hlt : x₀ < x₁
-  · rw [segmentFeasible, if_pos hlt] at h
+  · rw [segmentFeasible, ite_eq_left hlt] at h
     have hx := h x₀ ⟨le_rfl, le_of_lt hlt⟩
     simpa using hx
-  · rw [segmentFeasible, if_neg hlt] at h
+  · rw [segmentFeasible, ite_eq_right hlt] at h
     exact h.2.1
 
 theorem segmentFeasible_right
@@ -75,14 +75,14 @@ theorem segmentFeasible_right
     (h : segmentFeasible f x₀ y₀ x₁ y₁) :
     f x₁ ≤ y₁ := by
   by_cases hlt : x₀ < x₁
-  · rw [segmentFeasible, if_pos hlt] at h
+  · rw [segmentFeasible, ite_eq_left hlt] at h
     have hx := h x₁ ⟨le_of_lt hlt, le_rfl⟩
     calc
       f x₁ ≤ y₀ + (x₁ - x₀) * (y₁ - y₀) / (x₁ - x₀) := hx
       _ = y₁ := by
         field_simp [ne_of_gt (sub_pos.mpr hlt)]
         ring
-  · rw [segmentFeasible, if_neg hlt] at h
+  · rw [segmentFeasible, ite_eq_right hlt] at h
     rcases h with ⟨hxeq, hy₀, hy₁⟩
     simpa [hxeq] using hy₁
 
@@ -145,7 +145,7 @@ theorem segmentCost_lower_bound
     (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M) :
     segmentCost f x₀ y₀ x₁ y₁ ≥
       (x₁ - x₀) * ((y₀ + y₁) / 2 - M) := by
-  rw [segmentCost, if_pos hxy]
+  rw [segmentCost, ite_eq_left hxy]
   have hI := interval_integral_le_const f (le_of_lt hxy) hf hM
   linarith
 
@@ -157,11 +157,11 @@ theorem segmentCost_nonneg
     (hf : ContinuousOn f (Set.Icc x₀ x₁))
     (hfeas : segmentFeasible f x₀ y₀ x₁ y₁) :
     0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
-  rw [segmentCost, if_pos hxy]
+  rw [segmentCost, ite_eq_left hxy]
   let L : ℝ → ℝ :=
     fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)
   have hmajor : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ L x := by
-    rw [segmentFeasible, if_pos hxy] at hfeas
+    rw [segmentFeasible, ite_eq_left hxy] at hfeas
     exact hfeas
   have hfI : IntervalIntegrable f volume x₀ x₁ :=
     hf.intervalIntegrable_of_Icc (le_of_lt hxy)
@@ -187,16 +187,23 @@ theorem segmentCost_nonneg
           (fun x : ℝ => (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
           volume x₀ x₁ :=
       (hxI.mul_const (y₁ - y₀)).div_const (x₁ - x₀)
-    rw [show (fun x : ℝ => L x) =
-        (fun _ : ℝ => y₀) +
-          (fun x : ℝ => (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) by
-      funext x
-      rfl]
     have hconst : IntervalIntegrable (fun _ : ℝ => y₀) volume x₀ x₁ :=
       intervalIntegrable_const
     have hadd := intervalIntegral.integral_add hconst hterm
-    rw [hadd]
-    rw [intervalIntegral.integral_const]
+    calc
+      (∫ x in x₀..x₁, L x)
+          = (∫ x in x₀..x₁, y₀) +
+            ∫ x in x₀..x₁, (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+        change
+          (∫ x in x₀..x₁,
+              y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+            =
+            (∫ x in x₀..x₁, y₀) +
+              ∫ x in x₀..x₁, (x - x₀) * (y₁ - y₀) / (x₁ - x₀)
+        exact hadd
+      _ = (x₁ - x₀) * y₀ +
+            ∫ x in x₀..x₁, (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+        rw [intervalIntegral.integral_const]
     rw [intervalIntegral.integral_div]
     rw [intervalIntegral.integral_mul_const]
     rw [intervalIntegral.integral_sub]
@@ -240,16 +247,16 @@ theorem exists_relaxed_feasible
       simp [knotX, Q, P, hlast_i]
     rw [hxi, hxj]
     by_cases hablt : a < b
-    · rw [segmentFeasible, if_pos hablt]
+    · rw [segmentFeasible, ite_eq_left hablt]
       intro x hx
       simpa [knotY, Q, P] using hM x hx
     · have heq : a = b := le_antisymm hab (le_of_not_gt hablt)
       subst heq
-      rw [segmentFeasible, if_neg hablt]
+      rw [segmentFeasible, ite_eq_right hablt]
       exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
   · have hxj : knotX Q i.succ = a := by
       simp [knotX, Q, P, hlast_i]
-    rw [hxi, hxj, segmentFeasible, if_neg (lt_irrefl a)]
+    rw [hxi, hxj, segmentFeasible, ite_eq_right (lt_irrefl a)]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 
 /-- The relaxed feasible set is nonempty. -/

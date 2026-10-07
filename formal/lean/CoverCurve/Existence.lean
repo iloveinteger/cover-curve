@@ -245,6 +245,29 @@ theorem segment_width_height_bound
     segmentCost_lower_bound f (y₀ := y₀) (y₁ := y₁) hxy hf hM
   nlinarith
 
+/-- A bounded width-height product forces a small width when the height is large. -/
+theorem width_lt_of_height_gt
+    {w y A B δ : ℝ}
+    (hw : 0 ≤ w)
+    (hδ : 0 < δ)
+    (hbound : w * (y - A) ≤ B)
+    (hy : A + B / δ < y) :
+    w < δ := by
+  by_contra hnot
+  have hδw : δ ≤ w := le_of_not_gt hnot
+  have hpos : 0 < y - A := by
+    linarith [div_nonneg (le_of_lt hδ) (le_of_lt hδ)]
+  have hmul : δ * (y - A) ≤ w * (y - A) := by
+    gcongr
+  have hupper : B < δ * (y - A) := by
+    have : B / δ < y - A := by
+      linarith
+    have hδne : δ ≠ 0 := ne_of_gt hδ
+    calc
+      B = δ * (B / δ) := by field_simp
+      _ < δ * (y - A) := by gcongr
+  linarith
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

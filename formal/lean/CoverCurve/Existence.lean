@@ -149,6 +149,52 @@ theorem segmentCost_lower_bound
   have hI := interval_integral_le_const f (le_of_lt hxy) hf hM
   linarith
 
+
+/-- A feasible positive-width segment has nonnegative objective contribution. -/
+theorem segmentCost_nonneg
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (hxy : x₀ < x₁)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁) :
+    0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
+  rw [segmentCost, if_pos hxy]
+  have hmajor :
+      ∀ x ∈ Set.Icc x₀ x₁,
+        f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+    rw [segmentFeasible, if_pos hxy] at hfeas
+    exact hfeas
+  have hnonneg :
+      0 ≤ ∫ x in x₀..x₁,
+        (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) - f x) := by
+    exact intervalIntegral.integral_nonneg (le_of_lt hxy) (by
+      intro x hx
+      linarith [hmajor x hx])
+  have hcalc :
+      ∫ x in x₀..x₁,
+        (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+        = (x₁ - x₀) / 2 * (y₀ + y₁) := by
+    have hne : x₁ - x₀ ≠ 0 := ne_of_gt (sub_pos.mpr hxy)
+    rw [intervalIntegral.integral_add]
+    rw [intervalIntegral.integral_const]
+    rw [intervalIntegral.integral_div]
+    rw [intervalIntegral.integral_mul_const]
+    rw [intervalIntegral.integral_sub]
+    rw [intervalIntegral.integral_id]
+    rw [intervalIntegral.integral_const]
+    field_simp [hne]
+    ring
+  have hdiff :
+      (∫ x in x₀..x₁,
+          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) - f x))
+        =
+      (∫ x in x₀..x₁,
+          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)))
+        - ∫ x in x₀..x₁, f x := by
+    rw [intervalIntegral.integral_sub]
+  rw [hcalc] at hnonneg
+  linarith
+
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

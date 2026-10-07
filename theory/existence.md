@@ -53,78 +53,140 @@ $$
 
 ## 2. Existence of a relaxed minimizer
 
-Take a minimizing sequence $P^k$ with $I(P^k)\le C$. Since every knot is
-feasible,
+Take a minimizing sequence $P^k$ with
+$$
+I(P^k)\to m_{\rm rel},
+$$
+and, after discarding finitely many terms, assume
+$$
+I(P^k)\le C.
+$$
 
+Since every knot is feasible,
 $$
 y_i^k\ge f(x_i^k)\ge\mu.
 $$
 
-After passing to a subsequence,
-
+Because $x_i^k\in[a,b]$, after passing to a subsequence we may assume
 $$
-x_i^k\to\bar x_i\in[a,b], \qquad y_i^k\to\bar y_i\in[\mu,+\infty].
+x_i^k\to\bar x_i\in[a,b]
 $$
+for every $i$. Passing to a further subsequence, we may also assume
+$$
+y_i^k\to\bar y_i\in[\mu,+\infty]
+$$
+for every $i$.
 
 Call $i$ **finite** if $\bar y_i<\infty$.
 
-For a regular segment, with $w_i^k=x_i^k-x_{i-1}^k$,
-
+For a regular segment, let
 $$
-I_i(P^k) \ge w_i^k \left( \frac{y_{i-1}^k+y_i^k}{2}-M \right).
+w_i^k=x_i^k-x_{i-1}^k.
 $$
-
-Hence, if either endpoint tends to $+\infty$,
-
+Since $f\le M$,
+$$
+I_i(P^k)
+\ge
+w_i^k\left(\frac{y_{i-1}^k+y_i^k}{2}-M\right).
+$$
+Moreover $0\le I_i(P^k)\le I(P^k)\le C$. Hence, if either endpoint
+height tends to $+\infty$, then
 $$
 w_i^k\to0.
 $$
 
-Since
-
+There is at least one finite knot. Otherwise every knot height tends to
+$+\infty$, so $w_i^k\to0$ for every $i$. Since there are finitely many
+segments,
 $$
-\sum_i w_i^k=b-a>0,
+b-a=\sum_{i=1}^n w_i^k\to0,
+$$
+a contradiction.
+
+List the finite knots as
+$$
+i_1<\cdots<i_r.
 $$
 
-at least one finite knot exists.
+For consecutive finite knots $i_j<i_{j+1}$, if
+$$
+\bar x_{i_j}<\bar x_{i_{j+1}},
+$$
+then there is no infinite-height knot between them. Indeed, such a knot
+would force both adjacent widths to tend to zero, and hence
+$$
+\bar x_{i_j}=\bar x_{i_{j+1}}.
+$$
+Thus $i_{j+1}=i_j+1$, and the corresponding affine segment converges to the
+affine segment joining
+$$
+(\bar x_{i_j},\bar y_{i_j})
+\quad\text{and}\quad
+(\bar x_{i_{j+1}},\bar y_{i_{j+1}}).
+$$
 
-List the finite knots as $i_1<\cdots<i_r$. Between consecutive finite knots,
-retain the limiting regular segment when their limiting coordinates differ; if
-their coordinates coincide, replace the intervening zero-width chain by a
-vertical segment. Infinite runs at the two boundaries have zero total width
-and are discarded. This gives a finite relaxed configuration $\bar P$ with
-at most $n$ segments.
+If
+$$
+\bar x_{i_j}=\bar x_{i_{j+1}},
+$$
+replace the intervening zero-width chain by a vertical segment joining the
+two limiting endpoint values. Consecutive zero-width vertical chains may be
+merged.
+
+Every segment in the boundary run before $i_1$ has an infinite-height
+endpoint, so its width tends to zero. Hence
+$$
+\bar x_{i_1}
+=
+a+\lim_{k\to\infty}\sum_{i=1}^{i_1}w_i^k
+=a.
+$$
+Similarly,
+$$
+\bar x_{i_r}=b.
+$$
+Thus the resulting configuration spans $[a,b]$ and has at most $n$ segments.
 
 For every retained regular segment of positive limiting width, the endpoint
-data converge and hence the affine interpolants converge uniformly. Passing
-to the limit in $\ell_i^k\ge f$ gives $\bar\ell_i\ge f$. For every retained
-vertical segment at $c$,
-
+data converge, so the affine interpolants converge uniformly. Since
+$\ell_i^k\ge f$ and $f$ is continuous,
 $$
-\bar y_i = \lim_k y_i^k \ge \lim_k f(x_i^k) = f(c).
+\bar\ell_i\ge f.
 $$
 
-Thus $\bar P$ is feasible.
-
-For each retained regular segment,
-
+For every retained vertical segment at $c$,
 $$
-I_i(P^k)\to I_i(\bar P),
+\bar y_i
+=
+\lim_{k\to\infty}y_i^k
+\ge
+\lim_{k\to\infty}f(x_i^k)
+=f(c).
 $$
+Thus the limiting configuration $\bar P$ is feasible.
 
-while every discarded segment has nonnegative cost. Therefore
-
+For every retained regular segment,
 $$
-I(\bar P) \le \liminf_{k\to\infty}I(P^k) = m_{\rm rel}.
+I_i(P^k)\to I_i(\bar P).
 $$
-
-By feasibility, $I(\bar P)\ge m_{\rm rel}$, so
-
+All discarded segments have nonnegative cost. Therefore
+$$
+I(\bar P)
+\le
+\liminf_{k\to\infty}I(P^k)
+=
+m_{\rm rel}.
+$$
+By feasibility,
+$$
+I(\bar P)\ge m_{\rm rel}.
+$$
+Hence
 $$
 I(\bar P)=m_{\rm rel}.
 $$
 
-Thus the relaxed problem has a minimizer.
+Therefore the relaxed problem has a minimizer.
 
 ## 3. Removing vertical segments
 
@@ -199,11 +261,9 @@ I(g) = m_{\rm rel} \le \inf_{g\ge f,\ g\text{ admissible}}I(g) \le I(g).
 $$
 
 Hence
-
 $$
 I(g) = \inf_{g\ge f,\ g\text{ admissible}}I(g),
 $$
-
 so the infimum is attained.
 
 $\square$

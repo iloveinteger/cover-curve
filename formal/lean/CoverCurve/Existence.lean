@@ -225,6 +225,26 @@ theorem segmentCost_nonneg
   rw [hdiff, hcalc] at hnonneg
   linarith
 
+/-- A feasible positive-width segment with bounded cost has bounded width-height products. -/
+theorem segment_width_height_bound
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ μ M C : ℝ}
+    (hxy : x₀ < x₁)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁)
+    (hμ : ∀ x ∈ Set.Icc x₀ x₁, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M)
+    (hcost : segmentCost f x₀ y₀ x₁ y₁ ≤ C) :
+    (x₁ - x₀) * (y₁ - (2 * M - μ)) ≤ 2 * C := by
+  have hy₀ : μ ≤ y₀ := by
+    exact le_trans (hμ x₀ ⟨le_rfl, le_of_lt hxy⟩)
+      (segmentFeasible_left f hfeas)
+  have hy₁ : μ ≤ y₁ := by
+    exact le_trans (hμ x₁ ⟨le_of_lt hxy, le_rfl⟩)
+      (segmentFeasible_right f hfeas)
+  have hlow :=
+    segmentCost_lower_bound f hxy hf hM
+  nlinarith
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

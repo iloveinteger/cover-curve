@@ -43,11 +43,8 @@ theorem integral_sub_nonneg
     linarith [hfg x hx]
   have hint : IntervalIntegrable (fun x => g x - f x) volume a b :=
     hg.sub hf
-  rw [← intervalIntegral.integral_of_le (show a ≤ b by
-    exact le_of_not_gt (by
-      intro h
-      have : b ≤ a := le_of_lt h
-      exact not_lt_of_ge this h))]
   exact intervalIntegral.integral_nonneg_of_ae
-    (Filter.Eventually.of_forall hnonneg)
+    (Filter.Eventually.of_forall (fun x hx => by
+      exact hnonneg x (by
+        simpa [Set.uIcc_of_le] using hx)))
 end CoverCurve

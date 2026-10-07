@@ -170,7 +170,7 @@ where $L,R$ are the adjacent regular pieces. Let their widths be
 $w_L,w_R>0$. Choose $\eta>0$ such that
 
 $$
-\eta<\min\left\{w_L,\frac{w_R}{2}\right\},
+\eta<\min\{w_L,\frac{w_R}{2}\},
 $$
 
 and set $s=c-\eta$, $t=c+2\eta$. Replace the vertical segment and the

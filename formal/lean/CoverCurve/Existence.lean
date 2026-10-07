@@ -192,7 +192,9 @@ theorem segmentCost_nonneg
           (fun x : ℝ => (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) by
       funext x
       rfl]
-    have hadd := intervalIntegral.integral_add intervalIntegrable_const hterm
+    have hconst : IntervalIntegrable (fun _ : ℝ => y₀) volume x₀ x₁ :=
+      intervalIntegrable_const
+    have hadd := intervalIntegral.integral_add hconst hterm
     rw [hadd]
     rw [intervalIntegral.integral_const]
     rw [intervalIntegral.integral_div]

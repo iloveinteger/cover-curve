@@ -53,8 +53,21 @@ m_{\rm rel}\le
 
 ## 2. Existence of a relaxed minimizer
 
-Choose a minimizing sequence $P^k$ with $I(P^k)\to m_{\rm rel}$ and
-$I(P^k)\le C$. Since every knot is feasible,
+By the definition of the infimum, for each $k\ge1$ choose a feasible relaxed
+configuration $P^k$ such that
+
+$
+m_{\rm rel}\le I(P^k)<m_{\rm rel}+\frac1k.
+$
+
+Hence
+
+$
+I(P^k)\to m_{\rm rel}.
+$
+
+After discarding finitely many terms, assume $I(P^k)\le C$ for some finite
+constant $C$. Since every knot is feasible,
 
 ```math
 y_i^k\ge f(x_i^k)\ge\mu.

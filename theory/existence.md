@@ -40,16 +40,20 @@ $$
 and set $I_i(P)=0$ for vertical segments. Then
 
 $$
-I(P)=\sum_{i=1}^n I_i(P), \qquad I_i(P)\ge0. \tag{1}
+I(P)=\sum_{i=1}^n I_i(P), \qquad I_i(P)\ge0.
 $$
+
+(1)
 
 Let $m_{\rm rel}$ be the infimum over this relaxed class. A feasible
 configuration without vertical segments is an admissible function for the
 original problem, so
 
 $$
-m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g). \tag{2}
+m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g).
 $$
+
+(2)
 
 ## 2. Existence of a relaxed minimizer
 
@@ -77,8 +81,10 @@ $$
 Hence, if either endpoint tends to $+\infty$,
 
 $$
-w_i^k\to0. \tag{3}
+w_i^k\to0.
 $$
+
+(3)
 
 Since
 
@@ -92,8 +98,8 @@ List the finite knots as $i_1<\cdots<i_r$. Between consecutive finite knots,
 retain the limiting regular segment when their limiting coordinates differ; if
 their coordinates coincide, replace the intervening zero-width chain by a
 vertical segment. Infinite runs at the two boundaries have zero total width
-and are discarded. This gives a finite relaxed configuration $\bar P$ with at
-most $n$ segments.
+and are discarded. This gives a finite relaxed configuration $\bar P$ with
+at most $n$ segments.
 
 For every retained regular segment of positive limiting width, the endpoint
 data converge and hence the affine interpolants converge uniformly. Passing
@@ -159,8 +165,10 @@ $$
 and therefore
 
 $$
-M(c) = \frac23L(s)+\frac13R(t) = u+\frac d3+O(\eta). \tag{4}
+M(c) = \frac23L(s)+\frac13R(t) = u+\frac d3+O(\eta).
 $$
+
+(4)
 
 For sufficiently small $\eta$, $M\ge L\ge f$ on $[s,c]$. Also $M$ is
 increasing because its endpoint difference is $d+O(\eta)>0$. By continuity
@@ -181,7 +189,8 @@ Hence $M\ge f$ on $[c,t]$ for sufficiently small $\eta$.
 The change in objective is
 
 $$
-\int_s^c(M-L)\,dx-\int_c^t(R-M)\,dx = -\frac{\eta d}{2}+O(\eta^2)<0.
+\int_s^c(M-L)\,dx-\int_c^t(R-M)\,dx
+= -\frac{\eta d}{2}+O(\eta^2)<0.
 $$
 
 This contradicts minimality. Therefore a relaxed minimizer has no vertical

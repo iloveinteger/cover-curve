@@ -48,7 +48,7 @@ configuration without vertical segments is an admissible function for the
 original problem, so
 
 $$
-m_{\rm rel} \le \inf\{I(g): g\ge f,\ g\text{ admissible}\}.
+m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g).
 $$
 
 ## 2. Existence of a relaxed minimizer
@@ -195,13 +195,13 @@ piecewise-affine $g\ge f$ with at most $n$ nondegenerate affine pieces.
 By (2),
 
 $$
-I(g) = m_{\rm rel} \le \inf\{I(g): g\ge f,\ g\text{ admissible}\} \le I(g).
+I(g) = m_{\rm rel} \le \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g) \le I(g).
 $$
 
 Hence
 
 $$
-I(g) = \inf\{I(g): g\ge f,\ g\text{ admissible}\},
+I(g) = \inf_{\substack{g\ge f\\g\text{ admissible}}}I(g),
 $$
 
 so the infimum is attained.

@@ -205,7 +205,7 @@ theorem segmentCost_nonneg
       (∫ x in x₀..x₁, (L x - f x))
         = (∫ x in x₀..x₁, L x) - ∫ x in x₀..x₁, f x :=
     intervalIntegral.integral_sub hLI hfI
-  rw [hcalc] at hnonneg
+  rw [hdiff, hcalc] at hnonneg
   linarith
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

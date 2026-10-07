@@ -19,6 +19,8 @@ jobs:
         working-directory: formal/lean
     steps:
       - uses: actions/checkout@v5
+      - name: Generate Lake manifest
+        run: lake update
       - uses: leanprover/lean-action@v1
         with:
           lake-package-directory: formal/lean

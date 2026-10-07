@@ -50,7 +50,7 @@ def knotY {a b : ℝ} {n : ℕ}
     (P : OrderedKnots a b n) (i : Fin (n + 1)) : ℝ :=
   (P.1 i).2
 
-/-- Feasibility of one relaxed segment. -/
+/-- Feasibility of one relaxed segment.  Degenerate segments are vertical. -/
 def segmentFeasible
     (f : ℝ → ℝ) (x₀ y₀ x₁ y₁ : ℝ) : Prop :=
   if h : x₀ < x₁ then
@@ -65,7 +65,8 @@ theorem segmentFeasible_left
     f x₀ ≤ y₀ := by
   by_cases hlt : x₀ < x₁
   · rw [segmentFeasible, dif_pos hlt] at h
-    exact h x₀ ⟨le_rfl, le_of_lt hlt⟩
+    have hx := h x₀ ⟨le_rfl, le_of_lt hlt⟩
+    simpa using hx
   · rw [segmentFeasible, dif_neg hlt] at h
     exact h.2.1
 
@@ -75,10 +76,11 @@ theorem segmentFeasible_right
     f x₁ ≤ y₁ := by
   by_cases hlt : x₀ < x₁
   · rw [segmentFeasible, dif_pos hlt] at h
-    exact h x₁ ⟨le_of_lt hlt, le_rfl⟩
+    have hx := h x₁ ⟨le_of_lt hlt, le_rfl⟩
+    simpa using hx
   · rw [segmentFeasible, dif_neg hlt] at h
-    have hxy : x₀ = x₁ := h.1
-    simpa [hxy] using h.2.2
+    rcases h with ⟨hxeq, hy₀, hy₁⟩
+    simpa [hxeq] using hy₁
 
 /-- Feasibility of every segment of a relaxed configuration. -/
 def RelaxedFeasible
@@ -88,30 +90,6 @@ def RelaxedFeasible
     segmentFeasible f
       (knotX P i.castSucc) (knotY P i.castSucc)
       (knotX P i.succ) (knotY P i.succ)
-
-/-- Every knot of a feasible relaxed configuration lies above f. -/
-theorem relaxed_feasible_knot_lower_bound
-    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
-    (hn : 1 ≤ n)
-    (P : OrderedKnots a b n)
-    (hP : RelaxedFeasible f P) :
-    ∀ i : Fin (n + 1), f (knotX P i) ≤ knotY P i := by
-  intro i
-  by_cases hi : i.val = 0
-  · have hi0 : i = 0 := Fin.ext hi
-    subst i
-    exact segmentFeasible_left f (hP ⟨0, hn⟩)
-  · by_cases hilast : i.val = n
-    · have hiLast : i = Fin.last n := Fin.ext hilast
-      subst i
-      exact segmentFeasible_right f (hP ⟨n - 1, by omega⟩)
-    · let j : Fin n := ⟨i.val - 1, by omega⟩
-      have hj : j.succ = i := by
-        apply Fin.ext
-        dsimp [j]
-        omega
-      rw [← hj]
-      exact segmentFeasible_right f (hP j)
 
 /-- Objective contribution of one relaxed segment. -/
 def segmentCost
@@ -130,21 +108,7 @@ def relaxedObjective
       (knotX P i.castSucc) (knotY P i.castSucc)
       (knotX P i.succ) (knotY P i.succ)
 
-/-- Every knot abscissa lies in the endpoint interval. -/
-theorem knotX_mem_Icc
-    {a b : ℝ} {n : ℕ}
-    (P : OrderedKnots a b n)
-    (hab : a ≤ b) :
-    ∀ i : Fin (n + 1), knotX P i ∈ Set.Icc a b := by
-  intro i
-  have hleft : a ≤ knotX P i := by
-    rw [← P.2.1]
-    exact (P.2.2).transitive (by omega)
-  have hright : knotX P i ≤ b := by
-    rw [← P.2.2.1]
-    exact (P.2.2).transitive (by omega)
-  exact ⟨hleft, hright⟩
-
+/-- Consecutive knot abscissas are nondecreasing. -/
 theorem knotX_mono
     {a b : ℝ} {n : ℕ}
     (P : OrderedKnots a b n) :
@@ -152,95 +116,30 @@ theorem knotX_mono
   intro i
   exact P.2.2 i
 
-/-- The total horizontal width of an ordered configuration is b - a. -/
-theorem sum_knot_widths
+/-- Every knot abscissa lies between the two endpoint abscissas. -/
+theorem knotX_mem_Icc
     {a b : ℝ} {n : ℕ}
-    (P : OrderedKnots a b n) :
-    ∑ i : Fin n, (knotX P i.succ - knotX P i.castSucc) = b - a := by
-  rw [← P.2.2.1, ← P.2.1]
-  exact Fin.sum_univ_succ_sub (fun i => knotX P i)
-
-/-- Every feasible relaxed objective is nonnegative. -/
-theorem relaxedObjective_nonneg
-    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (P : OrderedKnots a b n)
-    (hP : RelaxedFeasible f P)
-    (hf : ContinuousOn f (Set.Icc a b)) :
-    0 ≤ relaxedObjective f P := by
-  unfold relaxedObjective
-  apply Finset.sum_nonneg
-  intro i hi
-  by_cases hlt : knotX P i.castSucc < knotX P i.succ
-  · rw [segmentCost, dif_pos hlt]
-    have hs := hP i
-    rw [segmentFeasible, dif_pos hlt] at hs
-    have hfi : ContinuousOn f
-        (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) :=
-      hf.mono (by
-        intro x hx
-        have hleft : a ≤ knotX P i.castSucc := by
-          rw [← P.2.1]
-          exact (P.2.2).transitive (by omega)
-        have hright : knotX P i.succ ≤ b := by
-          rw [← P.2.2.1]
-          exact (P.2.2).transitive (by omega)
-        exact ⟨le_trans hleft hx.1, le_trans hx.2 hright⟩)
-    have hline : ContinuousOn
-        (fun x =>
-          knotY P i.castSucc +
-            (x - knotX P i.castSucc) *
-              (knotY P i.succ - knotY P i.castSucc) /
-                (knotX P i.succ - knotX P i.castSucc))
-        (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) := by
-      continuity
-    have hgap : 0 ≤ ∫ x in knotX P i.castSucc..knotX P i.succ,
-        ((knotY P i.castSucc +
-          (x - knotX P i.castSucc) *
-            (knotY P i.succ - knotY P i.castSucc) /
-              (knotX P i.succ - knotX P i.castSucc)) - f x) := by
-      have hnonneg : ∀ x ∈ Set.Icc (knotX P i.castSucc) (knotX P i.succ),
-          0 ≤ (knotY P i.castSucc +
-            (x - knotX P i.castSucc) *
-              (knotY P i.succ - knotY P i.castSucc) /
-                (knotX P i.succ - knotX P i.castSucc)) - f x := by
-        intro x hx
-        linarith [hs x hx]
-      exact intervalIntegral.integral_nonneg
-        (le_of_lt hlt) hnonneg
-    have hline_int :
-        ∫ x in knotX P i.castSucc..knotX P i.succ,
-          (knotY P i.castSucc +
-            (x - knotX P i.castSucc) *
-              (knotY P i.succ - knotY P i.castSucc) /
-                (knotX P i.succ - knotX P i.castSucc))
-        =
-        (knotX P i.succ - knotX P i.castSucc) / 2 *
-          (knotY P i.castSucc + knotY P i.succ) := by
-      rw [intervalIntegral.integral_affine]
-      ring
-    have hsub :
-        (∫ x in knotX P i.castSucc..knotX P i.succ,
-          (knotY P i.castSucc +
-            (x - knotX P i.castSucc) *
-              (knotY P i.succ - knotY P i.castSucc) /
-                (knotX P i.succ - knotX P i.castSucc))) -
-        ∫ x in knotX P i.castSucc..knotX P i.succ, f x
-        =
-        ∫ x in knotX P i.castSucc..knotX P i.succ,
-          ((knotY P i.castSucc +
-            (x - knotX P i.castSucc) *
-              (knotY P i.succ - knotY P i.castSucc) /
-                (knotX P i.succ - knotX P i.castSucc)) - f x) := by
-      rw [← intervalIntegral.integral_sub]
-      · exact hline.intervalIntegrable
-      · exact hfi.intervalIntegrable
-    rw [← hline_int]
-    rw [← hsub]
-    exact hgap
-  · rw [segmentCost, dif_neg hlt]
-    exact le_rfl
+    (hab : a ≤ b) :
+    ∀ i : Fin (n + 1), knotX P i ∈ Set.Icc a b := by
+  intro i
+  constructor
+  · calc
+      a = knotX P 0 := P.2.1.symm
+      _ ≤ knotX P i := by
+        induction i using Fin.inductionOn with
+        | zero => exact le_rfl
+        | succ j hj =>
+            exact le_trans hj (P.2.2 j)
+  · calc
+      knotX P i ≤ knotX P (Fin.last n) := by
+        induction i using Fin.lastCases with
+        | last => exact le_rfl
+        | cast j hj =>
+            exact le_trans (P.2.2 j) hj
+      _ = b := P.2.2.1
 
-/-- A constant-knot configuration gives a nonempty relaxed feasible set. -/
+/-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (hn : 1 ≤ n)
@@ -264,19 +163,20 @@ theorem exists_relaxed_feasible
   intro i
   have hxi : knotX Q i.castSucc = a := by
     simp [knotX, Q, P]
-  by_cases hlast_i : i.succ = Fin.last n
+  by_cases hlast : i.succ = Fin.last n
   · have hxj : knotX Q i.succ = b := by
-      simp [knotX, Q, P, hlast_i]
+      simp [knotX, Q, P, hlast]
     rw [hxi, hxj]
     by_cases hablt : a < b
     · rw [segmentFeasible, dif_pos hablt]
       intro x hx
       exact hM x hx
-    · have habeq : a = b := le_antisymm hab (le_of_not_gt hablt)
-      rw [hablt, segmentFeasible, dif_neg]
+    · have heq : a = b := le_antisymm hab (le_of_not_gt hablt)
+      subst heq
+      rw [segmentFeasible, dif_neg]
       exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
   · have hxj : knotX Q i.succ = a := by
-      simp [knotX, Q, P, hlast_i]
+      simp [knotX, Q, P, hlast]
     rw [hxi, hxj, segmentFeasible, dif_neg]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 

@@ -127,14 +127,14 @@ theorem interval_integral_le_const
     (hf : ContinuousOn f (Set.Icc a b))
     (hM : ∀ x ∈ Set.Icc a b, f x ≤ M) :
     ∫ x in a..b, f x ≤ (b - a) * M := by
-  have hgap : 0 ≤ ∫ x in a..b, (M - f x) := by
-    apply integral_sub_nonneg f (fun _ => M) hab
-    exact hM
   have hfi : IntervalIntegrable f volume a b :=
     hf.intervalIntegrable_of_Icc hab
-  rw [intervalIntegral.integral_sub hfi intervalIntegrable_const,
-    intervalIntegral.integral_const] at hgap
-  linarith
+  have hconst : IntervalIntegrable (fun _ : ℝ => M) volume a b :=
+    intervalIntegrable_const
+  have hle :=
+    intervalIntegral.integral_mono_on hab hfi hconst hM
+  rw [intervalIntegral.integral_const] at hle
+  exact hle
 
 /-- On a positive-width segment, its cost is bounded below by its
 endpoint-height average minus an upper bound for f. -/
@@ -196,7 +196,7 @@ theorem relaxed_feasible_nonempty
     (hn : 1 ≤ n)
     (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
-    Set.Nonempty {P : OrderedKnots a b n | RelaxedFeasible f P} := by
+    Set.Nonempty {P : OrderedKnots a b n | RelaxedFeasible f P } := by
   obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
   exact ⟨P, hP⟩
 

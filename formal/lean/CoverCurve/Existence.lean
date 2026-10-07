@@ -143,6 +143,21 @@ def relaxedObjective
       (knotX P i.succ) (knotY P i.succ)
 
 /-- Adjacent knot coordinates are nondecreasing. -/
+/-- Every knot abscissa lies in the endpoint interval. -/
+theorem knotX_mem_Icc
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hab : a ≤ b) :
+    ∀ i : Fin (n + 1), knotX P i ∈ Set.Icc a b := by
+  intro i
+  have hleft : a ≤ knotX P i := by
+    rw [← P.2.1]
+    exact (P.2.2).transitive (by omega)
+  have hright : knotX P i ≤ b := by
+    rw [← P.2.2.1]
+    exact (P.2.2).transitive (by omega)
+  exact ⟨hleft, hright⟩
+
 theorem knotX_mono
     {a b : ℝ} {n : ℕ}
     (P : OrderedKnots a b n) :

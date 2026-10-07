@@ -38,14 +38,16 @@ theorem integral_sub_nonneg
     (hf : IntervalIntegrable f volume a b)
     (hg : IntervalIntegrable g volume a b) :
     0 ≤ ∫ x in a..b, (g x - f x) := by
-  have hnonneg : ∀ x ∈ Set.uIcc a b, 0 ≤ g x - f x := by
+  have hnonneg : ∀ x ∈ Set.Icc a b, 0 ≤ g x - f x := by
     intro x hx
-    have hx' : x ∈ Set.Icc a b := by
-      rw [Set.uIcc_of_le hab] at hx
-      exact hx
-    linarith [hfg x hx']
+    linarith [hfg x hx]
   have hint : IntervalIntegrable (fun x => g x - f x) volume a b :=
     hg.sub hf
-  exact intervalIntegral.integral_nonneg_of_ae hab (Filter.Eventually.of_forall hnonneg)
-
+  rw [← intervalIntegral.integral_of_le (show a ≤ b by
+    exact le_of_not_gt (by
+      intro h
+      have : b ≤ a := le_of_lt h
+      exact not_lt_of_ge this h))]
+  exact intervalIntegral.integral_nonneg_of_ae
+    (Filter.Eventually.of_forall hnonneg)
 end CoverCurve

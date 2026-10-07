@@ -152,5 +152,3 @@ statement in theory/existence.md will be revised to match it.
 
 end CoverCurve
 
-
--- Formalization work continues: structural compactness lemmas will be added in a dedicated module.

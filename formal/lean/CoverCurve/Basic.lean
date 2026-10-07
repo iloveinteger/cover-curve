@@ -41,10 +41,11 @@ theorem integral_sub_nonneg
   have hnonneg : ∀ x ∈ Set.uIcc a b, 0 ≤ g x - f x := by
     intro x hx
     have hx' : x ∈ Set.Icc a b := by
-      exact ⟨hx.1, hx.2⟩
+      rw [Set.uIcc_of_le hab] at hx
+      exact hx
     linarith [hfg x hx']
   have hint : IntervalIntegrable (fun x => g x - f x) volume a b :=
     hg.sub hf
-  exact intervalIntegral.integral_nonneg hab hnonneg
+  exact intervalIntegral.integral_nonneg_of_ae hab (Filter.Eventually.of_forall hnonneg)
 
 end CoverCurve

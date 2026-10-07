@@ -196,8 +196,9 @@ $a$ or $b$. It remains feasible and its cost and segment count do not
 increase.
 
 Suppose an isolated interior vertical segment at $c$ joins $u$ and $v$,
-with $d=|v-u|>0$. Reflecting the horizontal coordinate if necessary, assume
-$v>u$. Let the adjacent affine pieces be $L$ and $R$, so
+with $d=|v-u|>0$. Reverse the orientation of the vertical segment if
+necessary, and assume $v>u$. Let the adjacent affine pieces be $L$ and $R$,
+so
 
 $$
 L(c)=u, \qquad R(c)=v, \qquad f(c)\le u.
@@ -273,13 +274,75 @@ On $[s,c]$, $M-L$ is affine, vanishes at $s$, and is positive at $c$.
 Therefore $M\ge L\ge f$ on $[s,c]$. Thus the modified configuration is
 feasible.
 
-The change in objective is
+The change in objective can be computed exactly. Since $M-L$ is affine,
+vanishes at $s$, and has value
 $$
-\int_s^c(M-L)\,dx-\int_c^t(R-M)\,dx
-= -\frac{\eta d}{2}+O(\eta^2)<0
+M(c)-L(c)
+=
+\frac d3+\frac23(\sigma_R-\sigma_L)\eta
 $$
-for sufficiently small $\eta$. This contradicts minimality. Therefore a
-relaxed minimizer has no vertical segments.
+at $c$,
+
+$$
+\int_s^c(M-L)\,dx
+=
+\frac{\eta d}{6}
++
+\frac{\eta^2}{3}(\sigma_R-\sigma_L).
+$$
+
+Similarly, $R-M$ is affine, vanishes at $t$, and has value
+$$
+R(c)-M(c)
+=
+\frac{2d}{3}
+-
+\frac23(\sigma_R-\sigma_L)\eta
+$$
+at $c$. Hence
+
+$$
+\int_c^t(R-M)\,dx
+=
+\frac{2\eta d}{3}
+-
+\frac{2\eta^2}{3}(\sigma_R-\sigma_L).
+$$
+
+Therefore the exact change in objective is
+
+$$
+\begin{aligned}
+\Delta I
+&=
+\int_s^c(M-L)\,dx
+-
+\int_c^t(R-M)\,dx \\
+&=
+-\frac{d}{2}\eta
++
+(\sigma_R-\sigma_L)\eta^2.
+\end{aligned}
+$$
+
+The second condition imposed on $\eta$ gives
+
+$$
+|\sigma_R-\sigma_L|\eta<\frac d4.
+$$
+
+Consequently,
+
+$$
+\Delta I
+<
+-\frac d2\eta+\frac d4\eta
+=
+-\frac d4\eta<0.
+$$
+
+Thus the modified configuration has strictly smaller objective, contradicting
+minimality. Therefore a relaxed minimizer has no vertical segments.
 
 ## 4. Conclusion
 

@@ -203,52 +203,83 @@ $$
 L(c)=u, \qquad R(c)=v, \qquad f(c)\le u.
 $$
 
-For small $\eta>0$, set
+Choose $\eta>0$ small enough that $s=c-\eta$ and $t=c+2\eta$ lie in the
+domains of $L$ and $R$, respectively. Replace $L\,|\,\mathrm{vertical}\,|\,R$
+by $L\,|\,M\,|\,R$, where $M$ joins $(s,L(s))$ to $(t,R(t))$.
+
+Let $\sigma_L,\sigma_R$ be the slopes of $L$ and $R$. Then
 
 $$
-s=c-\eta, \qquad t=c+2\eta,
-$$
-
-and replace $L\,|\,\mathrm{vertical}\,|\,R$ by $L\,|\,M\,|\,R$, where $M$
-joins $(s,L(s))$ to $(t,R(t))$.
-
-If $\sigma_L,\sigma_R$ are the adjacent slopes, then
-
-$$
-L(s)=u-\sigma_L\eta, \qquad R(t)=v+2\sigma_R\eta,
+L(s)=u-\sigma_L\eta, \qquad
+R(t)=v+2\sigma_R\eta,
 $$
 
 and therefore
 
 $$
-M(c) = \frac23L(s)+\frac13R(t) = u+\frac d3+O(\eta).
+M(c)
+=
+\frac23L(s)+\frac13R(t)
+=
+u+\frac d3+\frac23(\sigma_R-\sigma_L)\eta.
 $$
 
-For sufficiently small $\eta$, $M\ge L\ge f$ on $[s,c]$. Also $M$ is
-increasing because its endpoint difference is $d+O(\eta)>0$. By continuity
-of $f$ at $c$,
-
+Set
 $$
-f(x)\le f(c)+o(1)\le u+o(1) \qquad (x\in[c,t]),
+\varepsilon=\frac d6.
 $$
-
-while
-
+By continuity of $f$ at $c$, there exists $\delta>0$ such that
 $$
-M(x)\ge u+\frac d3+o(1).
+|x-c|<\delta
+\quad\Longrightarrow\quad
+|f(x)-f(c)|<\varepsilon.
 $$
 
-Hence $M\ge f$ on $[c,t]$ for sufficiently small $\eta$.
+Now choose $\eta>0$ small enough to satisfy all of
+$$
+2\eta<\delta,
+$$
+$$
+\left|\frac23(\sigma_R-\sigma_L)\eta\right|<\varepsilon,
+$$
+and
+$$
+d+(\sigma_L+2\sigma_R)\eta>0.
+$$
+Such an $\eta$ exists because $d>0$, the slopes are finite, and all three
+conditions hold for every sufficiently small positive $\eta$. We may also
+require $s$ and $t$ to remain inside the adjacent affine pieces.
+
+The second condition gives
+$$
+M(c)>u+\frac d3-\frac d6=u+\frac d6.
+$$
+Since $M$ is increasing by the third condition,
+$$
+M(x)\ge M(c)>u+\frac d6
+\qquad(c\le x\le t).
+$$
+On the other hand, for $x\in[c,t]$ we have $|x-c|<\delta$, so
+$$
+f(x)<f(c)+\frac d6\le u+\frac d6.
+$$
+Hence
+$$
+M(x)>f(x)
+\qquad(c\le x\le t).
+$$
+
+On $[s,c]$, $M-L$ is affine, vanishes at $s$, and is positive at $c$.
+Therefore $M\ge L\ge f$ on $[s,c]$. Thus the modified configuration is
+feasible.
 
 The change in objective is
-
 $$
 \int_s^c(M-L)\,dx-\int_c^t(R-M)\,dx
-= -\frac{\eta d}{2}+O(\eta^2)<0.
+= -\frac{\eta d}{2}+O(\eta^2)<0
 $$
-
-This contradicts minimality. Therefore a relaxed minimizer has no vertical
-segments.
+for sufficiently small $\eta$. This contradicts minimality. Therefore a
+relaxed minimizer has no vertical segments.
 
 ## 4. Conclusion
 

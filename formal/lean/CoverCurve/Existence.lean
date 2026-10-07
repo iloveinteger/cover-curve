@@ -36,8 +36,8 @@ theorem exists_constant_majorant
 /-- A finite list of ordered knots, with endpoints fixed at a and b. -/
 def OrderedKnots (a b : ℝ) (n : ℕ) : Type :=
   {P : Fin (n + 1) → ℝ × ℝ //
-    P 0 |>.1 = a ∧
-    P (Fin.last n) |>.1 = b ∧
+    (P 0).1 = a ∧
+    (P (Fin.last n)).1 = b ∧
     ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1}
 
 /-- The horizontal coordinate of a knot. -/
@@ -50,10 +50,10 @@ def knotY {a b : ℝ} {n : ℕ}
     (P : OrderedKnots a b n) (i : Fin (n + 1)) : ℝ :=
   (P.1 i).2
 
-/-- Feasibility of one relaxed segment.  Degenerate segments are vertical. -/
+/-- Feasibility of one relaxed segment. Degenerate segments are vertical. -/
 def segmentFeasible
     (f : ℝ → ℝ) (x₀ y₀ x₁ y₁ : ℝ) : Prop :=
-  if h : x₀ < x₁ then
+  if x₀ < x₁ then
     ∀ x ∈ Set.Icc x₀ x₁,
       f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)
   else
@@ -64,10 +64,10 @@ theorem segmentFeasible_left
     (h : segmentFeasible f x₀ y₀ x₁ y₁) :
     f x₀ ≤ y₀ := by
   by_cases hlt : x₀ < x₁
-  · rw [segmentFeasible, dif_pos hlt] at h
+  · rw [segmentFeasible, if_pos hlt] at h
     have hx := h x₀ ⟨le_rfl, le_of_lt hlt⟩
     simpa using hx
-  · rw [segmentFeasible, dif_neg hlt] at h
+  · rw [segmentFeasible, if_neg hlt] at h
     exact h.2.1
 
 theorem segmentFeasible_right
@@ -75,10 +75,13 @@ theorem segmentFeasible_right
     (h : segmentFeasible f x₀ y₀ x₁ y₁) :
     f x₁ ≤ y₁ := by
   by_cases hlt : x₀ < x₁
-  · rw [segmentFeasible, dif_pos hlt] at h
+  · rw [segmentFeasible, if_pos hlt] at h
     have hx := h x₁ ⟨le_of_lt hlt, le_rfl⟩
-    simpa using hx
-  · rw [segmentFeasible, dif_neg hlt] at h
+    calc
+      f x₁ ≤ y₀ + (x₁ - x₀) * (y₁ - y₀) / (x₁ - x₀) := hx
+      _ = y₁ := by
+        field_simp [ne_of_gt (sub_pos.mpr hlt)]
+  · rw [segmentFeasible, if_neg hlt] at h
     rcases h with ⟨hxeq, hy₀, hy₁⟩
     simpa [hxeq] using hy₁
 
@@ -94,7 +97,7 @@ def RelaxedFeasible
 /-- Objective contribution of one relaxed segment. -/
 def segmentCost
     (f : ℝ → ℝ) (x₀ y₀ x₁ y₁ : ℝ) : ℝ :=
-  if h : x₀ < x₁ then
+  if x₀ < x₁ then
     (x₁ - x₀) / 2 * (y₀ + y₁) - ∫ x in x₀..x₁, f x
   else
     0
@@ -116,29 +119,6 @@ theorem knotX_mono
   intro i
   exact P.2.2 i
 
-/-- Every knot abscissa lies between the two endpoint abscissas. -/
-theorem knotX_mem_Icc
-    {a b : ℝ} {n : ℕ}
-    (P : OrderedKnots a b n)
-    (hab : a ≤ b) :
-    ∀ i : Fin (n + 1), knotX P i ∈ Set.Icc a b := by
-  intro i
-  constructor
-  · calc
-      a = knotX P 0 := P.2.1.symm
-      _ ≤ knotX P i := by
-        induction i using Fin.inductionOn with
-        | zero => exact le_rfl
-        | succ j hj =>
-            exact le_trans hj (P.2.2 j)
-  · calc
-      knotX P i ≤ knotX P (Fin.last n) := by
-        induction i using Fin.lastCases with
-        | last => exact le_rfl
-        | cast j hj =>
-            exact le_trans (P.2.2 j) hj
-      _ = b := P.2.2.1
-
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
@@ -149,9 +129,9 @@ theorem exists_relaxed_feasible
   obtain ⟨M, hM⟩ := continuous_has_constant_majorant f hab hf
   let P : Fin (n + 1) → ℝ × ℝ :=
     fun i => (if i = Fin.last n then b else a, M)
-  have h0 : P 0 |>.1 = a := by
+  have h0 : (P 0).1 = a := by
     simp [P, hn.ne']
-  have hlast : P (Fin.last n) |>.1 = b := by
+  have hlast : (P (Fin.last n)).1 = b := by
     simp [P]
   have hmono : ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1 := by
     intro i
@@ -163,21 +143,21 @@ theorem exists_relaxed_feasible
   intro i
   have hxi : knotX Q i.castSucc = a := by
     simp [knotX, Q, P]
-  by_cases hlast : i.succ = Fin.last n
+  by_cases hlast_i : i.succ = Fin.last n
   · have hxj : knotX Q i.succ = b := by
-      simp [knotX, Q, P, hlast]
+      simp [knotX, Q, P, hlast_i]
     rw [hxi, hxj]
     by_cases hablt : a < b
-    · rw [segmentFeasible, dif_pos hablt]
+    · rw [segmentFeasible, if_pos hablt]
       intro x hx
       exact hM x hx
     · have heq : a = b := le_antisymm hab (le_of_not_gt hablt)
       subst heq
-      rw [segmentFeasible, dif_neg]
+      rw [segmentFeasible, if_neg]
       exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
   · have hxj : knotX Q i.succ = a := by
-      simp [knotX, Q, P, hlast]
-    rw [hxi, hxj, segmentFeasible, dif_neg]
+      simp [knotX, Q, P, hlast_i]
+    rw [hxi, hxj, segmentFeasible, if_neg]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 
 /-- The relaxed feasible set is nonempty. -/

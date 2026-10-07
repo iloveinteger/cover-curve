@@ -142,6 +142,201 @@ def relaxedObjective
       (knotX P i.castSucc) (knotY P i.castSucc)
       (knotX P i.succ) (knotY P i.succ)
 
+/-- Adjacent knot coordinates are nondecreasing. -/
+theorem knotX_mono
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) :
+    ∀ i : Fin n,
+      knotX P i.castSucc ≤ knotX P i.succ := by
+  intro i
+  exact P.2.2 i
+
+/-- The total horizontal width of an ordered configuration is exactly b - a. -/
+theorem sum_knot_widths
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) :
+    ∑ i : Fin n, (knotX P i.succ - knotX P i.castSucc) = b - a := by
+  rw [← P.2.2.1, ← P.2.1]
+  exact Fin.sum_univ_succ_sub (fun i => knotX P i)
+
+/-- Each relaxed segment has nonnegative objective contribution when feasible. -/
+theorem segmentCost_nonneg
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (hseg : segmentFeasible f x₀ y₀ x₁ y₁)
+    (hf : ContinuousOn f (Set.uIcc x₀ x₁)) :
+    0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
+  by_cases hlt : x₀ < x₁
+  · rw [segmentCost, dif_pos hlt]
+    have hmajor : ∀ x ∈ Set.Icc x₀ x₁,
+        f x ≤ y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+      simpa [segmentFeasible, hlt] using hseg
+    have hcont : ContinuousOn
+        (fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))
+        (Set.Icc x₀ x₁) := by continuity
+    have hint : IntervalIntegrable
+        (fun x => y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) volume x₀ x₁ :=
+      hcont.intervalIntegrable
+    have hf' : IntervalIntegrable f volume x₀ x₁ := by
+      exact hf.intervalIntegrable
+    have hnonneg : ∀ x ∈ Set.uIcc x₀ x₁,
+        0 ≤ (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) - f x := by
+      intro x hx
+      have hx' : x ∈ Set.Icc x₀ x₁ := by
+        simpa [Set.uIcc_of_le (le_of_lt hlt)] using hx
+      linarith [hmajor x hx']
+    have hgap : 0 ≤ ∫ x in x₀..x₁,
+        ((y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀)) - f x) := by
+      exact intervalIntegral.integral_nonneg_of_ae
+        (Filter.Eventually.of_forall hnonneg)
+    have hline :
+        (∫ x in x₀..x₁,
+          (y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀))) =
+        (x₁ - x₀) / 2 * (y₀ + y₁) := by
+      rw [intervalIntegral.integral_add]
+      · rw [intervalIntegral.integral_sub]
+        · simp
+          ring
+        · exact intervalIntegrable_const.sub intervalIntegrable_id
+        · exact intervalIntegrable_const.sub intervalIntegrable_id
+      · exact hint
+      · exact hf'
+    rw [← hline]
+    exact hgap
+  · rw [segmentCost, dif_neg hlt]
+    exact le_rfl
+
+/-- A feasible relaxed configuration has nonnegative total objective. -/
+theorem relaxedObjective_nonneg
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hP : RelaxedFeasible f P)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    0 ≤ relaxedObjective f P := by
+  unfold relaxedObjective
+  apply Finset.sum_nonneg
+  intro i hi
+  apply segmentCost_nonneg f (hP i)
+  exact hf.mono (by
+    intro x hx
+    have hleft : a ≤ knotX P i.castSucc := by
+      rw [← P.2.1]
+      exact (P.2.2).transitive (by omega)
+    have hright : knotX P i.succ ≤ b := by
+      rw [← P.2.2.1]
+      exact (P.2.2).transitive (by omega)
+    exact ⟨le_trans hleft hx.1, le_trans hx.2 hright⟩)
+
+
+/-- A constant knot configuration is feasible. -/
+theorem exists_relaxed_feasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    ∃ P : OrderedKnots a b n, RelaxedFeasible f P := by
+  obtain ⟨M, hM⟩ := continuous_has_constant_majorant f hab hf
+  let P : Fin (n + 1) → ℝ × ℝ :=
+    fun i => (if i = Fin.last n then b else a, M)
+  have h0 : P 0 |>.1 = a := by
+    simp [P, hn.ne']
+  have hlast : P (Fin.last n) |>.1 = b := by
+    simp [P]
+  have hmono : ∀ i : Fin n, (P i.castSucc).1 ≤ (P i.succ).1 := by
+    intro i
+    by_cases h : i.succ = Fin.last n
+    · simp [P, h]
+    · simp [P, h]
+  let Q : OrderedKnots a b n := ⟨P, h0, hlast, hmono⟩
+  refine ⟨Q, ?_⟩
+  intro i
+  by_cases h : i.succ = Fin.last n
+  · have hxi : knotX Q i.castSucc = a := by
+      simp [knotX, Q, P]
+    have hxj : knotX Q i.succ = b := by
+      simp [knotX, Q, P, h]
+    rw [hxi, hxj]
+    rw [segmentFeasible]
+    rw [dif_pos (lt_of_lt_of_le (lt_of_le_of_ne hab (by
+      intro heq
+      apply h
+      apply Fin.ext
+      simp [heq, i.isLt])) hab)]
+    intro x hx
+    simpa using hM x ⟨hx.1, hx.2⟩
+  · have hxi : knotX Q i.castSucc = a := by
+      simp [knotX, Q, P]
+    have hxj : knotX Q i.succ = a := by
+      simp [knotX, Q, P, h]
+    rw [hxi, hxj, segmentFeasible, dif_neg]
+    exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
+
+/-- The relaxed feasible set is nonempty. -/
+theorem relaxed_feasible_nonempty
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    Set.Nonempty {P : OrderedKnots a b n | RelaxedFeasible f P} := by
+  obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
+  exact ⟨P, hP⟩
+
+/-- Every feasible relaxed objective is bounded below by zero. -/
+theorem relaxed_feasible_objective_lower_bound
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    {P : OrderedKnots a b n}
+    (hP : RelaxedFeasible f P) :
+    0 ≤ relaxedObjective f P := by
+  unfold relaxedObjective
+  apply Finset.sum_nonneg
+  intro i hi
+  by_cases hlt : knotX P i.castSucc < knotX P i.succ
+  · rw [segmentCost, dif_pos hlt]
+    have hs := hP i
+    rw [segmentFeasible, dif_pos hlt] at hs
+    have hmajor := hs
+    have hcont : ContinuousOn
+        (fun x => knotY P i.castSucc +
+          (x - knotX P i.castSucc) *
+            (knotY P i.succ - knotY P i.castSucc) /
+              (knotX P i.succ - knotX P i.castSucc))
+        (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) := by continuity
+    have hfi : ContinuousOn f
+        (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) :=
+      hf.mono (by
+        intro x hx
+        have hleft : a ≤ knotX P i.castSucc := by
+          rw [← P.2.1]
+          exact (P.2.2).transitive (by omega)
+        have hright : knotX P i.succ ≤ b := by
+          rw [← P.2.2.1]
+          exact (P.2.2).transitive (by omega)
+        exact ⟨le_trans hleft hx.1, le_trans hx.2 hright⟩)
+    have hgap : 0 ≤ ∫ x in knotX P i.castSucc..knotX P i.succ,
+        ((knotY P i.castSucc +
+          (x - knotX P i.castSucc) *
+            (knotY P i.succ - knotY P i.castSucc) /
+              (knotX P i.succ - knotX P i.castSucc)) - f x) := by
+      apply intervalIntegral.integral_nonneg_of_ae
+      exact Filter.Eventually.of_forall (fun x hx =>
+        sub_nonneg.mpr (hmajor x hx))
+    have hint : IntervalIntegrable
+        (fun x => knotY P i.castSucc +
+          (x - knotX P i.castSucc) *
+            (knotY P i.succ - knotY P i.castSucc) /
+              (knotX P i.succ - knotX P i.castSucc))
+        volume (knotX P i.castSucc) (knotX P i.succ) :=
+      hcont.intervalIntegrable
+    have hfint : IntervalIntegrable f volume
+        (knotX P i.castSucc) (knotX P i.succ) :=
+      hfi.intervalIntegrable
+    rw [← intervalIntegral.integral_sub hint hfint]
+    rw [intervalIntegral.integral_affine]
+    exact hgap
+  · rw [segmentCost, dif_neg hlt]
+    exact le_rfl
+
+
 /-
 The full existence theorem is intentionally not asserted here yet. The next
 steps formalize the bounded minimizing-sequence argument and the elimination
@@ -150,5 +345,9 @@ hypothesis or a different configuration representation, the mathematical
 statement in theory/existence.md will be revised to match it.
 -/
 
-end CoverCurve
 
+/-- CI marker. -/
+theorem lean_verification_stage_marker : True := by trivial
+
+
+end CoverCurve

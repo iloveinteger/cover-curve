@@ -379,7 +379,26 @@ theorem segmentCost_nonneg_of_feasible
   by_cases hlt : x₀ < x₁
   · exact segmentCost_nonneg f hlt hf hfeas
   · have hxeq : x₀ = x₁ := le_antisymm hxy (le_of_not_gt hlt)
-    simp [segmentCost, hlt, hxeq]
+    simp [segmentCost, hxeq]
+
+/-- Every knot abscissa lies in the global interval. -/
+theorem knotX_mem_Icc
+    {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n) :
+    ∀ i : Fin (n + 1), knotX P i ∈ Set.Icc a b := by
+  intro i
+  have hleft : ∀ j : Fin (n + 1), knotX P 0 ≤ knotX P j := by
+    intro j
+    exact Fin.induction le_rfl
+      (fun k hk => le_trans hk (knotX_mono P k)) j
+  have hright : ∀ j : Fin (n + 1),
+      knotX P j ≤ knotX P (Fin.last n) := by
+    intro j
+    exact Fin.reverseInduction le_rfl
+      (fun k hk => le_trans (knotX_mono P k) hk) j
+  constructor
+  · exact le_trans (le_of_eq P.2.1) (hleft i)
+  · exact le_trans (hright i) (le_of_eq P.2.2.1)
 
 /-- A feasible relaxed configuration has nonnegative total objective. -/
 theorem relaxedObjective_nonneg
@@ -394,9 +413,8 @@ theorem relaxedObjective_nonneg
   have hxi := knotX_mono P i
   have hleft : Set.Icc (knotX P i.castSucc) (knotX P i.succ) ⊆ Set.Icc a b := by
     intro x hx
-    constructor
-    · exact le_trans P.2.1 hx.1
-    · exact le_trans hx.2 P.2.2
+    exact ⟨le_trans (knotX_mem_Icc P i.castSucc).1 hx.1,
+      le_trans hx.2 (knotX_mem_Icc P i.succ).2⟩
   have hfi : ContinuousOn f
       (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) :=
     hf.mono hleft
@@ -409,23 +427,18 @@ theorem knotY_ge_of_global_lower_bound
     (P : OrderedKnots a b n)
     (hfeas : RelaxedFeasible f P)
     {μ : ℝ}
-    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x) :
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hn : 1 ≤ n) :
     ∀ i : Fin (n + 1), μ ≤ knotY P i := by
   intro i
-  by_cases hi0 : i = 0
-  · subst i
-    have hseg := hfeas ⟨0, Nat.zero_lt_succ n⟩
+  refine Fin.cases ?_ (fun j => ?_) i
+  · have hseg := hfeas ⟨0, hn⟩
     exact le_trans
-      (hμ (knotX P 0) ⟨P.2.1.le, P.2.1.le⟩)
+      (hμ (knotX P 0) (knotX_mem_Icc P 0))
       (segmentFeasible_left f hseg)
-  · have hpred : ∃ j : Fin n, j.succ = i := by
-      exact Fin.exists_neq_zero_iff.mp hi0
-    obtain ⟨j, hj⟩ := hpred
-    subst i
-    have hseg := hfeas j
+  · have hseg := hfeas j
     exact le_trans
-      (hμ (knotX P j.succ) ⟨P.2.1.trans (knotX_mono P j),
-        P.2.2⟩)
+      (hμ (knotX P j.succ) (knotX_mem_Icc P j.succ))
       (segmentFeasible_right f hseg)
 
 /-- The relaxed feasible set is nonempty. -/

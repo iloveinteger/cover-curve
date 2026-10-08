@@ -369,6 +369,66 @@ theorem exists_relaxed_feasible
     rw [hxi, hxj, segmentFeasible, ite_eq_right (lt_irrefl a)]
     exact ⟨rfl, hM a ⟨le_rfl, hab⟩, hM a ⟨le_rfl, hab⟩⟩
 
+/-- Every nondegenerate feasible segment has nonnegative cost. -/
+theorem segmentCost_nonneg_of_feasible
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ : ℝ}
+    (hxy : x₀ ≤ x₁)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁) :
+    0 ≤ segmentCost f x₀ y₀ x₁ y₁ := by
+  by_cases hlt : x₀ < x₁
+  · exact segmentCost_nonneg f hlt hf hfeas
+  · have hxeq : x₀ = x₁ := le_antisymm hxy (le_of_not_gt hlt)
+    simp [segmentCost, hlt, hxeq]
+
+/-- A feasible relaxed configuration has nonnegative total objective. -/
+theorem relaxedObjective_nonneg
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hfeas : RelaxedFeasible f P) :
+    0 ≤ relaxedObjective f P := by
+  unfold relaxedObjective
+  apply Finset.sum_nonneg
+  intro i hi
+  have hxi := knotX_mono P i
+  have hleft : Set.Icc (knotX P i.castSucc) (knotX P i.succ) ⊆ Set.Icc a b := by
+    intro x hx
+    constructor
+    · exact le_trans P.2.1 hx.1
+    · exact le_trans hx.2 P.2.2
+  have hfi : ContinuousOn f
+      (Set.Icc (knotX P i.castSucc) (knotX P i.succ)) :=
+    hf.mono hleft
+  exact segmentCost_nonneg_of_feasible f hxi hfi (hfeas i)
+
+/-- Every knot of a feasible relaxed configuration lies above a global lower
+bound for the covered function. -/
+theorem knotY_ge_of_global_lower_bound
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hfeas : RelaxedFeasible f P)
+    {μ : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x) :
+    ∀ i : Fin (n + 1), μ ≤ knotY P i := by
+  intro i
+  by_cases hi0 : i = 0
+  · subst i
+    have hseg := hfeas ⟨0, Nat.zero_lt_succ n⟩
+    exact le_trans
+      (hμ (knotX P 0) ⟨P.2.1.le, P.2.1.le⟩)
+      (segmentFeasible_left f hseg)
+  · have hpred : ∃ j : Fin n, j.succ = i := by
+      exact Fin.exists_neq_zero_iff.mp hi0
+    obtain ⟨j, hj⟩ := hpred
+    subst i
+    have hseg := hfeas j
+    exact le_trans
+      (hμ (knotX P j.succ) ⟨P.2.1.trans (knotX_mono P j),
+        P.2.2⟩)
+      (segmentFeasible_right f hseg)
+
+/-- The relaxed feasible set is nonempty. -/
 /-- The relaxed feasible set is nonempty. -/
 theorem relaxed_feasible_nonempty
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

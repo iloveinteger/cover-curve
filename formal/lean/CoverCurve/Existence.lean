@@ -316,9 +316,11 @@ theorem segment_width_tendsto_zero_of_right_height
     · simpa only [sub_zero] using
         (segment_width_height_bound f hpos (hf k) (hfeas k)
           (by
-          exact hμ)
+            intro x hx
+            exact hμ x)
           (by
-          exact hM)
+            intro x hx
+            exact hM x)
           (hcost k))
     · have hw0 : w k = 0 := le_antisymm (le_of_not_gt hpos) (hw k)
       simp [hw0, hC]
@@ -586,7 +588,7 @@ theorem segmentCost_le_relaxedObjective
     (f := fun j : Fin n =>
       segmentCost f
         (knotX P j.castSucc) (knotY P j.castSucc)
-        (knotX P j.succ))
+        (knotX P j.succ) (knotY P j.succ))
     (s := Finset.univ) ?_ (Finset.mem_univ i)
   intro j hj
   have hxi := knotX_mono P j

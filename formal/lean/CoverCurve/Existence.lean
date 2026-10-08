@@ -397,7 +397,7 @@ theorem knotX_mem_Icc
     exact Fin.reverseInduction le_rfl
       (fun k hk => le_trans (knotX_mono P k) hk) j
   constructor
-  · exact le_trans (le_of_eq P.2.1) (hleft i)
+  · exact le_trans (le_of_eq P.2.1.symm) (hleft i)
   · exact le_trans (hright i) (le_of_eq P.2.2.1)
 
 /-- A feasible relaxed configuration has nonnegative total objective. -/

@@ -936,8 +936,8 @@ theorem classified_segment_widths_tendsto_zero
     (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
     (hC : 0 ≤ C)
     (φ : ℕ → ℕ)
-    (hφ : StrictMono φ)
-    (hclass : ∀ i : Fin (n + 1),
+    (_hφ : StrictMono φ)
+    (_hclass : ∀ i : Fin (n + 1),
       (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
         R < knotY (P (φ k)) i) ∨
       ∃ y : ℝ,
@@ -989,6 +989,21 @@ theorem classified_segment_widths_tendsto_zero
       hC hy
 
 
+/-- The sum of successive coordinate differences telescopes. -/
+theorem fin_sum_adjacent_sub
+    {n : ℕ} (x : Fin (n + 1) → ℝ) :
+    (∑ i : Fin n, x i.succ - x i.castSucc) =
+      x (Fin.last n) - x 0 := by
+  induction n with
+  | zero =>
+      simp
+  | succ n ih =>
+      rw [Fin.sum_univ_succ]
+      have htail := ih (x := fun i => x i.succ)
+      simp only [Fin.last, Fin.castSucc_zero, Fin.succ_zero_eq_one] at htail ⊢
+      rw [htail]
+      ring
+
 /-- A classified bounded-cost subsequence has at least two knots whose heights
     converge to finite real limits. -/
 theorem exists_two_convergent_knot_heights
@@ -1022,7 +1037,6 @@ theorem exists_two_convergent_knot_heights
           (fun k => knotY (P (φ k)) j)
           (Filter.atTop : Filter ℕ) (nhds yj)) := by
   by_contra htwo
-  push_neg at htwo
   have hwidth : ∀ i : Fin n,
       Filter.Tendsto
         (fun k =>
@@ -1064,10 +1078,20 @@ theorem exists_two_convergent_knot_heights
         (x := (Filter.atTop : Filter ℕ)) (by
           intro i hi
           simpa using hwidth i))
+  have heq :
+      (fun k =>
+        ∑ i : Fin n,
+          knotX (P (φ k)) i.succ -
+            knotX (P (φ k)) i.castSucc) =
+        (fun _ : ℕ => b - a) := by
+    funext k
+    simpa [OrderedKnots, knotX] using
+      (fin_sum_adjacent_sub (x := fun i => knotX (P (φ k)) i))
   have hconst : Filter.Tendsto
       (fun _ : ℕ => b - a)
       (Filter.atTop : Filter ℕ) (nhds 0) := by
-    simpa [sum_knot_width] using hsum
+    rw [← heq]
+    exact hsum
   have hzero : b - a = 0 :=
     (tendsto_const_nhds_iff.mp hconst)
   linarith

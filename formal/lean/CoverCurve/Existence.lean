@@ -461,7 +461,7 @@ def relaxedObjectiveSet
 /-- The infimum of the relaxed finite-segment problem. -/
 noncomputable def relaxedValue
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ} : ℝ :=
-  sInf (relaxedObjectiveSet f)
+  sInf (relaxedObjectiveSet f (a := a) (b := b) (n := n))
 
 /-- The relaxed objective set is nonempty. -/
 theorem relaxedObjectiveSet_nonempty
@@ -490,11 +490,10 @@ theorem relaxedValue_nonneg
     (hf : ContinuousOn f (Set.Icc a b)) :
     0 ≤ relaxedValue f := by
   unfold relaxedValue
-  exact le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
-    (by
-      intro v hv
-      rcases hv with ⟨P, hP, rfl⟩
-      exact relaxedObjective_nonneg f P hf hP)
+  apply le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
+  intro v hv
+  rcases hv with ⟨P, hP, rfl⟩
+  exact relaxedObjective_nonneg f P hf hP
 
 /-- The relaxed infimum is attained below any chosen feasible objective value. -/
 theorem relaxedValue_le_of_feasible
@@ -503,7 +502,7 @@ theorem relaxedValue_le_of_feasible
     (hf : ContinuousOn f (Set.Icc a b))
     {P : OrderedKnots a b n}
     (hP : RelaxedFeasible f P) :
-    relaxedValue f ≤ relaxedObjective f P := by
+    relaxedValue (f := f) (a := a) (b := b) (n := n) ≤ relaxedObjective f P := by
   unfold relaxedValue
   exact csInf_le
     (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)

@@ -275,18 +275,24 @@ theorem tendsto_zero_of_mul_sub_le
     {w y : ℕ → ℝ} {A B : ℝ}
         (hB : 0 ≤ B)
     (hbound : ∀ k, w k * (y k - A) ≤ B)
-    (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k) :
+    (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k)
+    (hw_nonneg : ∀ᶠ k in (Filter.atTop : Filter ℕ), 0 ≤ w k) :
     Filter.Tendsto w (Filter.atTop : Filter ℕ) (nhds 0) := by
   refine (Metric.tendsto_atTop (u := w) (a := (0 : ℝ))).2 ?_
   intro ε hε
   have hyε : ∀ᶠ k in (Filter.atTop : Filter ℕ), A + B / ε < y k :=
     hy (A + B / ε)
   rcases (Filter.eventually_atTop.1 hyε) with ⟨N, hN⟩
-  refine ⟨N, ?_⟩
+  rcases (Filter.eventually_atTop.1 hw_nonneg) with ⟨N₀, hN₀⟩
+  refine ⟨max N N₀, ?_⟩
   intro k hk
-  have hkheight := hN k hk
+  have hkN : N ≤ k := le_trans (Nat.le_max_left _ _) hk
+  have hkN₀ : N₀ ≤ k := le_trans (Nat.le_max_right _ _) hk
+  have hkheight := hN k hkN
+  have hk_nonneg := hN₀ k hkN₀
   have hw := width_lt_of_height_gt hB hε (hbound k) hkheight
-  simpa [Real.dist_eq] using hw
+  rw [Real.dist_eq, abs_of_nonneg hk_nonneg]
+  exact hw
 
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

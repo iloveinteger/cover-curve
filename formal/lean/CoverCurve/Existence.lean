@@ -657,7 +657,7 @@ a diverging right endpoint height forces the segment widths to vanish. -/
 theorem segment_width_tendsto_zero_of_right_height_global
     (f : ℝ → ℝ) {a b : ℝ} {x₀ x₁ y₀ y₁ : ℕ → ℝ}
     {μ M C : ℝ}
-    (hab : a ≤ b)
+    (_hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b))
     (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
     (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
@@ -712,18 +712,17 @@ theorem segment_width_tendsto_zero_of_left_height_global
     · have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
         intro x hx
         exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
-      have hbound' := segment_width_height_bound f hpos
-        (hf.mono hleft) (hfeas k)
-        (fun x hx => hμ x (hleft hx))
-        (fun x hx => hM x (hleft hx))
-        (hcost k)
+      have hlow :=
+        segmentCost_lower_bound f hpos (hf.mono hleft) (hM.mono hleft)
       have hy0 : μ ≤ y₀ k := le_trans
-        (hμ (x₀ k) ⟨(hinterval k).1, hpos.le⟩)
+        (hμ (x₀ k) ⟨(hinterval k).1,
+          le_trans hpos.le (hinterval k).2⟩)
         (segmentFeasible_left f (hfeas k))
       have hy1 : μ ≤ y₁ k := le_trans
-        (hμ (x₁ k) ⟨hpos.le, (hinterval k).2⟩)
+        (hμ (x₁ k) ⟨le_trans (hinterval k).1 hpos.le,
+          (hinterval k).2⟩)
         (segmentFeasible_right f (hfeas k))
-      nlinarith [hbound']
+      nlinarith [hlow]
     · have hz : x₁ k - x₀ k = 0 := by
         linarith [hordered k]
       simp [hz, hC]

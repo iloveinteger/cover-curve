@@ -934,9 +934,13 @@ theorem limit_knot_height_ge
     (hfeas : ∀ k, f (xseq k) ≤ yseq k)
     (hxmem : x ∈ Set.Icc a b) :
     f x ≤ y := by
+  have hxwithin :
+      Filter.Tendsto xseq (Filter.atTop : Filter ℕ)
+        (nhdsWithin x (Set.Icc a b)) :=
+    tendsto_nhdsWithin_iff.mpr ⟨hx, Filter.Eventually.of_forall hxin⟩
   have hfx : Filter.Tendsto (fun k => f (xseq k))
       (Filter.atTop : Filter ℕ) (nhds (f x)) :=
-    (hf x hxmem).tendsto hx (Filter.Eventually.of_forall hxin)
+    (hf x hxmem).tendsto hxwithin
   exact le_of_tendsto' hfx hy (Filter.Eventually.of_forall hfeas)
 
 

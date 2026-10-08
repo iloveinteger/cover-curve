@@ -988,8 +988,6 @@ theorem classified_segment_widths_tendsto_zero
           (hcost (φ k)))
       hC hy
 
-end
-
 
 /-- A classified bounded-cost subsequence has at least two knots whose heights
     converge to finite real limits. -/

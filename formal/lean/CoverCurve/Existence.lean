@@ -316,11 +316,9 @@ theorem segment_width_tendsto_zero_of_right_height
     · simpa only [sub_zero] using
         (segment_width_height_bound f hpos (hf k) (hfeas k)
           (by
-          intro x hx
-            exact hμ x)
+          exact hμ)
           (by
-            intro x hx
-            exact hM x)
+          exact hM)
           (hcost k))
     · have hw0 : w k = 0 := le_antisymm (le_of_not_gt hpos) (hw k)
       simp [hw0, hC]
@@ -588,12 +586,12 @@ theorem segmentCost_le_relaxedObjective
   intro j hj
   have hxi := knotX_mono P j
   have hleft :
-        Set.Icc (knotX P j.castSucc) (knotX P j.succ) ⊆ Set.Icc a b := by
-      intro x hx
+      Set.Icc (knotX P j.castSucc) (knotX P j.succ) ⊆ Set.Icc a b := by
+    intro x hx
     exact ⟨le_trans (knotX_mem_Icc P j.castSucc).1 hx.1,
-        le_trans hx.2 (knotX_mem_Icc P j.succ).2⟩
+      le_trans hx.2 (knotX_mem_Icc P j.succ).2⟩
   have hfj : ContinuousOn f
-        (Set.Icc (knotX P j.castSucc) (knotX P j.succ)) :=
+      (Set.Icc (knotX P j.castSucc) (knotX P j.succ)) :=
     hf.mono hleft
   exact segmentCost_nonneg_of_feasible f hxi hfj (hfeas j)
 

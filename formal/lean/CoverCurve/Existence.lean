@@ -1040,7 +1040,7 @@ theorem exists_two_convergent_knot_heights
               (Filter.atTop : Filter ℕ) (nhds y))) := by
       intro h
       exact htwo ⟨(Fin.castSucc i), (Fin.succ i),
-        Fin.ne_of_lt (Fin.castSucc i)_lt_succ, h.1, h.2⟩
+        Fin.ne_of_lt (Fin.castSucc_lt_succ i), h.1, h.2⟩
     rcases hclass (Fin.castSucc i) with hleft | hleft
     · exact (classified_segment_widths_tendsto_zero
         f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).1 hleft

@@ -763,7 +763,7 @@ theorem exists_knotX_convergent_subsequence
   let K : Set (Fin (n + 1) → ℝ) :=
     Set.pi Set.univ (fun _ => Set.Icc a b)
   have hK : IsCompact K := by
-    exact isCompact_pi (fun _ _ => isCompact_Icc)
+    exact isCompact_univ_pi (fun _ => isCompact_Icc)
   have hPK : ∀ k : ℕ, (fun i => knotX (P k) i) ∈ K := by
     intro k
     intro i hi

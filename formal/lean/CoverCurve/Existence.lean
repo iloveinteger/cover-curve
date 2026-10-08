@@ -258,15 +258,16 @@ theorem width_lt_of_height_gt
   have hδw : δ ≤ w := le_of_not_gt hnot
   have hpos : 0 < y - A := by
     have hdiv : 0 ≤ B / δ := div_nonneg hB (le_of_lt hδ)
-    linarith
+    have hAy : A < y := by
+      linarith [hy, hdiv]
+    exact sub_pos.mpr hAy
   have hmul : δ * (y - A) ≤ w * (y - A) := by
     gcongr
   have hupper : B < δ * (y - A) := by
     have hdiv : B / δ < y - A := by
       linarith
-    have hδne : δ ≠ 0 := ne_of_gt hδ
     calc
-      B = δ * (B / δ) := by field_simp
+      B = δ * (B / δ) := by field_simp [ne_of_gt hδ]
       _ < δ * (y - A) := by gcongr
   linarith
 

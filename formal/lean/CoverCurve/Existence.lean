@@ -650,4 +650,77 @@ theorem relaxed_minimizing_sequence_segment_cost_bounded
     (segmentCost_le_relaxedObjective f (P k) hf (hPfeas k) i)
     (hPbound k)
 
+
+/-- For a sequence of feasible segments inside a fixed compact interval,
+a diverging right endpoint height forces the segment widths to vanish. -/
+theorem segment_width_tendsto_zero_of_right_height_global
+    (f : ℝ → ℝ) {a b : ℝ} {x₀ x₁ y₀ y₁ : ℕ → ℝ}
+    {μ M C : ℝ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hinterval : ∀ k, a ≤ x₀ k ∧ x₁ k ≤ b)
+    (hordered : ∀ k, x₀ k ≤ x₁ k)
+    (hfeas : ∀ k, segmentFeasible f (x₀ k) (y₀ k) (x₁ k) (y₁ k))
+    (hcost : ∀ k, segmentCost f (x₀ k) (y₀ k) (x₁ k) (y₁ k) ≤ C)
+    (hC : 0 ≤ C)
+    (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y₁ k) :
+    Filter.Tendsto (fun k => x₁ k - x₀ k)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+  have hbound : ∀ k, (x₁ k - x₀ k) * (y₁ k - (2 * M - μ)) ≤ 2 * C := by
+    intro k
+    have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
+      intro x hx
+      exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
+    exact segment_width_height_bound f (hordered k)
+      (hf.mono hleft) (hfeas k)
+      (fun x hx => hμ x (hleft hx))
+      (fun x hx => hM x (hleft hx))
+      (hcost k)
+  exact tendsto_zero_of_mul_sub_le
+    (A := 2 * M - μ) (B := 2 * C)
+    (mul_nonneg (by norm_num) hC) hbound hy
+    (Filter.Eventually.of_forall (fun k => sub_nonneg.mpr (hordered k)))
+
+
+/-- The symmetric version: a diverging left endpoint height forces the
+segment widths to vanish. -/
+theorem segment_width_tendsto_zero_of_left_height_global
+    (f : ℝ → ℝ) {a b : ℝ} {x₀ x₁ y₀ y₁ : ℕ → ℝ}
+    {μ M C : ℝ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hinterval : ∀ k, a ≤ x₀ k ∧ x₁ k ≤ b)
+    (hordered : ∀ k, x₀ k ≤ x₁ k)
+    (hfeas : ∀ k, segmentFeasible f (x₀ k) (y₀ k) (x₁ k) (y₁ k))
+    (hcost : ∀ k, segmentCost f (x₀ k) (y₀ k) (x₁ k) (y₁ k) ≤ C)
+    (hC : 0 ≤ C)
+    (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y₀ k) :
+    Filter.Tendsto (fun k => x₁ k - x₀ k)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+  have hbound : ∀ k, (x₁ k - x₀ k) * (y₀ k - (2 * M - μ)) ≤ 2 * C := by
+    intro k
+    have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
+      intro x hx
+      exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
+    have hbound' := segment_width_height_bound f (hordered k)
+      (hf.mono hleft) (hfeas k)
+      (fun x hx => hμ x (hleft hx))
+      (fun x hx => hM x (hleft hx))
+      (hcost k)
+    have hy0 : μ ≤ y₀ k := le_trans
+      (hμ (x₀ k) ⟨(hinterval k).1, hordered k⟩)
+      (segmentFeasible_left f (hfeas k))
+    have hy1 : μ ≤ y₁ k := le_trans
+      (hμ (x₁ k) ⟨hordered k, (hinterval k).2⟩)
+      (segmentFeasible_right f (hfeas k))
+    nlinarith [hbound']
+  exact tendsto_zero_of_mul_sub_le
+    (A := 2 * M - μ) (B := 2 * C)
+    (mul_nonneg (by norm_num) hC) hbound hy
+    (Filter.Eventually.of_forall (fun k => sub_nonneg.mpr (hordered k)))
+
 end

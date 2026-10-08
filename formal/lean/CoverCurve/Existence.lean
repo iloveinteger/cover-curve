@@ -1095,4 +1095,5 @@ theorem exists_two_convergent_knot_heights
   have hzero : b - a = 0 :=
     (tendsto_const_nhds_iff.mp hconst)
   linarith
-\nend\n
+
+end

@@ -582,7 +582,12 @@ theorem segmentCost_le_relaxedObjective
         (knotX P i.succ) (knotY P i.succ) ≤
       relaxedObjective f P := by
   unfold relaxedObjective
-  refine Finset.single_le_sum (s := Finset.univ) ?_ (Finset.mem_univ i)
+  refine Finset.single_le_sum
+    (f := fun j : Fin n =>
+      segmentCost f
+        (knotX P j.castSucc) (knotY P j.castSucc)
+        (knotX P j.succ))
+    (s := Finset.univ) ?_ (Finset.mem_univ i)
   intro j hj
   have hxi := knotX_mono P j
   have hleft :

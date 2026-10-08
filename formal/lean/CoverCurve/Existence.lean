@@ -277,7 +277,7 @@ theorem tendsto_zero_of_mul_sub_le
     (hbound : ∀ k, w k * (y k - A) ≤ B)
     (hy : ∀ R : ℝ, ∀ᶠ k in (atTop : Filter ℕ), R < y k) :
     Filter.Tendsto w (atTop : Filter ℕ) (nhds 0) := by
-  refine Metric.tendsto_atTop.2 ?_
+  refine (Metric.tendsto_atTop (β := ℕ)).2 ?_
   intro ε hε
   have hyε : ∀ᶠ k in (atTop : Filter ℕ), A + B / ε < y k :=
     hy (A + B / ε)

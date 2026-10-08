@@ -941,7 +941,7 @@ theorem limit_knot_height_ge
   have hfx : Filter.Tendsto (fun k => f (xseq k))
       (Filter.atTop : Filter ℕ) (nhds (f x)) :=
     (hf x hxmem).tendsto.comp hxwithin
-  exact le_of_tendsto' hfx hy (Filter.Eventually.of_forall hfeas)
+  exact le_of_tendsto_of_tendsto hfx hy (Filter.Eventually.of_forall hfeas)
 
 
 /-- On a bounded-cost minimizing subsequence, a knot whose height diverges
@@ -1086,8 +1086,7 @@ theorem exists_two_convergent_knot_heights
       (fun k => ∑ i : Fin n, width i k) =
         (fun _ : ℕ => b - a) := by
     funext k
-    rw [Fin.sum_univ_eq_sum_range]
-    simp [Finset.sum_range_sub, OrderedKnots, knotX]
+    simp [width, Fin.sum_univ_eq_sum_range, Finset.sum_range_sub, OrderedKnots, knotX]
   have hconst : Filter.Tendsto
       (fun _ : ℕ => b - a)
       (Filter.atTop : Filter ℕ) (nhds 0) := by

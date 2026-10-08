@@ -248,7 +248,6 @@ theorem segment_width_height_bound
 /-- A bounded width-height product forces a small width when the height is large. -/
 theorem width_lt_of_height_gt
     {w y A B δ : ℝ}
-    (hw : 0 ≤ w)
     (hB : 0 ≤ B)
     (hδ : 0 < δ)
     (hbound : w * (y - A) ≤ B)
@@ -284,7 +283,7 @@ theorem tendsto_zero_of_mul_sub_le
   have hyε : ∀ᶠ k in atTop, A + B / ε < y k :=
     hy.eventually (eventually_gt_atTop (A + B / ε))
   filter_upwards [hyε] with k hk
-  exact width_lt_of_height_gt (hw k) hB hε (hbound k) hk
+  exact width_lt_of_height_gt hB hε (hbound k) hk
 
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

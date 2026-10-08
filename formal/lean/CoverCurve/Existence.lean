@@ -727,7 +727,11 @@ theorem segment_width_tendsto_zero_of_left_height_global
         (hμ (x₁ k) ⟨le_trans (hinterval k).1 hpos.le,
           (hinterval k).2⟩)
         (segmentFeasible_right f (hfeas k))
-      nlinarith [hlow]
+      have hw : 0 ≤ x₁ k - x₀ k := sub_nonneg.mpr (hordered k)
+      have hy1' : 0 ≤ y₁ k - μ := sub_nonneg.mpr hy1
+      have hprod : 0 ≤ (x₁ k - x₀ k) * (y₁ k - μ) :=
+        mul_nonneg hw hy1'
+      nlinarith [hlow, hprod]
     · have hz : x₁ k - x₀ k = 0 := by
         linarith [hordered k]
       simp [hz, hC]

@@ -958,7 +958,7 @@ theorem classified_segment_widths_tendsto_zero
           (fun k =>
             knotX (P (φ k)) i.succ -
               knotX (P (φ k)) i.castSucc)
-          (Filter.atTop : Filter ℕ) (nhds 0) := by
+          (Filter.atTop : Filter ℕ) (nhds 0)) := by
   intro i
   constructor
   · intro hy

@@ -771,4 +771,32 @@ theorem exists_knotX_convergent_subsequence
   obtain ⟨x, hx, φ, hφ, hlim⟩ := hK.tendsto_subseq hPK
   exact ⟨x, φ, hφ, hlim⟩
 
+
+/-- If every knot is at or above a global majorant level, replacing all
+    knot heights by that level preserves feasibility. -/
+theorem relaxed_feasible_constant_height_of_ge
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    {M : ℝ}
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hY : ∀ i : Fin (n + 1), M ≤ knotY P i) :
+    RelaxedFeasible f
+      (⟨fun i => (knotX P i, M), P.2.1, P.2.2.1, P.2.2.2⟩ :
+        OrderedKnots a b n) := by
+  intro i
+  have hxi : knotX P i.castSucc ≤ knotX P i.succ :=
+    knotX_mono P i
+  by_cases hlt : knotX P i.castSucc < knotX P i.succ
+  · rw [segmentFeasible, ite_eq_left hlt]
+    intro x hx
+    exact hM x ⟨le_trans (knotX_mem_Icc P i.castSucc).1 hx.1,
+      le_trans hx.2 (knotX_mem_Icc P i.succ).2⟩
+  · have hxeq : knotX P i.castSucc = knotX P i.succ :=
+      le_antisymm (le_of_not_gt hlt) hxi
+    rw [segmentFeasible, ite_eq_right hlt]
+    exact ⟨hxeq, hM (knotX P i.castSucc)
+      (knotX_mem_Icc P i.castSucc), hM (knotX P i.succ)
+      (knotX_mem_Icc P i.succ)⟩
+
+
 end

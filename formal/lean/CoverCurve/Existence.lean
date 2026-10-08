@@ -584,8 +584,8 @@ theorem segmentCost_le_relaxedObjective
         (knotX P i.succ) (knotY P i.succ) ≤
       relaxedObjective f P := by
   unfold relaxedObjective
-  apply Finset.single_le_sum
-  · intro j hj
+  refine Finset.single_le_sum (s := Finset.univ) ?_ (Finset.mem_univ i)
+  intro j hj
     have hxi := knotX_mono P j
     have hleft :
         Set.Icc (knotX P j.castSucc) (knotX P j.succ) ⊆ Set.Icc a b := by
@@ -596,7 +596,6 @@ theorem segmentCost_le_relaxedObjective
         (Set.Icc (knotX P j.castSucc) (knotX P j.succ)) :=
       hf.mono hleft
     exact segmentCost_nonneg_of_feasible f hxi hfj (hfeas j)
-  · exact Finset.mem_univ i
 
 /-- A minimizing sequence has a uniform upper bound on every individual
 segment cost. -/

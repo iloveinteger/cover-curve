@@ -806,7 +806,7 @@ theorem relaxed_feasible_constant_height_of_ge
   · have hxeq : knotX P i.castSucc = knotX P i.succ :=
       le_antisymm hxi (le_of_not_gt hlt)
     simp [hxeq]
-    exact hM (knotX P i.castSucc) (knotX_mem_Icc P i.castSucc)
+    exact hM (knotX P i.succ) (knotX_mem_Icc P i.succ)
 
 
 end

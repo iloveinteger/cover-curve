@@ -922,6 +922,24 @@ theorem exists_height_classification_subsequence
 
 
 
+/-- A convergent feasible knot remains above the covered function at its
+    limiting abscissa. -/
+theorem limit_knot_height_ge
+    (f : ℝ → ℝ) {a b : ℝ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    {x y : ℝ} {xseq yseq : ℕ → ℝ}
+    (hx : Filter.Tendsto xseq (Filter.atTop : Filter ℕ) (nhds x))
+    (hy : Filter.Tendsto yseq (Filter.atTop : Filter ℕ) (nhds y))
+    (hxin : ∀ k, xseq k ∈ Set.Icc a b)
+    (hfeas : ∀ k, f (xseq k) ≤ yseq k)
+    (hxmem : x ∈ Set.Icc a b) :
+    f x ≤ y := by
+  have hfx : Filter.Tendsto (fun k => f (xseq k))
+      (Filter.atTop : Filter ℕ) (nhds (f x)) :=
+    (hf x hxmem).tendsto hx (Filter.Eventually.of_forall hxin)
+  exact le_of_tendsto' hfx hy (Filter.Eventually.of_forall hfeas)
+
+
 /-- On a bounded-cost minimizing subsequence, a knot whose height diverges
     forces each adjacent segment width to vanish. -/
 theorem classified_segment_widths_tendsto_zero

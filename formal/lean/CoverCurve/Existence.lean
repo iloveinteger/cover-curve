@@ -940,7 +940,7 @@ theorem limit_knot_height_ge
     tendsto_nhdsWithin_iff.mpr ⟨hx, Filter.Eventually.of_forall hxin⟩
   have hfx : Filter.Tendsto (fun k => f (xseq k))
       (Filter.atTop : Filter ℕ) (nhds (f x)) :=
-    (hf x hxmem).tendsto hxwithin
+    (hf x hxmem).tendsto.comp hxwithin
   exact le_of_tendsto' hfx hy (Filter.Eventually.of_forall hfeas)
 
 
@@ -1070,26 +1070,20 @@ theorem exists_two_convergent_knot_heights
       · exact (classified_segment_widths_tendsto_zero
           f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).2 hright
       · exact False.elim (hnotboth ⟨hleft, hright⟩)
+  let width : Fin n → ℕ → ℝ := fun i k =>
+    knotX (P (φ k)) i.succ - knotX (P (φ k)) i.castSucc
   have hsum : Filter.Tendsto
-      (fun k => ∑ i : Fin n,
-        knotX (P (φ k)) i.succ -
-          knotX (P (φ k)) i.castSucc)
+      (fun k => ∑ i : Fin n, width i k)
       (Filter.atTop : Filter ℕ) (nhds 0) := by
-    simpa using
+    simpa [width] using
       (tendsto_finsetSum (s := Finset.univ)
-        (f := fun i : Fin n =>
-          fun k =>
-            knotX (P (φ k)) i.succ -
-              knotX (P (φ k)) i.castSucc)
+        (f := width)
         (a := fun _ : Fin n => 0)
         (x := (Filter.atTop : Filter ℕ)) (by
           intro i hi
-          simpa using hwidth i))
+          simpa [width] using hwidth i))
   have heq :
-      (fun k =>
-        ∑ i : Fin n,
-          knotX (P (φ k)) i.succ -
-            knotX (P (φ k)) i.castSucc) =
+      (fun k => ∑ i : Fin n, width i k) =
         (fun _ : ℕ => b - a) := by
     funext k
     rw [Fin.sum_univ_eq_sum_range]

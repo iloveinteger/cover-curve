@@ -291,8 +291,7 @@ theorem tendsto_zero_of_mul_sub_le
   have hkheight := hN k hkN
   have hk_nonneg := hN₀ k hkN₀
   have hw := width_lt_of_height_gt hB hε (hbound k) hkheight
-  rw [Real.dist_eq, abs_of_nonneg hk_nonneg]
-  exact hw
+  simpa [Real.dist_eq, sub_zero, abs_of_nonneg hk_nonneg] using hw
 
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

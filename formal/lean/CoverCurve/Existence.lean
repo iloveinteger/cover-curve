@@ -989,3 +989,88 @@ theorem classified_segment_widths_tendsto_zero
       hC hy
 
 end
+
+
+/-- A classified bounded-cost subsequence has at least two knots whose heights
+    converge to finite real limits. -/
+theorem exists_two_convergent_knot_heights
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hn : 1 ≤ n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∃ i j : Fin (n + 1), i ≠ j ∧
+      (∃ yi : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds yi)) ∧
+      (∃ yj : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) j)
+          (Filter.atTop : Filter ℕ) (nhds yj)) := by
+  by_contra htwo
+  push_neg at htwo
+  have hwidth : ∀ i : Fin n,
+      Filter.Tendsto
+        (fun k =>
+          knotX (P (φ k)) i.succ -
+            knotX (P (φ k)) i.castSucc)
+        (Filter.atTop : Filter ℕ) (nhds 0) := by
+    intro i
+    have hnotboth :
+        ¬ ((∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.castSucc)
+              (Filter.atTop : Filter ℕ) (nhds y)) ∧
+          (∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.succ)
+              (Filter.atTop : Filter ℕ) (nhds y))) := by
+      intro h
+      exact htwo i.castSucc i.succ
+        (Fin.ne_of_lt i.castSucc_lt_succ) h.1 h.2
+    rcases hclass i.castSucc with hleft | hleft
+    · exact (classified_segment_widths_tendsto_zero
+        f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).1 hleft
+    · rcases hclass i.succ with hright | hright
+      · exact (classified_segment_widths_tendsto_zero
+          f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).2 hright
+      · exact False.elim (hnotboth ⟨hleft, hright⟩)
+  have hsum : Filter.Tendsto
+      (fun k => ∑ i : Fin n,
+        knotX (P (φ k)) i.succ -
+          knotX (P (φ k)) i.castSucc)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+    simpa using
+      (tendsto_finsetSum (s := Finset.univ)
+        (f := fun i : Fin n =>
+          fun k =>
+            knotX (P (φ k)) i.succ -
+              knotX (P (φ k)) i.castSucc)
+        (a := fun _ : Fin n => 0)
+        (x := (Filter.atTop : Filter ℕ)) (by
+          intro i hi
+          simpa using hwidth i))
+  have hconst : Filter.Tendsto
+      (fun _ : ℕ => b - a)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+    simpa [sum_knot_width] using hsum
+  have hzero : b - a = 0 :=
+    (tendsto_const_nhds_iff.mp hconst)
+  linarith
+\nend\n

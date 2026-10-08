@@ -818,15 +818,22 @@ theorem exists_bounded_subsequence_of_not_tendsto_top
     (h : ¬ (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k)) :
     ∃ R : ℝ, ∃ φ : ℕ → ℕ,
       StrictMono φ ∧ ∀ k, y (φ k) ≤ R := by
-  push_neg at h
-  obtain ⟨R, hR⟩ := h
-  have hset : Set.Infinite {k : ℕ | y k ≤ R} := by
-    by_contra hfin
-    have hcof : Set.Finite {k : ℕ | y k ≤ R} := hfin
+  obtain ⟨R, hR⟩ := not_forall.mp h
+  have hfreq : ∃ᶠ k in (Filter.atTop : Filter ℕ), y k ≤ R := by
+    rw [Filter.frequently_atTop']
+    intro N
+    by_contra hN
     have hev : ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k := by
-      exact hcof.eventually_not_mem
+      rw [Filter.eventually_atTop]
+      refine ⟨N, ?_⟩
+      intro k hk
+      have hnot : ¬ y k ≤ R := by
+        intro hy
+        exact hN ⟨k, lt_of_lt_of_le (by exact hk) (le_rfl), hy⟩
+      exact lt_of_not_ge hnot
     exact hR hev
-  obtain ⟨φ, hφ, hmem⟩ := hset.exists_strictMono_subsequence
+  obtain ⟨φ, hφ, hmem⟩ :=
+    Filter.extraction_of_frequently_atTop hfreq
   refine ⟨R, φ, hφ, ?_⟩
   intro k
   exact hmem k
@@ -909,7 +916,7 @@ theorem exists_height_classification_subsequence
         · intro i
           refine Fin.cases ?_ (fun j => ?_) i
           · exact Or.inr ⟨y, by
-              simpa [y0, φ] using hlim.comp hφtail⟩
+              simpa [y0, φ] using hlim.comp hφtail.tendsto_atTop⟩
           · exact htail j
 
 end

@@ -271,6 +271,22 @@ theorem width_lt_of_height_gt
       _ < δ * (y - A) := by gcongr
   linarith
 
+/-- A bounded width-height product and diverging heights force the widths to zero. -/
+theorem tendsto_zero_of_mul_sub_le
+    {w y : ℕ → ℝ} {A B : ℝ}
+    (hw : ∀ k, 0 ≤ w k)
+    (hB : 0 ≤ B)
+    (hbound : ∀ k, w k * (y k - A) ≤ B)
+    (hy : Tendsto y atTop atTop) :
+    Tendsto w atTop (𝓝 0) := by
+  refine Metric.tendsto_atTop.2 ?_
+  intro ε hε
+  have hyε : ∀ᶠ k in atTop, A + B / ε < y k :=
+    hy.eventually (eventually_gt_atTop (A + B / ε))
+  filter_upwards [hyε] with k hk
+  exact width_lt_of_height_gt (hw k) hB hε (hbound k) hk
+
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

@@ -571,4 +571,53 @@ theorem relaxed_minimizing_sequence_bounded
     exact (div_le_iff₀ hpos).2 (by linarith)
   linarith
 
+
+/-- Each segment cost is bounded by the total objective of a feasible configuration. -/
+theorem segmentCost_le_relaxedObjective
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hfeas : RelaxedFeasible f P)
+    (i : Fin n) :
+    segmentCost f
+        (knotX P i.castSucc) (knotY P i.castSucc)
+        (knotX P i.succ) (knotY P i.succ) ≤
+      relaxedObjective f P := by
+  unfold relaxedObjective
+  apply Finset.single_le_sum
+  · intro j hj
+    have hxi := knotX_mono P j
+    have hleft :
+        Set.Icc (knotX P j.castSucc) (knotX P j.succ) ⊆ Set.Icc a b := by
+      intro x hx
+      exact ⟨le_trans (knotX_mem_Icc P j.castSucc).1 hx.1,
+        le_trans hx.2 (knotX_mem_Icc P j.succ).2⟩
+    have hfj : ContinuousOn f
+        (Set.Icc (knotX P j.castSucc) (knotX P j.succ)) :=
+      hf.mono hleft
+    exact segmentCost_nonneg_of_feasible f hxi hfj (hfeas j)
+  · exact Finset.mem_univ i
+
+/-- A minimizing sequence has a uniform upper bound on every individual
+segment cost. -/
+theorem relaxed_minimizing_sequence_segment_cost_bounded
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    ∃ P : ℕ → OrderedKnots a b n,
+      (∀ k, RelaxedFeasible f (P k)) ∧
+      (∀ k, ∀ i : Fin n,
+        segmentCost f
+            (knotX (P k) i.castSucc) (knotY (P k) i.castSucc)
+            (knotX (P k) i.succ) (knotY (P k) i.succ) ≤
+          relaxedValue (f := f) (a := a) (b := b) (n := n) + 1) := by
+  obtain ⟨P, hPfeas, hPbound⟩ :=
+    relaxed_minimizing_sequence_bounded f hn hab hf
+  refine ⟨P, hPfeas, ?_⟩
+  intro k i
+  exact le_trans
+    (segmentCost_le_relaxedObjective f (P k) hf (hPfeas k) i)
+    (hPbound k)
+
 end

@@ -469,7 +469,7 @@ theorem relaxedObjectiveSet_nonempty
     (hn : 1 ≤ n)
     (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
-    (relaxedObjectiveSet f).Nonempty := by
+    (relaxedObjectiveSet f (a := a) (b := b) (n := n)).Nonempty := by
   obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
   exact ⟨relaxedObjective f P, P, hP, rfl⟩
 
@@ -478,7 +478,7 @@ theorem relaxedObjectiveSet_bddBelow
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
-    BddBelow (relaxedObjectiveSet f) := by
+    BddBelow (relaxedObjectiveSet f (a := a) (b := b) (n := n)) := by
   refine ⟨0, ?_⟩
   rintro _ ⟨P, hP, rfl⟩
   exact relaxedObjective_nonneg f P hf hP
@@ -490,7 +490,7 @@ theorem relaxedValue_nonneg
     (hf : ContinuousOn f (Set.Icc a b)) :
     0 ≤ relaxedValue f := by
   unfold relaxedValue
-  exact le_csInf (relaxedObjectiveSet_bddBelow f hab hf)
+  exact le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
     (by
       intro v hv
       rcases hv with ⟨P, hP, rfl⟩
@@ -506,7 +506,7 @@ theorem relaxedValue_le_of_feasible
     relaxedValue f ≤ relaxedObjective f P := by
   unfold relaxedValue
   exact csInf_le
-    (relaxedObjectiveSet_bddBelow f hab hf)
+    (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
     ⟨P, hP, rfl⟩
 
 end

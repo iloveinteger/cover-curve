@@ -530,7 +530,9 @@ theorem exists_relaxed_minimizing_sequence
         relaxedValue (f := f) (a := a) (b := b) (n := n) <
           relaxedValue (f := f) (a := a) (b := b) (n := n) +
             1 / ((k : ℝ) + 1) := by
-      positivity
+      have hpos : 0 < (1 : ℝ) / ((k : ℝ) + 1) := by
+        positivity
+      linarith
     have hlt' :
         sInf S <
           relaxedValue (f := f) (a := a) (b := b) (n := n) +

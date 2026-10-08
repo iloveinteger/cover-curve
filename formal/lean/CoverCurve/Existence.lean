@@ -442,7 +442,6 @@ theorem knotY_ge_of_global_lower_bound
       (segmentFeasible_right f hseg)
 
 /-- The relaxed feasible set is nonempty. -/
-/-- The relaxed feasible set is nonempty. -/
 theorem relaxed_feasible_nonempty
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (hn : 1 ≤ n)

@@ -245,6 +245,30 @@ theorem segment_width_height_bound
     segmentCost_lower_bound f (y₀ := y₀) (y₁ := y₁) hxy hf hM
   nlinarith
 
+ /-- A positive lower bound on segment width gives an upper bound on
+the right endpoint height from a uniform cost bound. -/
+theorem segment_right_height_bound
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ μ M C δ : ℝ}
+    (hxy : x₀ < x₁)
+    (hwidth : δ ≤ x₁ - x₀)
+    (hδ : 0 < δ)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁)
+    (hμ : ∀ x ∈ Set.Icc x₀ x₁, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M)
+    (hcost : segmentCost f x₀ y₀ x₁ y₁ ≤ C)
+    (hC : 0 ≤ C) :
+    y₁ ≤ (2 * M - μ) + 2 * C / δ := by
+  have hbound :=
+    segment_width_height_bound f hxy hf hfeas hμ hM hcost
+  by_contra hnot
+  have hy : (2 * M - μ) + (2 * C) / δ < y₁ := by
+    linarith
+  have hw := width_lt_of_height_gt
+    (w := x₁ - x₀) (y := y₁) (A := 2 * M - μ) (B := 2 * C)
+    (δ := δ) (mul_nonneg (by norm_num) hC) hδ hbound hy
+  linarith
+
 /-- A bounded width-height product forces a small width when the height is large. -/
 theorem width_lt_of_height_gt
     {w y A B δ : ℝ}

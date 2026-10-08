@@ -277,14 +277,12 @@ theorem tendsto_zero_of_mul_sub_le
     (hbound : ∀ k, w k * (y k - A) ≤ B)
     (hy : ∀ R : ℝ, ∀ᶠ k in (atTop : Filter ℕ), R < y k) :
     Filter.Tendsto w (atTop : Filter ℕ) (nhds 0) := by
-  rw [Metric.tendsto_atTop]
+  refine Metric.tendsto_atTop.2 ?_
   intro ε hε
   have hyε : ∀ᶠ k in (atTop : Filter ℕ), A + B / ε < y k :=
     hy (A + B / ε)
-  obtain ⟨N, hN⟩ := (Filter.eventually_atTop.1 hyε)
-  refine ⟨N, ?_⟩
-  intro k hk
-  exact width_lt_of_height_gt hB hε (hbound k) (hN k hk)
+  filter_upwards [hyε] with k hk
+  exact width_lt_of_height_gt hB hε (hbound k) hk
 
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/

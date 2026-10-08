@@ -313,21 +313,22 @@ theorem segment_width_tendsto_zero_of_right_height
   have hbound : ∀ k, w k * (y k - (2 * M - μ)) ≤ 2 * C := by
     intro k
     by_cases hpos : 0 < w k
-    · exact segment_width_height_bound f hpos (hf k) (hfeas k)
-        (by
-          intro x hx
-          exact hμ x)
-        (by
-          intro x hx
-          exact hM x)
-        (hcost k)
+    · simpa only [sub_zero] using
+        (segment_width_height_bound f hpos (hf k) (hfeas k)
+          (by
+            intro x hx
+            exact hμ x)
+          (by
+            intro x hx
+            exact hM x)
+          (hcost k))
     · have hw0 : w k = 0 := le_antisymm (le_of_not_gt hpos) (hw k)
       simp [hw0, hC]
   exact tendsto_zero_of_mul_sub_le (A := 2 * M - μ) (B := 2 * C)
     (mul_nonneg (by norm_num) hC) hbound hy
     (Filter.Eventually.of_forall hw)
 
-/-- A constant-height configuration is always a relaxed feasible configuration. -/
+ /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (hn : 1 ≤ n)

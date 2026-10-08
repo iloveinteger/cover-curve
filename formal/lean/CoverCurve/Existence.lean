@@ -731,7 +731,16 @@ theorem segment_width_tendsto_zero_of_left_height_global
       have hy1' : 0 ≤ y₁ k - μ := sub_nonneg.mpr hy1
       have hprod : 0 ≤ (x₁ k - x₀ k) * (y₁ k - μ) :=
         mul_nonneg hw hy1'
-      nlinarith [hlow, hprod]
+      have htotal :
+          (x₁ k - x₀ k) * (y₀ k + y₁ k - 2 * M) ≤ 2 * C := by
+        nlinarith [hlow, hcost k]
+      have hsplit :
+          (x₁ k - x₀ k) * (y₀ k - (2 * M - μ)) =
+            (x₁ k - x₀ k) * (y₀ k + y₁ k - 2 * M) -
+              (x₁ k - x₀ k) * (y₁ k - μ) := by
+        ring
+      rw [hsplit]
+      linarith
     · have hz : x₁ k - x₀ k = 0 := by
         linarith [hordered k]
       simp [hz, hC]

@@ -712,8 +712,11 @@ theorem segment_width_tendsto_zero_of_left_height_global
     · have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
         intro x hx
         exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
+      have hMlocal : ∀ x ∈ Set.Icc (x₀ k) (x₁ k), f x ≤ M := by
+        intro x hx
+        exact hM x (hleft hx)
       have hlow :=
-        segmentCost_lower_bound f hpos (hf.mono hleft) (hM.mono hleft)
+        segmentCost_lower_bound f hpos (hf.mono hleft) hMlocal
       have hy0 : μ ≤ y₀ k := le_trans
         (hμ (x₀ k) ⟨(hinterval k).1,
           le_trans hpos.le (hinterval k).2⟩)

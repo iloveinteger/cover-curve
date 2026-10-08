@@ -694,7 +694,7 @@ segment widths to vanish. -/
 theorem segment_width_tendsto_zero_of_left_height_global
     (f : ℝ → ℝ) {a b : ℝ} {x₀ x₁ y₀ y₁ : ℕ → ℝ}
     {μ M C : ℝ}
-    (hab : a ≤ b)
+    (_hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b))
     (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
     (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
@@ -752,9 +752,9 @@ theorem segment_width_tendsto_zero_of_left_height_global
 
 /-- The knot abscissae admit a convergent subsequence in the fixed compact box. -/
 theorem exists_knotX_convergent_subsequence
-    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (_f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (P : ℕ → OrderedKnots a b n)
-    (hab : a ≤ b) :
+    (_hab : a ≤ b) :
     ∃ x : Fin (n + 1) → ℝ, ∃ φ : ℕ → ℕ,
       StrictMono φ ∧
         Filter.Tendsto
@@ -766,7 +766,7 @@ theorem exists_knotX_convergent_subsequence
     exact isCompact_univ_pi (fun _ => isCompact_Icc)
   have hPK : ∀ k : ℕ, (fun i => knotX (P k) i) ∈ K := by
     intro k
-    intro i hi
+    intro i _
     exact knotX_mem_Icc (P k) i
   obtain ⟨x, hx, φ, hφ, hlim⟩ := hK.tendsto_subseq hPK
   exact ⟨x, φ, hφ, hlim⟩
@@ -783,17 +783,30 @@ theorem relaxed_feasible_constant_height_of_ge
     RelaxedFeasible f
       (⟨fun i => (knotX P i, M), P.2.1, P.2.2.1, P.2.2.2⟩ :
         OrderedKnots a b n) := by
+  let Q : OrderedKnots a b n :=
+    ⟨fun i => (knotX P i, M), P.2.1, P.2.2.1, P.2.2.2⟩
+  change RelaxedFeasible f Q
   intro i
   have hxi : knotX P i.castSucc ≤ knotX P i.succ :=
     knotX_mono P i
+  have hQx0 : knotX Q i.castSucc = knotX P i.castSucc := by
+    rfl
+  have hQx1 : knotX Q i.succ = knotX P i.succ := by
+    rfl
+  have hQy0 : knotY Q i.castSucc = M := by
+    rfl
+  have hQy1 : knotY Q i.succ = M := by
+    rfl
+  rw [segmentFeasible]
+  rw [hQx0, hQx1, hQy0, hQy1]
   by_cases hlt : knotX P i.castSucc < knotX P i.succ
-  · rw [segmentFeasible, ite_eq_left hlt]
+  · simp [hlt]
     intro x hx
     exact hM x ⟨le_trans (knotX_mem_Icc P i.castSucc).1 hx.1,
       le_trans hx.2 (knotX_mem_Icc P i.succ).2⟩
   · have hxeq : knotX P i.castSucc = knotX P i.succ :=
       le_antisymm (le_of_not_gt hlt) hxi
-    rw [segmentFeasible, ite_eq_right hlt]
+    simp [hlt, hxeq]
     exact ⟨hxeq, hM (knotX P i.castSucc)
       (knotX_mem_Icc P i.castSucc), hM (knotX P i.succ)
       (knotX_mem_Icc P i.succ)⟩

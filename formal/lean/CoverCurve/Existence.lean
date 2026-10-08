@@ -279,9 +279,9 @@ theorem tendsto_zero_of_mul_sub_le
     Filter.Tendsto w (Filter.atTop : Filter ℕ) (nhds 0) := by
   refine (Metric.tendsto_atTop (u := w) (a := (0 : ℝ))).2 ?_
   intro ε hε
-  have hyε : ∀ᶠ k in (atTop : Filter ℕ), A + B / ε < y k :=
+  have hyε : ∀ᶠ k in (Filter.atTop : Filter ℕ), A + B / ε < y k :=
     hy (A + B / ε)
-  rcases (eventually_atTop.1 hyε) with ⟨N, hN⟩
+  rcases (Filter.eventually_atTop.1 hyε) with ⟨N, hN⟩
   refine ⟨N, ?_⟩
   intro k hk
   have hkheight := hN k hk

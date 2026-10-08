@@ -716,7 +716,8 @@ theorem segment_width_tendsto_zero_of_left_height_global
         intro x hx
         exact hM x (hleft hx)
       have hlow :=
-        segmentCost_lower_bound f (x₀ k) (y₀ k) (x₁ k) (y₁ k) M hpos
+        segmentCost_lower_bound f (x₀ := x₀ k) (y₀ := y₀ k)
+          (x₁ := x₁ k) (y₁ := y₁ k) (M := M) hpos
           (hf.mono hleft) hMlocal
       have hy0 : μ ≤ y₀ k := le_trans
         (hμ (x₀ k) ⟨(hinterval k).1,

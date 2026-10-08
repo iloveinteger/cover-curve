@@ -245,7 +245,7 @@ theorem segment_width_height_bound
     segmentCost_lower_bound f (y₀ := y₀) (y₁ := y₁) hxy hf hM
   nlinarith
 
- /-- A positive lower bound on segment width gives an upper bound on
+/-- A positive lower bound on segment width gives an upper bound on
 the right endpoint height from a uniform cost bound. -/
 theorem segment_right_height_bound
     (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ μ M C δ : ℝ}
@@ -293,6 +293,8 @@ theorem width_lt_of_height_gt
       B = δ * (B / δ) := by field_simp [ne_of_gt hδ]
       _ < δ * (y - A) := by gcongr
   linarith
+
+
 
 /-- A bounded width-height product and diverging heights force the widths to zero. -/
 theorem tendsto_zero_of_mul_sub_le

@@ -749,4 +749,26 @@ theorem segment_width_tendsto_zero_of_left_height_global
     (mul_nonneg (by norm_num) hC) hbound hy
     (Filter.Eventually.of_forall (fun k => sub_nonneg.mpr (hordered k)))
 
+
+/-- The knot abscissae admit a convergent subsequence in the fixed compact box. -/
+theorem exists_knotX_convergent_subsequence
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a ≤ b) :
+    ∃ x : Fin (n + 1) → ℝ, ∃ φ : ℕ → ℕ,
+      StrictMono φ ∧
+        Filter.Tendsto
+          (fun k => fun i => knotX (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds x) := by
+  let K : Set (Fin (n + 1) → ℝ) :=
+    Set.pi Set.univ (fun _ => Set.Icc a b)
+  have hK : IsCompact K := by
+    exact isCompact_pi (fun _ _ => isCompact_Icc)
+  have hPK : ∀ k : ℕ, (fun i => knotX (P k) i) ∈ K := by
+    intro k
+    intro i hi
+    exact knotX_mem_Icc (P k) i
+  obtain ⟨x, hx, φ, hφ, hlim⟩ := hK.tendsto_subseq hPK
+  exact ⟨x, φ, hφ, hlim⟩
+
 end

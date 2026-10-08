@@ -765,8 +765,7 @@ theorem exists_knotX_convergent_subsequence
   have hK : IsCompact K := by
     exact isCompact_univ_pi (fun _ => isCompact_Icc)
   have hPK : ∀ k : ℕ, (fun i => knotX (P k) i) ∈ K := by
-    intro k
-    intro i _
+    intro k i _
     exact knotX_mem_Icc (P k) i
   obtain ⟨x, hx, φ, hφ, hlim⟩ := hK.tendsto_subseq hPK
   exact ⟨x, φ, hφ, hlim⟩
@@ -779,7 +778,7 @@ theorem relaxed_feasible_constant_height_of_ge
     (P : OrderedKnots a b n)
     {M : ℝ}
     (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
-    (hY : ∀ i : Fin (n + 1), M ≤ knotY P i) :
+    (_hY : ∀ i : Fin (n + 1), M ≤ knotY P i) :
     RelaxedFeasible f
       (⟨fun i => (knotX P i, M), P.2.1, P.2.2.1, P.2.2.2⟩ :
         OrderedKnots a b n) := by
@@ -801,15 +800,13 @@ theorem relaxed_feasible_constant_height_of_ge
   rw [hQx0, hQx1, hQy0, hQy1]
   by_cases hlt : knotX P i.castSucc < knotX P i.succ
   · simp [hlt]
-    intro x hx
-    exact hM x ⟨le_trans (knotX_mem_Icc P i.castSucc).1 hx.1,
-      le_trans hx.2 (knotX_mem_Icc P i.succ).2⟩
+    intro x hx0 hx1
+    exact hM x ⟨le_trans (knotX_mem_Icc P i.castSucc).1 hx0,
+      le_trans hx1 (knotX_mem_Icc P i.succ).2⟩
   · have hxeq : knotX P i.castSucc = knotX P i.succ :=
-      le_antisymm (le_of_not_gt hlt) hxi
-    simp [hlt, hxeq]
-    exact ⟨hxeq, hM (knotX P i.castSucc)
-      (knotX_mem_Icc P i.castSucc), hM (knotX P i.succ)
-      (knotX_mem_Icc P i.succ)⟩
+      le_antisymm hxi (le_of_not_gt hlt)
+    simp [hxeq]
+    exact hM (knotX P i.castSucc) (knotX_mem_Icc P i.castSucc)
 
 
 end

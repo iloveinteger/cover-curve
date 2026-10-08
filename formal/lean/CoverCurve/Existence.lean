@@ -486,17 +486,15 @@ theorem relaxedObjectiveSet_bddBelow
 theorem relaxedValue_nonneg
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (hf : ContinuousOn f (Set.Icc a b)) :
-    0 ≤ relaxedValue f := by
+    0 ≤ relaxedValue (f := f) (a := a) (b := b) (n := n) := by
   unfold relaxedValue
-  apply le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hf)
-  intro v hv
-  rcases hv with ⟨P, hP, rfl⟩
-  exact relaxedObjective_nonneg f P hf hP
+  exact Real.sInf_nonneg (fun v hv => by
+    rcases hv with ⟨P, hP, rfl⟩
+    exact relaxedObjective_nonneg f P hf hP)
 
 /-- The relaxed infimum is attained below any chosen feasible objective value. -/
 theorem relaxedValue_le_of_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
-    (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b))
     {P : OrderedKnots a b n}
     (hP : RelaxedFeasible f P) :

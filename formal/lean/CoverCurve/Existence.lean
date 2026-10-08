@@ -820,7 +820,7 @@ theorem exists_bounded_subsequence_of_not_tendsto_top
       StrictMono φ ∧ ∀ k, y (φ k) ≤ R := by
   obtain ⟨R, hR⟩ := not_forall.mp h
   have hfreq : ∃ᶠ k in (Filter.atTop : Filter ℕ), y k ≤ R := by
-    rw [Filter.frequently_atTop']
+    rw [Filter.frequently_atTop]
     intro N
     by_contra hN
     have hev : ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k := by
@@ -829,7 +829,7 @@ theorem exists_bounded_subsequence_of_not_tendsto_top
       intro k hk
       have hnot : ¬ y k ≤ R := by
         intro hy
-        exact hN ⟨k, lt_of_lt_of_le (by exact hk) (le_rfl), hy⟩
+        exact hN ⟨k, hk, hy⟩
       exact lt_of_not_ge hnot
     exact hR hev
   obtain ⟨φ, hφ, hmem⟩ :=

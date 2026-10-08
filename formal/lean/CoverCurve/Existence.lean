@@ -294,6 +294,42 @@ theorem tendsto_zero_of_mul_sub_le
   simpa [Real.dist_eq, sub_zero, abs_of_nonneg hk_nonneg] using hw
 
 
+/-- A uniformly bounded-cost sequence of feasible segments has vanishing width
+    when its right endpoint height diverges. -/
+theorem segment_width_tendsto_zero_of_right_height
+    (f : ℝ → ℝ) {w y : ℕ → ℝ} {μ M C : ℝ}
+    (hμ : ∀ k x, μ ≤ f x)
+    (hM : ∀ k x, f x ≤ M)
+    (hfeas :
+      ∀ k, segmentFeasible f
+        0 (μ) (w k) (y k))
+    (hcost :
+      ∀ k, segmentCost f 0 (μ) (w k) (y k) ≤ C)
+    (hw : ∀ k, 0 ≤ w k)
+    (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k)
+    (hC : 0 ≤ C) :
+    Filter.Tendsto w (Filter.atTop : Filter ℕ) (nhds 0) := by
+  have hbound : ∀ k, w k * (y k - (2 * M - μ)) ≤ 2 * C := by
+    intro k
+    by_cases hpos : 0 < w k
+    · exact segment_width_height_bound f hpos
+        (by
+          exact fun x hx => by
+            exact hM k x)
+        (hfeas k)
+        (by
+          intro x hx
+          exact hμ k x)
+        (by
+          intro x hx
+          exact hM k x)
+        (hcost k)
+    · have hw0 : w k = 0 := le_antisymm (le_of_not_gt hpos) (hw k)
+      simp [hw0]
+  exact tendsto_zero_of_mul_sub_le hC hbound hy
+    (Filter.Eventually.of_forall hw)
+
+
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}

@@ -547,4 +547,28 @@ theorem exists_relaxed_minimizing_sequence
   rcases Classical.choose_spec (hex k) with ⟨hP, hobj⟩
   exact ⟨hP, hobj.le⟩
 
+
+
+/-- The minimizing sequence has a uniform objective bound. -/
+theorem relaxed_minimizing_sequence_bounded
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    ∃ P : ℕ → OrderedKnots a b n,
+      (∀ k, RelaxedFeasible f (P k)) ∧
+      (∀ k,
+        relaxedObjective f (P k) ≤
+          relaxedValue (f := f) (a := a) (b := b) (n := n) + 1) := by
+  obtain ⟨P, hP⟩ := exists_relaxed_minimizing_sequence f hn hab hf
+  refine ⟨P, fun k => (hP k).1, ?_⟩
+  intro k
+  have hk := (hP k).2
+  have hfrac : (1 : ℝ) / ((k : ℝ) + 1) ≤ 1 := by
+    have hk0 : 0 ≤ (k : ℝ) := by positivity
+    have hden : 1 ≤ (k : ℝ) + 1 := by linarith
+    have hpos : 0 < (k : ℝ) + 1 := by linarith
+    exact (div_le_iff₀ hpos).2 (by linarith)
+  linarith
+
 end

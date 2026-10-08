@@ -245,30 +245,6 @@ theorem segment_width_height_bound
     segmentCost_lower_bound f (y₀ := y₀) (y₁ := y₁) hxy hf hM
   nlinarith
 
-/-- A positive lower bound on segment width gives an upper bound on
-the right endpoint height from a uniform cost bound. -/
-theorem segment_right_height_bound
-    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ μ M C δ : ℝ}
-    (hxy : x₀ < x₁)
-    (hwidth : δ ≤ x₁ - x₀)
-    (hδ : 0 < δ)
-    (hf : ContinuousOn f (Set.Icc x₀ x₁))
-    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁)
-    (hμ : ∀ x ∈ Set.Icc x₀ x₁, μ ≤ f x)
-    (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M)
-    (hcost : segmentCost f x₀ y₀ x₁ y₁ ≤ C)
-    (hC : 0 ≤ C) :
-    y₁ ≤ (2 * M - μ) + 2 * C / δ := by
-  have hbound :=
-    segment_width_height_bound f hxy hf hfeas hμ hM hcost
-  by_contra hnot
-  have hy : (2 * M - μ) + (2 * C) / δ < y₁ := by
-    linarith
-  have hw := width_lt_of_height_gt
-    (w := x₁ - x₀) (y := y₁) (A := 2 * M - μ) (B := 2 * C)
-    (δ := δ) (mul_nonneg (by norm_num) hC) hδ hbound hy
-  linarith
-
 /-- A bounded width-height product forces a small width when the height is large. -/
 theorem width_lt_of_height_gt
     {w y A B δ : ℝ}
@@ -295,6 +271,31 @@ theorem width_lt_of_height_gt
   linarith
 
 
+
+
+/-- A positive lower bound on segment width gives an upper bound on
+the right endpoint height from a uniform cost bound. -/
+theorem segment_right_height_bound
+    (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ μ M C δ : ℝ}
+    (hxy : x₀ < x₁)
+    (hwidth : δ ≤ x₁ - x₀)
+    (hδ : 0 < δ)
+    (hf : ContinuousOn f (Set.Icc x₀ x₁))
+    (hfeas : segmentFeasible f x₀ y₀ x₁ y₁)
+    (hμ : ∀ x ∈ Set.Icc x₀ x₁, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc x₀ x₁, f x ≤ M)
+    (hcost : segmentCost f x₀ y₀ x₁ y₁ ≤ C)
+    (hC : 0 ≤ C) :
+    y₁ ≤ (2 * M - μ) + 2 * C / δ := by
+  have hbound :=
+    segment_width_height_bound f hxy hf hfeas hμ hM hcost
+  by_contra hnot
+  have hy : (2 * M - μ) + (2 * C) / δ < y₁ := by
+    linarith
+  have hw := width_lt_of_height_gt
+    (w := x₁ - x₀) (y := y₁) (A := 2 * M - μ) (B := 2 * C)
+    (δ := δ) (mul_nonneg (by norm_num) hC) hδ hbound hy
+  linarith
 
 /-- A bounded width-height product and diverging heights force the widths to zero. -/
 theorem tendsto_zero_of_mul_sub_le
@@ -670,14 +671,18 @@ theorem segment_width_tendsto_zero_of_right_height_global
       (Filter.atTop : Filter ℕ) (nhds 0) := by
   have hbound : ∀ k, (x₁ k - x₀ k) * (y₁ k - (2 * M - μ)) ≤ 2 * C := by
     intro k
-    have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
-      intro x hx
-      exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
-    exact segment_width_height_bound f (hordered k)
-      (hf.mono hleft) (hfeas k)
-      (fun x hx => hμ x (hleft hx))
-      (fun x hx => hM x (hleft hx))
-      (hcost k)
+    by_cases hpos : x₀ k < x₁ k
+    · have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
+        intro x hx
+        exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
+      exact segment_width_height_bound f hpos
+        (hf.mono hleft) (hfeas k)
+        (fun x hx => hμ x (hleft hx))
+        (fun x hx => hM x (hleft hx))
+        (hcost k)
+    · have hz : x₁ k - x₀ k = 0 := by
+        linarith [hordered k]
+      simp [hz, hC]
   exact tendsto_zero_of_mul_sub_le
     (A := 2 * M - μ) (B := 2 * C)
     (mul_nonneg (by norm_num) hC) hbound hy
@@ -703,21 +708,25 @@ theorem segment_width_tendsto_zero_of_left_height_global
       (Filter.atTop : Filter ℕ) (nhds 0) := by
   have hbound : ∀ k, (x₁ k - x₀ k) * (y₀ k - (2 * M - μ)) ≤ 2 * C := by
     intro k
-    have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
-      intro x hx
-      exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
-    have hbound' := segment_width_height_bound f (hordered k)
-      (hf.mono hleft) (hfeas k)
-      (fun x hx => hμ x (hleft hx))
-      (fun x hx => hM x (hleft hx))
-      (hcost k)
-    have hy0 : μ ≤ y₀ k := le_trans
-      (hμ (x₀ k) ⟨(hinterval k).1, hordered k⟩)
-      (segmentFeasible_left f (hfeas k))
-    have hy1 : μ ≤ y₁ k := le_trans
-      (hμ (x₁ k) ⟨hordered k, (hinterval k).2⟩)
-      (segmentFeasible_right f (hfeas k))
-    nlinarith [hbound']
+    by_cases hpos : x₀ k < x₁ k
+    · have hleft : Set.Icc (x₀ k) (x₁ k) ⊆ Set.Icc a b := by
+        intro x hx
+        exact ⟨le_trans (hinterval k).1 hx.1, le_trans hx.2 (hinterval k).2⟩
+      have hbound' := segment_width_height_bound f hpos
+        (hf.mono hleft) (hfeas k)
+        (fun x hx => hμ x (hleft hx))
+        (fun x hx => hM x (hleft hx))
+        (hcost k)
+      have hy0 : μ ≤ y₀ k := le_trans
+        (hμ (x₀ k) ⟨(hinterval k).1, hpos.le⟩)
+        (segmentFeasible_left f (hfeas k))
+      have hy1 : μ ≤ y₁ k := le_trans
+        (hμ (x₁ k) ⟨hpos.le, (hinterval k).2⟩)
+        (segmentFeasible_right f (hfeas k))
+      nlinarith [hbound']
+    · have hz : x₁ k - x₀ k = 0 := by
+        linarith [hordered k]
+      simp [hz, hC]
   exact tendsto_zero_of_mul_sub_le
     (A := 2 * M - μ) (B := 2 * C)
     (mul_nonneg (by norm_num) hC) hbound hy

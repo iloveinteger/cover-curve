@@ -316,7 +316,7 @@ theorem segment_width_tendsto_zero_of_right_height
     · simpa only [sub_zero] using
         (segment_width_height_bound f hpos (hf k) (hfeas k)
           (by
-            intro x hx
+          intro x hx
             exact hμ x)
           (by
             intro x hx
@@ -586,16 +586,16 @@ theorem segmentCost_le_relaxedObjective
   unfold relaxedObjective
   refine Finset.single_le_sum (s := Finset.univ) ?_ (Finset.mem_univ i)
   intro j hj
-    have hxi := knotX_mono P j
-    have hleft :
+  have hxi := knotX_mono P j
+  have hleft :
         Set.Icc (knotX P j.castSucc) (knotX P j.succ) ⊆ Set.Icc a b := by
       intro x hx
-      exact ⟨le_trans (knotX_mem_Icc P j.castSucc).1 hx.1,
+    exact ⟨le_trans (knotX_mem_Icc P j.castSucc).1 hx.1,
         le_trans hx.2 (knotX_mem_Icc P j.succ).2⟩
-    have hfj : ContinuousOn f
+  have hfj : ContinuousOn f
         (Set.Icc (knotX P j.castSucc) (knotX P j.succ)) :=
-      hf.mono hleft
-    exact segmentCost_nonneg_of_feasible f hxi hfj (hfeas j)
+    hf.mono hleft
+  exact segmentCost_nonneg_of_feasible f hxi hfj (hfeas j)
 
 /-- A minimizing sequence has a uniform upper bound on every individual
 segment cost. -/

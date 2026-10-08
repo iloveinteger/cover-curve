@@ -920,4 +920,72 @@ theorem exists_height_classification_subsequence
               exact hlim.comp hφtail.tendsto_atTop⟩
           · exact htail j
 
+
+
+/-- On a bounded-cost minimizing subsequence, a knot whose height diverges
+    forces each adjacent segment width to vanish. -/
+theorem classified_segment_widths_tendsto_zero
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∀ i : Fin n,
+      ((∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+          R < knotY (P (φ k)) i.castSucc) →
+        Filter.Tendsto
+          (fun k =>
+            knotX (P (φ k)) i.succ -
+              knotX (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds 0)) ∧
+      ((∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+          R < knotY (P (φ k)) i.succ) →
+        Filter.Tendsto
+          (fun k =>
+            knotX (P (φ k)) i.succ -
+              knotX (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds 0) := by
+  intro i
+  constructor
+  · intro hy
+    apply segment_width_tendsto_zero_of_left_height_global f hab.le hf hμ hM
+      (fun k => ⟨
+        (knotX_mem_Icc (P (φ k)) i.castSucc).1,
+        (knotX_mem_Icc (P (φ k)) i.succ).2⟩)
+      (fun k => knotX_mono (P (φ k)) i)
+      (fun k => hfeas (φ k) i)
+      (fun k =>
+        le_trans
+          (segmentCost_le_relaxedObjective f (P (φ k)) hf
+            (hfeas (φ k)) i)
+          (hcost (φ k)))
+      hC hy
+  · intro hy
+    apply segment_width_tendsto_zero_of_right_height_global f hab.le hf hμ hM
+      (fun k => ⟨
+        (knotX_mem_Icc (P (φ k)) i.castSucc).1,
+        (knotX_mem_Icc (P (φ k)) i.succ).2⟩)
+      (fun k => knotX_mono (P (φ k)) i)
+      (fun k => hfeas (φ k) i)
+      (fun k =>
+        le_trans
+          (segmentCost_le_relaxedObjective f (P (φ k)) hf
+            (hfeas (φ k)) i)
+          (hcost (φ k)))
+      hC hy
+
 end

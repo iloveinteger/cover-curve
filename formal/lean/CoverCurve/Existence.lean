@@ -504,4 +504,44 @@ theorem relaxedValue_le_of_feasible
     (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hf)
     ⟨P, hP, rfl⟩
 
+/-- A feasible minimizing sequence exists for the relaxed problem. -/
+theorem exists_relaxed_minimizing_sequence
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    ∃ P : ℕ → OrderedKnots a b n,
+      ∀ k, RelaxedFeasible f (P k) ∧
+        relaxedObjective f (P k) ≤
+          relaxedValue (f := f) (a := a) (b := b) (n := n) +
+            1 / ((k : ℝ) + 1) := by
+  let S : Set ℝ := relaxedObjectiveSet f (a := a) (b := b) (n := n)
+  have hS_nonempty : S.Nonempty := by
+    exact relaxedObjectiveSet_nonempty f hn hab hf
+  have hS_bddBelow : BddBelow S := by
+    exact relaxedObjectiveSet_bddBelow f hf
+  have hex : ∀ k : ℕ, ∃ P : OrderedKnots a b n,
+      RelaxedFeasible f P ∧
+        relaxedObjective f P <
+          relaxedValue (f := f) (a := a) (b := b) (n := n) +
+            1 / ((k : ℝ) + 1) := by
+    intro k
+    have hlt :
+        relaxedValue (f := f) (a := a) (b := b) (n := n) <
+          relaxedValue (f := f) (a := a) (b := b) (n := n) +
+            1 / ((k : ℝ) + 1) := by
+      positivity
+    have hlt' :
+        sInf S <
+          relaxedValue (f := f) (a := a) (b := b) (n := n) +
+            1 / ((k : ℝ) + 1) := by
+      simpa [S, relaxedValue] using hlt
+    obtain ⟨v, hv, hvlt⟩ := (csInf_lt_iff hS_bddBelow hS_nonempty).1 hlt'
+    rcases hv with ⟨P, hP, rfl⟩
+    exact ⟨P, hP, hvlt⟩
+  let P : ℕ → OrderedKnots a b n := fun k => Classical.choose (hex k)
+  refine ⟨P, ?_⟩
+  intro k
+  exact (Classical.choose_spec (hex k)).le
+
 end

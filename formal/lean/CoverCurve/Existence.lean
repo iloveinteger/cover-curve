@@ -273,11 +273,10 @@ theorem width_lt_of_height_gt
 /-- A bounded width-height product and diverging heights force the widths to zero. -/
 theorem tendsto_zero_of_mul_sub_le
     {w y : ℕ → ℝ} {A B : ℝ}
-    (hw : ∀ k, 0 ≤ w k)
-    (hB : 0 ≤ B)
+        (hB : 0 ≤ B)
     (hbound : ∀ k, w k * (y k - A) ≤ B)
-    (hy : Tendsto y atTop atTop) :
-    Tendsto w atTop (𝓝 0) := by
+    (hy : Filter.Tendsto y atTop atTop) :
+    Filter.Tendsto w atTop (𝓝 0) := by
   refine Metric.tendsto_atTop.2 ?_
   intro ε hε
   have hyε : ∀ᶠ k in atTop, A + B / ε < y k :=

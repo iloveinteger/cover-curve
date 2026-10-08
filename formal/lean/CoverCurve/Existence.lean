@@ -451,4 +451,62 @@ theorem relaxed_feasible_nonempty
   obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
   exact ⟨P, hP⟩
 
+
+/-- Objective values attained by feasible relaxed configurations. -/
+def relaxedObjectiveSet
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ} : Set ℝ :=
+  {v | ∃ P : OrderedKnots a b n, RelaxedFeasible f P ∧
+    v = relaxedObjective f P}
+
+/-- The infimum of the relaxed finite-segment problem. -/
+noncomputable def relaxedValue
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ} : ℝ :=
+  sInf (relaxedObjectiveSet f)
+
+/-- The relaxed objective set is nonempty. -/
+theorem relaxedObjectiveSet_nonempty
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 1 ≤ n)
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    (relaxedObjectiveSet f).Nonempty := by
+  obtain ⟨P, hP⟩ := exists_relaxed_feasible f hn hab hf
+  exact ⟨relaxedObjective f P, P, hP, rfl⟩
+
+/-- Zero is a lower bound for all relaxed objective values. -/
+theorem relaxedObjectiveSet_bddBelow
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    BddBelow (relaxedObjectiveSet f) := by
+  refine ⟨0, ?_⟩
+  rintro _ ⟨P, hP, rfl⟩
+  exact relaxedObjective_nonneg f P hf hP
+
+/-- The relaxed infimum is nonnegative. -/
+theorem relaxedValue_nonneg
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b)) :
+    0 ≤ relaxedValue f := by
+  unfold relaxedValue
+  exact le_csInf (relaxedObjectiveSet_bddBelow f hab hf)
+    (by
+      intro v hv
+      rcases hv with ⟨P, hP, rfl⟩
+      exact relaxedObjective_nonneg f P hf hP)
+
+/-- The relaxed infimum is attained below any chosen feasible objective value. -/
+theorem relaxedValue_le_of_feasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hab : a ≤ b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {P : OrderedKnots a b n}
+    (hP : RelaxedFeasible f P) :
+    relaxedValue f ≤ relaxedObjective f P := by
+  unfold relaxedValue
+  exact csInf_le
+    (relaxedObjectiveSet_bddBelow f hab hf)
+    ⟨P, hP, rfl⟩
+
 end

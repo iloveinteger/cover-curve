@@ -298,13 +298,14 @@ theorem tendsto_zero_of_mul_sub_le
     when its right endpoint height diverges. -/
 theorem segment_width_tendsto_zero_of_right_height
     (f : ℝ → ℝ) {w y : ℕ → ℝ} {μ M C : ℝ}
-    (hμ : ∀ k x, μ ≤ f x)
-    (hM : ∀ k x, f x ≤ M)
+    (hf : ∀ k, ContinuousOn f (Set.Icc 0 (w k)))
+    (hμ : ∀ x, μ ≤ f x)
+    (hM : ∀ x, f x ≤ M)
     (hfeas :
       ∀ k, segmentFeasible f
-        0 (μ) (w k) (y k))
+        0 μ (w k) (y k))
     (hcost :
-      ∀ k, segmentCost f 0 (μ) (w k) (y k) ≤ C)
+      ∀ k, segmentCost f 0 μ (w k) (y k) ≤ C)
     (hw : ∀ k, 0 ≤ w k)
     (hy : ∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k)
     (hC : 0 ≤ C) :
@@ -312,23 +313,19 @@ theorem segment_width_tendsto_zero_of_right_height
   have hbound : ∀ k, w k * (y k - (2 * M - μ)) ≤ 2 * C := by
     intro k
     by_cases hpos : 0 < w k
-    · exact segment_width_height_bound f hpos
-        (by
-          exact fun x hx => by
-            exact hM k x)
-        (hfeas k)
+    · exact segment_width_height_bound f hpos (hf k) (hfeas k)
         (by
           intro x hx
-          exact hμ k x)
+          exact hμ x)
         (by
           intro x hx
-          exact hM k x)
+          exact hM x)
         (hcost k)
     · have hw0 : w k = 0 := le_antisymm (le_of_not_gt hpos) (hw k)
-      simp [hw0]
-  exact tendsto_zero_of_mul_sub_le hC hbound hy
+      simp [hw0, hC]
+  exact tendsto_zero_of_mul_sub_le (A := 2 * M - μ) (B := 2 * C)
+    (mul_nonneg (by norm_num) hC) hbound hy
     (Filter.Eventually.of_forall hw)
-
 
 /-- A constant-height configuration is always a relaxed feasible configuration. -/
 theorem exists_relaxed_feasible

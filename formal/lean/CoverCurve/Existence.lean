@@ -476,7 +476,6 @@ theorem relaxedObjectiveSet_nonempty
 /-- Zero is a lower bound for all relaxed objective values. -/
 theorem relaxedObjectiveSet_bddBelow
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
-    (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
     BddBelow (relaxedObjectiveSet f (a := a) (b := b) (n := n)) := by
   refine ⟨0, ?_⟩
@@ -486,11 +485,10 @@ theorem relaxedObjectiveSet_bddBelow
 /-- The relaxed infimum is nonnegative. -/
 theorem relaxedValue_nonneg
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
-    (hab : a ≤ b)
     (hf : ContinuousOn f (Set.Icc a b)) :
     0 ≤ relaxedValue f := by
   unfold relaxedValue
-  apply le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
+  apply le_csInf (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hf)
   intro v hv
   rcases hv with ⟨P, hP, rfl⟩
   exact relaxedObjective_nonneg f P hf hP
@@ -505,7 +503,7 @@ theorem relaxedValue_le_of_feasible
     relaxedValue (f := f) (a := a) (b := b) (n := n) ≤ relaxedObjective f P := by
   unfold relaxedValue
   exact csInf_le
-    (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hab hf)
+    (relaxedObjectiveSet_bddBelow f (a := a) (b := b) (n := n) hf)
     ⟨P, hP, rfl⟩
 
 end

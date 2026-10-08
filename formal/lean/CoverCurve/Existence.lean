@@ -916,7 +916,8 @@ theorem exists_height_classification_subsequence
         · intro i
           refine Fin.cases ?_ (fun j => ?_) i
           · exact Or.inr ⟨y, by
-              simpa [y0, φ] using hlim.comp hφtail.tendsto_atTop⟩
+              dsimp [φ, y0]
+              exact hlim.comp hφtail.tendsto_atTop⟩
           · exact htail j
 
 end

@@ -811,6 +811,26 @@ theorem relaxed_feasible_constant_height_of_ge
 
 
 
+/-- A sequence which does not tend to +infinity has an infinite bounded
+    subsequence. -/
+theorem exists_bounded_subsequence_of_not_tendsto_top
+    (y : ℕ → ℝ)
+    (h : ¬ (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k)) :
+    ∃ R : ℝ, ∃ φ : ℕ → ℕ,
+      StrictMono φ ∧ ∀ k, y (φ k) ≤ R := by
+  push_neg at h
+  obtain ⟨R, hR⟩ := h
+  have hset : Set.Infinite {k : ℕ | y k ≤ R} := by
+    by_contra hfin
+    have hcof : Set.Finite {k : ℕ | y k ≤ R} := hfin
+    have hev : ∀ᶠ k in (Filter.atTop : Filter ℕ), R < y k := by
+      exact hcof.eventually_not_mem
+    exact hR hev
+  obtain ⟨φ, hφ, hmem⟩ := hset.exists_strictMono_subsequence
+  refine ⟨R, φ, hφ, ?_⟩
+  intro k
+  exact hmem k
+
 /-- Every real sequence either diverges to +infinity or has a bounded
     subsequence. -/
 theorem height_subsequence_dichotomy

@@ -989,21 +989,6 @@ theorem classified_segment_widths_tendsto_zero
       hC hy
 
 
-/-- The sum of successive coordinate differences telescopes. -/
-theorem fin_sum_adjacent_sub
-    {n : ℕ} (x : Fin (n + 1) → ℝ) :
-    (∑ i : Fin n, x (Fin.succ i) - x (Fin.castSucc i)) =
-      x (Fin.last n) - x 0 := by
-  induction n with
-  | zero =>
-      simp
-  | succ n ih =>
-      rw [Fin.sum_univ_succ]
-      have htail := ih (x := fun i => x (Fin.succ i))
-      rw [htail]
-      simp
-      ring
-
 /-- A classified bounded-cost subsequence has at least two knots whose heights
     converge to finite real limits. -/
 theorem exists_two_convergent_knot_heights
@@ -1040,40 +1025,40 @@ theorem exists_two_convergent_knot_heights
   have hwidth : ∀ i : Fin n,
       Filter.Tendsto
         (fun k =>
-          knotX (P (φ k)) i.succ -
-            knotX (P (φ k)) i.castSucc)
+          knotX (P (φ k)) Fin.succ i -
+            knotX (P (φ k)) Fin.castSucc i)
         (Filter.atTop : Filter ℕ) (nhds 0) := by
     intro i
     have hnotboth :
         ¬ ((∃ y : ℝ,
             Filter.Tendsto
-              (fun k => knotY (P (φ k)) i.castSucc)
+              (fun k => knotY (P (φ k)) Fin.castSucc i)
               (Filter.atTop : Filter ℕ) (nhds y)) ∧
           (∃ y : ℝ,
             Filter.Tendsto
-              (fun k => knotY (P (φ k)) i.succ)
+              (fun k => knotY (P (φ k)) Fin.succ i)
               (Filter.atTop : Filter ℕ) (nhds y))) := by
       intro h
-      exact htwo ⟨i.castSucc, i.succ,
-        Fin.ne_of_lt i.castSucc_lt_succ, h.1, h.2⟩
-    rcases hclass i.castSucc with hleft | hleft
+      exact htwo ⟨Fin.castSucc i, Fin.succ i,
+        Fin.ne_of_lt Fin.castSucc i_lt_succ, h.1, h.2⟩
+    rcases hclass Fin.castSucc i with hleft | hleft
     · exact (classified_segment_widths_tendsto_zero
         f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).1 hleft
-    · rcases hclass i.succ with hright | hright
+    · rcases hclass Fin.succ i with hright | hright
       · exact (classified_segment_widths_tendsto_zero
           f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).2 hright
       · exact False.elim (hnotboth ⟨hleft, hright⟩)
   have hsum : Filter.Tendsto
       (fun k => ∑ i : Fin n,
-        knotX (P (φ k)) i.succ -
-          knotX (P (φ k)) i.castSucc)
+        knotX (P (φ k)) Fin.succ i -
+          knotX (P (φ k)) Fin.castSucc i)
       (Filter.atTop : Filter ℕ) (nhds 0) := by
     simpa using
       (tendsto_finsetSum (s := Finset.univ)
         (f := fun i : Fin n =>
           fun k =>
-            knotX (P (φ k)) i.succ -
-              knotX (P (φ k)) i.castSucc)
+            knotX (P (φ k)) Fin.succ i -
+              knotX (P (φ k)) Fin.castSucc i)
         (a := fun _ : Fin n => 0)
         (x := (Filter.atTop : Filter ℕ)) (by
           intro i hi
@@ -1081,12 +1066,12 @@ theorem exists_two_convergent_knot_heights
   have heq :
       (fun k =>
         ∑ i : Fin n,
-          knotX (P (φ k)) i.succ -
-            knotX (P (φ k)) i.castSucc) =
+          knotX (P (φ k)) Fin.succ i -
+            knotX (P (φ k)) Fin.castSucc i) =
         (fun _ : ℕ => b - a) := by
     funext k
-    simpa [OrderedKnots, knotX] using
-      (fin_sum_adjacent_sub (x := fun i => knotX (P (φ k)) i))
+    rw [Fin.sum_univ_eq_sum_range]
+    simp [Finset.sum_range_sub, OrderedKnots, knotX]
   have hconst : Filter.Tendsto
       (fun _ : ℕ => b - a)
       (Filter.atTop : Filter ℕ) (nhds 0) := by

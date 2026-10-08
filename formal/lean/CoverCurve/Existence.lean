@@ -542,6 +542,7 @@ theorem exists_relaxed_minimizing_sequence
   let P : ℕ → OrderedKnots a b n := fun k => Classical.choose (hex k)
   refine ⟨P, ?_⟩
   intro k
-  exact (Classical.choose_spec (hex k)).le
+  rcases Classical.choose_spec (hex k) with ⟨hP, hobj⟩
+  exact ⟨hP, hobj.le⟩
 
 end

@@ -275,12 +275,12 @@ theorem tendsto_zero_of_mul_sub_le
     {w y : ℕ → ℝ} {A B : ℝ}
         (hB : 0 ≤ B)
     (hbound : ∀ k, w k * (y k - A) ≤ B)
-    (hy : Filter.Tendsto y (atTop : Filter ℕ) (atTop : Filter ℝ)) :
+    (hy : ∀ R : ℝ, ∀ᶠ k in (atTop : Filter ℕ), R < y k) :
     Filter.Tendsto w (atTop : Filter ℕ) (nhds 0) := by
   refine Metric.tendsto_atTop.2 ?_
   intro ε hε
-  have hyε : ∀ᶠ k in atTop, A + B / ε < y k :=
-    hy.eventually (eventually_gt_atTop (A + B / ε))
+  have hyε : ∀ᶠ k in (atTop : Filter ℕ), A + B / ε < y k :=
+    hy (A + B / ε)
   filter_upwards [hyε] with k hk
   exact width_lt_of_height_gt hB hε (hbound k) hk
 

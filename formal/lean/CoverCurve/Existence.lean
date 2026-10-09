@@ -1114,7 +1114,8 @@ theorem exists_two_convergent_knot_heights
               (x ⟨i + 1, by omega⟩ - x ⟨i, by omega⟩) := by
         apply Finset.sum_congr rfl
         intro i hi
-        simp [d, Finset.mem_range.mp hi]
+        have hix : i < n := Finset.mem_range.mp hi
+        simp [d, hix]
       rw [hrewrite, Finset.sum_range_sub]
     have hx0 : x 0 = a := by
       simpa [x, knotX] using (P (φ k)).property.1

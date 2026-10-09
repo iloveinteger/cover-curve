@@ -1090,11 +1090,16 @@ theorem exists_two_convergent_knot_heights
     have hsumx :
         (∑ i : Fin n, (x i.succ - x i.castSucc)) =
           x (Fin.last n) - x 0 := by
-      rw [Fin.sum_univ_eq_sum_range]
+      rw [← Fin.sum_univ_eq_sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]
       simp
-    simpa [width, x, knotX, OrderedKnots] using hsumx
+    have hx0 : x 0 = a := by
+      simpa [x, knotX] using (P (φ k)).property.1
+    have hxn : x (Fin.last n) = b := by
+      simpa [x, knotX] using (P (φ k)).property.2.1
+    rw [hx0, hxn] at hsumx
+    simpa [width, x, knotX] using hsumx
   have hconst : Filter.Tendsto
       (fun _ : ℕ => b - a)
       (Filter.atTop : Filter ℕ) (nhds 0) := by

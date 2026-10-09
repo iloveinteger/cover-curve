@@ -1120,8 +1120,6 @@ theorem exists_two_convergent_knot_heights
       have hzn : z n = x (Fin.last n) := by
         simp [z]
         congr 1
-        apply Fin.ext
-        rfl
       have hz0 : z 0 = x 0 := by
         simp [z]
       rw [hzn, hz0]

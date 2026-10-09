@@ -1106,7 +1106,7 @@ theorem exists_two_convergent_knot_heights
           apply Fin.ext
           rfl
         rw [hs, hc]
-        simp [d, z, i.isLt, Nat.succ_le_of_lt i.isLt]
+        simp [d, z, i.isLt]
       rw [hconvert, Fin.sum_univ_eq_sum_range]
       have hrewrite :
           (∑ i ∈ Finset.range n, d i) =
@@ -1117,7 +1117,14 @@ theorem exists_two_convergent_knot_heights
         simp [d, hix]
       rw [hrewrite, Finset.sum_range_sub]
       change z n - z 0 = x (Fin.last n) - x 0
-      simp [z]
+      have hzn : z n = x (Fin.last n) := by
+        simp [z]
+        congr 1
+        apply Fin.ext
+        rfl
+      have hz0 : z 0 = x 0 := by
+        simp [z]
+      rw [hzn, hz0]
     have hx0 : x 0 = a := by
       simpa [x, knotX] using (P (φ k)).property.1
     have hxn : x (Fin.last n) = b := by

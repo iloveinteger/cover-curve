@@ -1087,10 +1087,10 @@ theorem exists_two_convergent_knot_heights
         (fun _ : ℕ => b - a) := by
     funext k
     let x : Fin (n + 1) → ℝ := knotX (P (φ k))
+    let z : ℕ → ℝ := fun i =>
+      if hi : i ≤ n then x ⟨i, Nat.lt_succ_of_le hi⟩ else 0
     let d : ℕ → ℝ := fun i =>
-      if hi : i < n then
-        x ⟨i + 1, by omega⟩ - x ⟨i, by omega⟩
-      else 0
+      if hi : i < n then z (i + 1) - z i else 0
     have hsumx :
         (∑ i : Fin n, (x i.succ - x i.castSucc)) =
           x (Fin.last n) - x 0 := by
@@ -1106,17 +1106,18 @@ theorem exists_two_convergent_knot_heights
           apply Fin.ext
           rfl
         rw [hs, hc]
-        simp [d, i.isLt]
+        simp [d, z, i.isLt, Nat.succ_le_of_lt i.isLt]
       rw [hconvert, Fin.sum_univ_eq_sum_range]
       have hrewrite :
           (∑ i ∈ Finset.range n, d i) =
-            ∑ i ∈ Finset.range n,
-              (x ⟨i + 1, by omega⟩ - x ⟨i, by omega⟩) := by
+            ∑ i ∈ Finset.range n, (z (i + 1) - z i) := by
         apply Finset.sum_congr rfl
         intro i hi
         have hix : i < n := Finset.mem_range.mp hi
         simp [d, hix]
       rw [hrewrite, Finset.sum_range_sub]
+      change z n - z 0 = x (Fin.last n) - x 0
+      simp [z]
     have hx0 : x 0 = a := by
       simpa [x, knotX] using (P (φ k)).property.1
     have hxn : x (Fin.last n) = b := by

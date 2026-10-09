@@ -1099,7 +1099,13 @@ theorem exists_two_convergent_knot_heights
             ∑ i : Fin n, d i.val := by
         apply Finset.sum_congr rfl
         intro i hi
-        simp [d, i.isLt, Fin.ext_iff]
+        have hs : i.succ = ⟨i.val + 1, by omega⟩ := by
+          apply Fin.ext
+          simp
+        have hc : i.castSucc = ⟨i.val, by omega⟩ := by
+          apply Fin.ext
+          rfl
+        simp [d, i.isLt, hs, hc]
       rw [hconvert, Fin.sum_univ_eq_sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]

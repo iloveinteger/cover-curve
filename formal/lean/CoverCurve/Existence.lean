@@ -1115,7 +1115,8 @@ theorem exists_two_convergent_knot_heights
     have hxn : x (Fin.last n) = b := by
       simpa [x, knotX] using (P (φ k)).property.2.1
     rw [hx0, hxn] at hsumx
-    simpa [width, x, knotX] using hsumx
+    change (∑ i : Fin n, (x i.succ - x i.castSucc)) = b - a
+    exact hsumx
   have hconst : Filter.Tendsto
       (fun _ : ℕ => b - a)
       (Filter.atTop : Filter ℕ) (nhds 0) := by

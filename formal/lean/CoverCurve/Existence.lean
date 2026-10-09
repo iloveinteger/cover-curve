@@ -1098,7 +1098,7 @@ theorem exists_two_convergent_knot_heights
         apply Finset.sum_congr rfl
         intro i hi
         simp [d, Fin.ext_iff]
-      rw [hconvert, ← Finset.sum_range]
+      rw [hconvert, Finset.sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]
       simp [d]

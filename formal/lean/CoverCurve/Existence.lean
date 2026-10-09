@@ -1088,7 +1088,9 @@ theorem exists_two_convergent_knot_heights
     funext k
     let x : Fin (n + 1) → ℝ := knotX (P (φ k))
     let d : ℕ → ℝ := fun i =>
-      x ⟨i + 1, by omega⟩ - x ⟨i, by omega⟩
+      if hi : i < n then
+        x ⟨i + 1, by omega⟩ - x ⟨i, by omega⟩
+      else 0
     have hsumx :
         (∑ i : Fin n, (x i.succ - x i.castSucc)) =
           x (Fin.last n) - x 0 := by
@@ -1097,8 +1099,8 @@ theorem exists_two_convergent_knot_heights
             ∑ i : Fin n, d i.val := by
         apply Finset.sum_congr rfl
         intro i hi
-        simp [d, Fin.ext_iff]
-      rw [hconvert, Finset.sum_range]
+        simp [d, i.isLt, Fin.ext_iff]
+      rw [hconvert, Fin.sum_univ_eq_sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]
       simp [d]

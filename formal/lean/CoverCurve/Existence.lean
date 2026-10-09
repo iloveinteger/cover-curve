@@ -1016,7 +1016,6 @@ theorem classified_segment_widths_tendsto_zero
 theorem exists_two_convergent_knot_heights
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
     (P : ℕ → OrderedKnots a b n)
-    (hn : 1 ≤ n)
     (hab : a < b)
     (hf : ContinuousOn f (Set.Icc a b))
     {μ M C : ℝ}

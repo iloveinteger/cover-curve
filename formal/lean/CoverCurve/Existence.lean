@@ -1105,7 +1105,8 @@ theorem exists_two_convergent_knot_heights
         have hc : i.castSucc = ⟨i.val, by omega⟩ := by
           apply Fin.ext
           rfl
-        simp [d, i.isLt, hs, hc]
+        rw [hs, hc]
+        simp [d, i.isLt]
       rw [hconvert, Fin.sum_univ_eq_sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]

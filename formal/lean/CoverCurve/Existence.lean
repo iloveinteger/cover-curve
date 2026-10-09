@@ -1110,7 +1110,6 @@ theorem exists_two_convergent_knot_heights
       rw [hconvert, Fin.sum_univ_eq_sum_range]
       simp only [Finset.sum_sub_distrib]
       rw [Finset.sum_range_sub]
-      simp [d]
     have hx0 : x 0 = a := by
       simpa [x, knotX] using (P (φ k)).property.1
     have hxn : x (Fin.last n) = b := by

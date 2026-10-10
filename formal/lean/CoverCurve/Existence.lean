@@ -1435,18 +1435,18 @@ theorem positive_width_segments_remain_feasible
           (fun k => knotY (P (φ k)) i)
           (Filter.atTop : Filter ℕ) (nhds y)) :
     ∀ i : Fin n, x i.castSucc < x i.succ →
-      segmentFeasible f
-        (x i.castSucc)
-        (Classical.choose ((positive_width_segments_have_finite_height_limits
-          f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i ‹x i.castSucc < x i.succ›).1)
-        (x i.succ)
-        (Classical.choose ((positive_width_segments_have_finite_height_limits
-          f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i ‹x i.castSucc < x i.succ›).2) := by
+      ∃ y₀ y₁ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds y₀) ∧
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.succ)
+          (Filter.atTop : Filter ℕ) (nhds y₁) ∧
+        segmentFeasible f (x i.castSucc) y₀ (x i.succ) y₁ := by
   intro i hwidth_pos
   have hcoords := (tendsto_pi_nhds.mp hx)
   have hx₀ := hcoords i.castSucc
   have hx₁ := hcoords i.succ
-  have hwidth := hx₁.sub hx₀
   obtain ⟨y₀, hy₀⟩ :=
     (positive_width_segments_have_finite_height_limits
       f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i hwidth_pos).1
@@ -1468,7 +1468,7 @@ theorem positive_width_segments_remain_feasible
         (knotX (P (φ k)) i.succ)
         (knotY (P (φ k)) i.succ) :=
     Filter.Eventually.of_forall fun k => hfeas (φ k) i
-  exact segmentFeasible_limit f hf hx₀mem hx₁mem hwidth_pos
+  have hseg := segmentFeasible_limit f hf hx₀mem hx₁mem hwidth_pos
     (fun k => knotX (P (φ k)) i.castSucc)
     (fun k => knotX (P (φ k)) i.succ)
     (fun k => knotY (P (φ k)) i.castSucc)
@@ -1477,6 +1477,7 @@ theorem positive_width_segments_remain_feasible
     (fun k => knotX_mem_Icc (P (φ k)) i.castSucc)
     (fun k => knotX_mem_Icc (P (φ k)) i.succ)
     hseg_eventually
+  exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
 
 
 /-- A positive-width segment remains feasible when both endpoint knots

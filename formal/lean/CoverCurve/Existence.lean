@@ -1334,22 +1334,23 @@ theorem segmentFeasible_limit
   have ht₁ : t ≤ 1 := by
     dsimp [t]
     rw [div_le_one (sub_pos.mpr hxy)]
-    linarith
+    exact sub_le_sub_right hx.2 x₀
   let xk : ℕ → ℝ := fun k => x₀seq k + t * (x₁seq k - x₀seq k)
   have hxk_tendsto :
       Filter.Tendsto xk (Filter.atTop : Filter ℕ) (nhds x) := by
     have h := hx₀.add (tendsto_const_nhds.mul (hx₁.sub hx₀))
     have hident : x₀ + t * (x₁ - x₀) = x := by
       dsimp [t]
-      field_simp [hden]
-      ring
+      field_simp [hden] <;> ring
     simpa [xk, hident] using h
   have hwidth : Filter.Tendsto
       (fun k => x₁seq k - x₀seq k)
       (Filter.atTop : Filter ℕ) (nhds (x₁ - x₀)) := hx₁.sub hx₀
   have hpositive : ∀ᶠ k in (Filter.atTop : Filter ℕ),
-      x₀seq k < x₁seq k :=
-    hwidth.eventually (eventually_gt_nhds (sub_pos.mpr hxy))
+      x₀seq k < x₁seq k := by
+    filter_upwards [hwidth.eventually
+      (eventually_gt_nhds (sub_pos.mpr hxy))] with k hk
+    exact sub_pos.mp hk
   have hyline : Filter.Tendsto
       (fun k => y₀seq k + t * (y₁seq k - y₀seq k))
       (Filter.atTop : Filter ℕ) (nhds (y₀ + t * (y₁ - y₀))) := by
@@ -1377,8 +1378,7 @@ theorem segmentFeasible_limit
               (x₁seq k - x₀seq k) =
           y₀seq k + t * (y₁seq k - y₀seq k) := by
       dsimp [xk]
-      field_simp [ne_of_gt hpos]
-      ring
+      field_simp [ne_of_gt hpos] <;> ring_nf
     calc
       f (xk k) ≤
           y₀seq k +
@@ -1406,7 +1406,6 @@ theorem segmentFeasible_limit
     f x ≤ y₀ + t * (y₁ - y₀) := hlim
     _ = y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
       dsimp [t]
-      field_simp [hden]
-      ring
+      field_simp [hden] <;> ring
 
 end

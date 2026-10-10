@@ -1254,4 +1254,40 @@ theorem exists_adjacent_convergent_knot_heights
     (tendsto_const_nhds_iff.mp hconst)
   linarith
 
+
+/-- A single subsequence can make all knot abscissae converge while
+    classifying every knot height as either divergent to +∞ or convergent
+    to a finite real limit. -/
+theorem exists_joint_knot_subsequence
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a ≤ b)
+    {μ : ℝ}
+    (hμ : ∀ k i, μ ≤ knotY (P k) i) :
+    ∃ x : Fin (n + 1) → ℝ, ∃ φ : ℕ → ℕ,
+      StrictMono φ ∧
+      Filter.Tendsto
+        (fun k => fun i => knotX (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds x) ∧
+      ∀ i : Fin (n + 1),
+        (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+          R < knotY (P (φ k)) i) ∨
+        ∃ y : ℝ,
+          Filter.Tendsto
+            (fun k => knotY (P (φ k)) i)
+            (Filter.atTop : Filter ℕ) (nhds y) := by
+  obtain ⟨x, ψ, hψ, hx⟩ :=
+    exists_knotX_convergent_subsequence f P hab
+  obtain ⟨θ, hθ, hclass⟩ :=
+    exists_height_classification_subsequence
+      (Y := fun k i => knotY (P (ψ k)) i)
+      (μ := μ)
+      (by
+        intro k i
+        exact hμ (ψ k) i)
+  refine ⟨x, ψ ∘ θ, hψ.comp hθ, ?_, ?_⟩
+  · simpa [Function.comp_def] using hx.comp hθ.tendsto_atTop
+  · intro i
+    simpa [Function.comp_def] using hclass i
+
 end

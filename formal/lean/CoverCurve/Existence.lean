@@ -1338,7 +1338,9 @@ theorem segmentFeasible_limit
   let xk : ℕ → ℝ := fun k => x₀seq k + t * (x₁seq k - x₀seq k)
   have hxk_tendsto :
       Filter.Tendsto xk (Filter.atTop : Filter ℕ) (nhds x) := by
-    have h := hx₀.add (tendsto_const_nhds.mul (hx₁.sub hx₀))
+    have ht : Filter.Tendsto (fun _ : ℕ => t)
+        (Filter.atTop : Filter ℕ) (nhds t) := tendsto_const_nhds
+    have h := hx₀.add (ht.mul (hx₁.sub hx₀))
     have hident : x₀ + t * (x₁ - x₀) = x := by
       dsimp [t]
       field_simp [hden] <;> ring
@@ -1354,7 +1356,9 @@ theorem segmentFeasible_limit
   have hyline : Filter.Tendsto
       (fun k => y₀seq k + t * (y₁seq k - y₀seq k))
       (Filter.atTop : Filter ℕ) (nhds (y₀ + t * (y₁ - y₀))) := by
-    exact hy₀.add (tendsto_const_nhds.mul (hy₁.sub hy₀))
+    have ht : Filter.Tendsto (fun _ : ℕ => t)
+        (Filter.atTop : Filter ℕ) (nhds t) := tendsto_const_nhds
+    exact hy₀.add (ht.mul (hy₁.sub hy₀))
   have hineq : ∀ᶠ k in (Filter.atTop : Filter ℕ),
       f (xk k) ≤ y₀seq k + t * (y₁seq k - y₀seq k) := by
     filter_upwards [hfeas, hpositive] with k hseg hpos
@@ -1372,13 +1376,17 @@ theorem segmentFeasible_limit
     have hxkmem : xk k ∈ Set.Icc a b :=
       ⟨le_trans (h₀mem k).1 hxk₀, le_trans hxk₁ (h₁mem k).2⟩
     have hpoint := hseg' (xk k) ⟨hxk₀, hxk₁⟩
+    have hxkdiff : xk k - x₀seq k =
+        t * (x₁seq k - x₀seq k) := by
+      simp [xk]
+      ring
     have hline :
         y₀seq k +
             (xk k - x₀seq k) * (y₁seq k - y₀seq k) /
               (x₁seq k - x₀seq k) =
           y₀seq k + t * (y₁seq k - y₀seq k) := by
-      dsimp [xk]
-      field_simp [ne_of_gt hpos] <;> ring_nf
+      rw [hxkdiff]
+      field_simp [ne_of_gt hpos] <;> ring
     calc
       f (xk k) ≤
           y₀seq k +

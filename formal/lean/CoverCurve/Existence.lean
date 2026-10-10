@@ -1186,7 +1186,7 @@ theorem exists_adjacent_convergent_knot_heights
           (∃ y : ℝ,
             Filter.Tendsto
               (fun k => knotY (P (φ k)) i.succ)
-              (Filter.atTop : Filter ℕ) (nhds y)) := by
+              (Filter.atTop : Filter ℕ) (nhds y))) := by
       intro h
       exact hnone ⟨i, h.1, h.2⟩
     rcases hclass i.castSucc with hleft | hleft

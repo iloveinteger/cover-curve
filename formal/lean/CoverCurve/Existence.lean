@@ -1669,4 +1669,48 @@ theorem positive_width_segments_remain_feasible
   exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
 
 
+
+/-- A degenerate segment remains feasible when its endpoint coordinates
+    converge and the approximating segments are feasible. -/
+theorem segmentFeasible_limit_degenerate
+    (f : ℝ → ℝ) {a b x₀ x₁ y₀ y₁ : ℝ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hx₀mem : x₀ ∈ Set.Icc a b)
+    (hx₁mem : x₁ ∈ Set.Icc a b)
+    (hxeq : x₀ = x₁)
+    (x₀seq x₁seq y₀seq y₁seq : ℕ → ℝ)
+    (hx₀ : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ) (nhds x₀))
+    (hx₁ : Filter.Tendsto x₁seq (Filter.atTop : Filter ℕ) (nhds x₁))
+    (hy₀ : Filter.Tendsto y₀seq (Filter.atTop : Filter ℕ) (nhds y₀))
+    (hy₁ : Filter.Tendsto y₁seq (Filter.atTop : Filter ℕ) (nhds y₁))
+    (h₀mem : ∀ k, x₀seq k ∈ Set.Icc a b)
+    (h₁mem : ∀ k, x₁seq k ∈ Set.Icc a b)
+    (hfeas : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      segmentFeasible f (x₀seq k) (y₀seq k) (x₁seq k) (y₁seq k)) :
+    segmentFeasible f x₀ y₀ x₁ y₁ := by
+  rw [segmentFeasible, if_neg (not_lt_of_ge (le_of_eq hxeq))]
+  refine ⟨hxeq, ?_, ?_⟩
+  · have hxwithin : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ)
+        (nhdsWithin x₀ (Set.Icc a b)) :=
+      tendsto_nhdsWithin_iff.mpr ⟨hx₀, Filter.Eventually.of_forall h₀mem⟩
+    have hfx : Filter.Tendsto (fun k => f (x₀seq k))
+        (Filter.atTop : Filter ℕ) (nhds (f x₀)) :=
+      (hf x₀ hx₀mem).tendsto.comp hxwithin
+    have hineq : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        f (x₀seq k) ≤ y₀seq k := by
+      filter_upwards [hfeas] with k hk
+      exact segmentFeasible_left f hk
+    exact le_of_tendsto_of_tendsto hfx hy₀ hineq
+  · have hxwithin : Filter.Tendsto x₁seq (Filter.atTop : Filter ℕ)
+        (nhdsWithin x₁ (Set.Icc a b)) :=
+      tendsto_nhdsWithin_iff.mpr ⟨hx₁, Filter.Eventually.of_forall h₁mem⟩
+    have hfx : Filter.Tendsto (fun k => f (x₁seq k))
+        (Filter.atTop : Filter ℕ) (nhds (f x₁)) :=
+      (hf x₁ hx₁mem).tendsto.comp hxwithin
+    have hineq : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        f (x₁seq k) ≤ y₁seq k := by
+      filter_upwards [hfeas] with k hk
+      exact segmentFeasible_right f hk
+    exact le_of_tendsto_of_tendsto hfx hy₁ hineq
+
 end

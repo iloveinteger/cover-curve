@@ -1407,79 +1407,6 @@ theorem positive_width_segments_have_finite_height_limits
     (sub_pos.mpr hwidth_pos)
 
 
-/-- Every positive-width segment in a classified knot limit remains feasible.
-    The endpoint heights are first shown to converge to finite values, then
-    feasibility is passed to the limit using the affine-parameter argument. -/
-theorem positive_width_segments_remain_feasible
-    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
-    (P : ℕ → OrderedKnots a b n)
-    (hab : a < b)
-    (hf : ContinuousOn f (Set.Icc a b))
-    {μ M C : ℝ}
-    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
-    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
-    (hfeas : ∀ k, RelaxedFeasible f (P k))
-    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
-    (hC : 0 ≤ C)
-    (φ : ℕ → ℕ)
-    (hφ : StrictMono φ)
-    (x : Fin (n + 1) → ℝ)
-    (hx : Filter.Tendsto
-      (fun k i => knotX (P (φ k)) i)
-      (Filter.atTop : Filter ℕ) (nhds x))
-    (hclass : ∀ i : Fin (n + 1),
-      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
-        R < knotY (P (φ k)) i) ∨
-      ∃ y : ℝ,
-        Filter.Tendsto
-          (fun k => knotY (P (φ k)) i)
-          (Filter.atTop : Filter ℕ) (nhds y)) :
-    ∀ i : Fin n, x i.castSucc < x i.succ →
-      ∃ y₀ y₁ : ℝ,
-        Filter.Tendsto
-          (fun k => knotY (P (φ k)) i.castSucc)
-          (Filter.atTop : Filter ℕ) (nhds y₀) ∧
-        Filter.Tendsto
-          (fun k => knotY (P (φ k)) i.succ)
-          (Filter.atTop : Filter ℕ) (nhds y₁) ∧
-        segmentFeasible f (x i.castSucc) y₀ (x i.succ) y₁ := by
-  intro i hwidth_pos
-  have hcoords := (tendsto_pi_nhds.mp hx)
-  have hx₀ := hcoords i.castSucc
-  have hx₁ := hcoords i.succ
-  obtain ⟨y₀, hy₀⟩ :=
-    (positive_width_segments_have_finite_height_limits
-      f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i hwidth_pos).1
-  obtain ⟨y₁, hy₁⟩ :=
-    (positive_width_segments_have_finite_height_limits
-      f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i hwidth_pos).2
-  have hx₀mem : x i.castSucc ∈ Set.Icc a b :=
-    isClosed_Icc.mem_of_tendsto hx₀
-      (Filter.Eventually.of_forall fun k =>
-        knotX_mem_Icc (P (φ k)) i.castSucc)
-  have hx₁mem : x i.succ ∈ Set.Icc a b :=
-    isClosed_Icc.mem_of_tendsto hx₁
-      (Filter.Eventually.of_forall fun k =>
-        knotX_mem_Icc (P (φ k)) i.succ)
-  have hseg_eventually : ∀ᶠ k in (Filter.atTop : Filter ℕ),
-      segmentFeasible f
-        (knotX (P (φ k)) i.castSucc)
-        (knotY (P (φ k)) i.castSucc)
-        (knotX (P (φ k)) i.succ)
-        (knotY (P (φ k)) i.succ) :=
-    Filter.Eventually.of_forall fun k => hfeas (φ k) i
-  have hseg := segmentFeasible_limit f hf hx₀mem hx₁mem hwidth_pos
-    (fun k => knotX (P (φ k)) i.castSucc)
-    (fun k => knotX (P (φ k)) i.succ)
-    (fun k => knotY (P (φ k)) i.castSucc)
-    (fun k => knotY (P (φ k)) i.succ)
-    hx₀ hx₁ hy₀ hy₁
-    (fun k => knotX_mem_Icc (P (φ k)) i.castSucc)
-    (fun k => knotX_mem_Icc (P (φ k)) i.succ)
-    hseg_eventually
-  exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
-
-
 /-- A positive-width segment remains feasible when both endpoint knots
     converge to finite limits. The proof evaluates each approximating segment
     at the same affine parameter, so it does not assume that a fixed interior
@@ -1603,5 +1530,79 @@ theorem segmentFeasible_limit
     _ = y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
       dsimp [t]
       field_simp [hden]
+
+
+/-- Every positive-width segment in a classified knot limit remains feasible.
+    The endpoint heights are first shown to converge to finite values, then
+    feasibility is passed to the limit using the affine-parameter argument. -/
+theorem positive_width_segments_remain_feasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∀ i : Fin n, x i.castSucc < x i.succ →
+      ∃ y₀ y₁ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds y₀) ∧
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.succ)
+          (Filter.atTop : Filter ℕ) (nhds y₁) ∧
+        segmentFeasible f (x i.castSucc) y₀ (x i.succ) y₁ := by
+  intro i hwidth_pos
+  have hcoords := (tendsto_pi_nhds.mp hx)
+  have hx₀ := hcoords i.castSucc
+  have hx₁ := hcoords i.succ
+  obtain ⟨y₀, hy₀⟩ :=
+    (positive_width_segments_have_finite_height_limits
+      f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i hwidth_pos).1
+  obtain ⟨y₁, hy₁⟩ :=
+    (positive_width_segments_have_finite_height_limits
+      f P hab hf hμ hM hfeas hcost hC φ hφ x hx hclass i hwidth_pos).2
+  have hx₀mem : x i.castSucc ∈ Set.Icc a b :=
+    isClosed_Icc.mem_of_tendsto hx₀
+      (Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i.castSucc)
+  have hx₁mem : x i.succ ∈ Set.Icc a b :=
+    isClosed_Icc.mem_of_tendsto hx₁
+      (Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i.succ)
+  have hseg_eventually : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      segmentFeasible f
+        (knotX (P (φ k)) i.castSucc)
+        (knotY (P (φ k)) i.castSucc)
+        (knotX (P (φ k)) i.succ)
+        (knotY (P (φ k)) i.succ) :=
+    Filter.Eventually.of_forall fun k => hfeas (φ k) i
+  have hseg := segmentFeasible_limit f hf hx₀mem hx₁mem hwidth_pos
+    (fun k => knotX (P (φ k)) i.castSucc)
+    (fun k => knotX (P (φ k)) i.succ)
+    (fun k => knotY (P (φ k)) i.castSucc)
+    (fun k => knotY (P (φ k)) i.succ)
+    hx₀ hx₁ hy₀ hy₁
+    (fun k => knotX_mem_Icc (P (φ k)) i.castSucc)
+    (fun k => knotX_mem_Icc (P (φ k)) i.succ)
+    hseg_eventually
+  exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
+
 
 end

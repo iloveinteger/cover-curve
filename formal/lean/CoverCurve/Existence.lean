@@ -1139,6 +1139,66 @@ theorem exists_two_convergent_knot_heights
   linarith
 
 
+/-- A segment whose limiting width is positive cannot have an endpoint
+    height diverging to +infinity along a bounded-cost classified subsequence.
+    Hence both endpoint heights have finite limits. -/
+theorem finite_endpoint_heights_of_positive_width_limit
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y))
+    (i : Fin n) {d : ℝ}
+    (hwidth : Filter.Tendsto
+      (fun k => knotX (P (φ k)) i.succ -
+        knotX (P (φ k)) i.castSucc)
+      (Filter.atTop : Filter ℕ) (nhds d))
+    (hd : 0 < d) :
+    (∃ y₀ : ℝ,
+      Filter.Tendsto (fun k => knotY (P (φ k)) i.castSucc)
+        (Filter.atTop : Filter ℕ) (nhds y₀)) ∧
+    (∃ y₁ : ℝ,
+      Filter.Tendsto (fun k => knotY (P (φ k)) i.succ)
+        (Filter.atTop : Filter ℕ) (nhds y₁)) := by
+  have hwidth_zero := classified_segment_widths_tendsto_zero
+    f P hab hf hμ hM hfeas hcost hC φ hφ hclass i
+  have hleft_not_top :
+      ¬ (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i.castSucc) := by
+    intro htop
+    have hz := hwidth_zero.1 htop
+    have heq : d = 0 := hwidth.unique hz
+    linarith
+  have hright_not_top :
+      ¬ (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i.succ) := by
+    intro htop
+    have hz := hwidth_zero.2 htop
+    have heq : d = 0 := hwidth.unique hz
+    linarith
+  constructor
+  · rcases hclass i.castSucc with htop | ⟨y, hy⟩
+    · exact False.elim (hleft_not_top htop)
+    · exact ⟨y, hy⟩
+  · rcases hclass i.succ with htop | ⟨y, hy⟩
+    · exact False.elim (hright_not_top htop)
+    · exact ⟨y, hy⟩
+
+
 /-- Some segment has two endpoint heights converging to finite limits
     along the classified bounded-cost subsequence. -/
 theorem exists_adjacent_convergent_knot_heights

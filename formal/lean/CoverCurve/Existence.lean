@@ -1362,6 +1362,51 @@ theorem exists_joint_knot_subsequence
     simpa [Function.comp_def] using hclass i
 
 
+/-- Every segment with positive limiting width has finite limits at both
+    endpoint heights along the common classified subsequence. -/
+theorem positive_width_segments_have_finite_height_limits
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∀ i : Fin n, x i.castSucc < x i.succ →
+      (∃ y₀ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds y₀)) ∧
+      (∃ y₁ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.succ)
+          (Filter.atTop : Filter ℕ) (nhds y₁)) := by
+  intro i hwidth_pos
+  have hcoords := (tendsto_pi_nhds.mp hx)
+  have hx₀ := hcoords i.castSucc
+  have hx₁ := hcoords i.succ
+  have hwidth := hx₁.sub hx₀
+  exact finite_endpoint_heights_of_positive_width_limit
+    f P hab hf hμ hM hfeas hcost hC φ hφ hclass i hwidth
+    (sub_pos.mpr hwidth_pos)
+
+
 /-- A positive-width segment remains feasible when both endpoint knots
     converge to finite limits. The proof evaluates each approximating segment
     at the same affine parameter, so it does not assume that a fixed interior

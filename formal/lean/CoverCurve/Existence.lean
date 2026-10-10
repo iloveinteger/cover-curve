@@ -1301,4 +1301,105 @@ theorem exists_joint_knot_subsequence
   · intro i
     simpa [Function.comp_def] using hclass i
 
+
+/-- A positive-width segment remains feasible when both endpoint knots
+    converge to finite limits. The proof evaluates each approximating segment
+    at the same affine parameter, so it does not assume that a fixed interior
+    point lies in every approximating interval. -/
+theorem segmentFeasible_limit
+    (f : ℝ → ℝ) {a b x₀ x₁ y₀ y₁ : ℝ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hx₀mem : x₀ ∈ Set.Icc a b)
+    (hx₁mem : x₁ ∈ Set.Icc a b)
+    (hxy : x₀ < x₁)
+    (x₀seq x₁seq y₀seq y₁seq : ℕ → ℝ)
+    (hx₀ : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ) (nhds x₀))
+    (hx₁ : Filter.Tendsto x₁seq (Filter.atTop : Filter ℕ) (nhds x₁))
+    (hy₀ : Filter.Tendsto y₀seq (Filter.atTop : Filter ℕ) (nhds y₀))
+    (hy₁ : Filter.Tendsto y₁seq (Filter.atTop : Filter ℕ) (nhds y₁))
+    (h₀mem : ∀ k, x₀seq k ∈ Set.Icc a b)
+    (h₁mem : ∀ k, x₁seq k ∈ Set.Icc a b)
+    (hfeas : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      segmentFeasible f (x₀seq k) (y₀seq k) (x₁seq k) (y₁seq k)) :
+    segmentFeasible f x₀ y₀ x₁ y₁ := by
+  simp only [segmentFeasible, if_pos hxy]
+  intro x hx
+  let t : ℝ := (x - x₀) / (x₁ - x₀)
+  have hden : x₁ - x₀ ≠ 0 := ne_of_gt (sub_pos.mpr hxy)
+  have ht₀ : 0 ≤ t := by
+    dsimp [t]
+    exact div_nonneg (sub_nonneg.mpr hx.1) (le_of_lt (sub_pos.mpr hxy))
+  have ht₁ : t ≤ 1 := by
+    dsimp [t]
+    rw [div_le_one (sub_pos.mpr hxy)]
+    linarith
+  let xk : ℕ → ℝ := fun k => x₀seq k + t * (x₁seq k - x₀seq k)
+  have hxk_tendsto :
+      Filter.Tendsto xk (Filter.atTop : Filter ℕ) (nhds x) := by
+    have h := hx₀.add (tendsto_const_nhds.mul (hx₁.sub hx₀))
+    have hident : x₀ + t * (x₁ - x₀) = x := by
+      dsimp [t]
+      field_simp [hden]
+      ring
+    simpa [xk, hident] using h
+  have hwidth : Filter.Tendsto
+      (fun k => x₁seq k - x₀seq k)
+      (Filter.atTop : Filter ℕ) (nhds (x₁ - x₀)) := hx₁.sub hx₀
+  have hpositive : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      x₀seq k < x₁seq k :=
+    hwidth.eventually (eventually_gt_nhds (sub_pos.mpr hxy))
+  have hyline : Filter.Tendsto
+      (fun k => y₀seq k + t * (y₁seq k - y₀seq k))
+      (Filter.atTop : Filter ℕ) (nhds (y₀ + t * (y₁ - y₀))) := by
+    exact hy₀.add (tendsto_const_nhds.mul (hy₁.sub hy₀))
+  have hineq : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      f (xk k) ≤ y₀seq k + t * (y₁seq k - y₀seq k) := by
+    filter_upwards [hfeas, hpositive] with k hseg hpos
+    have hseg' : ∀ z ∈ Set.Icc (x₀seq k) (x₁seq k),
+        f z ≤ y₀seq k +
+          (z - x₀seq k) * (y₁seq k - y₀seq k) /
+            (x₁seq k - x₀seq k) := by
+      simpa [segmentFeasible, hpos] using hseg
+    have hxk₀ : x₀seq k ≤ xk k := by
+      dsimp [xk]
+      nlinarith [mul_nonneg ht₀ (sub_nonneg.mpr hpos.le)]
+    have hxk₁ : xk k ≤ x₁seq k := by
+      dsimp [xk]
+      nlinarith [mul_le_mul_of_nonneg_right ht₁ (sub_nonneg.mpr hpos.le)]
+    have hxkmem : xk k ∈ Set.Icc a b :=
+      ⟨le_trans (h₀mem k).1 hxk₀, le_trans hxk₁ (h₁mem k).2⟩
+    have hpoint := hseg' (xk k) ⟨hxk₀, hxk₁⟩
+    have hline :
+        y₀seq k +
+            (xk k - x₀seq k) * (y₁seq k - y₀seq k) /
+              (x₁seq k - x₀seq k) =
+          y₀seq k + t * (y₁seq k - y₀seq k) := by
+      dsimp [xk]
+      field_simp [ne_of_gt hpos]
+      ring
+    exact le_of_eq_of_le hline.symm hpoint
+  have hxwithin : Filter.Tendsto xk (Filter.atTop : Filter ℕ)
+      (nhdsWithin x (Set.Icc a b)) :=
+    tendsto_nhdsWithin_iff.mpr
+      ⟨hxk_tendsto, Filter.Eventually.of_forall (fun k => by
+        have hpos := hpositive
+        filter_upwards [hpos] with k hpos
+        have hxk₀ : x₀seq k ≤ xk k := by
+          dsimp [xk]
+          nlinarith [mul_nonneg ht₀ (sub_nonneg.mpr hpos.le)]
+        have hxk₁ : xk k ≤ x₁seq k := by
+          dsimp [xk]
+          nlinarith [mul_le_mul_of_nonneg_right ht₁ (sub_nonneg.mpr hpos.le)]
+        exact ⟨le_trans (h₀mem k).1 hxk₀, le_trans hxk₁ (h₁mem k).2⟩)⟩
+  have hfx : Filter.Tendsto (fun k => f (xk k))
+      (Filter.atTop : Filter ℕ) (nhds (f x)) :=
+    (hf x hx₀mem).tendsto.comp hxwithin
+  have hlim := le_of_tendsto_of_tendsto hfx hyline hineq
+  calc
+    f x ≤ y₀ + t * (y₁ - y₀) := hlim
+    _ = y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
+      dsimp [t]
+      field_simp [hden]
+      ring
+
 end

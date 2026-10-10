@@ -1379,14 +1379,13 @@ theorem segmentFeasible_limit
     have hxkdiff : xk k - x₀seq k =
         t * (x₁seq k - x₀seq k) := by
       simp [xk]
-      ring
     have hline :
         y₀seq k +
             (xk k - x₀seq k) * (y₁seq k - y₀seq k) /
               (x₁seq k - x₀seq k) =
           y₀seq k + t * (y₁seq k - y₀seq k) := by
       rw [hxkdiff]
-      field_simp [ne_of_gt hpos] <;> ring
+      field_simp [ne_of_gt hpos] <;> ring_nf
     calc
       f (xk k) ≤
           y₀seq k +

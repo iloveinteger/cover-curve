@@ -1362,6 +1362,50 @@ theorem exists_joint_knot_subsequence
     simpa [Function.comp_def] using hclass i
 
 
+/-- The limit of a convergent subsequence of ordered knot abscissae
+    still has fixed endpoints and nondecreasing coordinates. -/
+theorem limit_knotX_ordered
+    {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x)) :
+    x 0 = a ∧ x (Fin.last n) = b ∧
+      ∀ i : Fin n, x i.castSucc ≤ x i.succ := by
+  have hcoords := (tendsto_pi_nhds.mp hx)
+  have hstart_seq :
+      Filter.Tendsto
+        (fun k => knotX (P (φ k)) 0)
+        (Filter.atTop : Filter ℕ) (nhds a) := by
+    have heq : (fun k => knotX (P (φ k)) 0) = fun _ : ℕ => a := by
+      funext k
+      exact congrArg id (P (φ k)).property.1
+    rw [heq]
+    exact tendsto_const_nhds
+  have hend_seq :
+      Filter.Tendsto
+        (fun k => knotX (P (φ k)) (Fin.last n))
+        (Filter.atTop : Filter ℕ) (nhds b) := by
+    have heq :
+        (fun k => knotX (P (φ k)) (Fin.last n)) =
+          fun _ : ℕ => b := by
+      funext k
+      exact congrArg id (P (φ k)).property.2.1
+    rw [heq]
+    exact tendsto_const_nhds
+  have hstart : x 0 = a :=
+    tendsto_nhds_unique (hcoords 0) hstart_seq
+  have hend : x (Fin.last n) = b :=
+    tendsto_nhds_unique (hcoords (Fin.last n)) hend_seq
+  refine ⟨hstart, hend, ?_⟩
+  intro i
+  exact le_of_tendsto_of_tendsto
+    (hcoords i.castSucc) (hcoords i.succ)
+    (Filter.Eventually.of_forall fun k => knotX_mono (P (φ k)) i)
+
+
 /-- Every segment with positive limiting width has finite limits at both
     endpoint heights along the common classified subsequence. -/
 theorem positive_width_segments_have_finite_height_limits

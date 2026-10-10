@@ -1424,6 +1424,6 @@ theorem segmentFeasible_limit
     f x ≤ y₀ + t * (y₁ - y₀) := hlim
     _ = y₀ + (x - x₀) * (y₁ - y₀) / (x₁ - x₀) := by
       dsimp [t]
-      field_simp [hden] <;> ring
+      field_simp [hden]
 
 end

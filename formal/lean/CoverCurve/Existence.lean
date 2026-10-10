@@ -1406,6 +1406,26 @@ theorem limit_knotX_ordered
     (Filter.Eventually.of_forall fun k => knotX_mono (P (φ k)) i)
 
 
+/-- The coordinatewise limit of ordered knot abscissae is itself an
+    admissible ordered knot vector. -/
+theorem orderedKnots_of_knotX_limit
+    {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x)) :
+    ∃ Q : OrderedKnots a b n,
+      ∀ i : Fin (n + 1), knotX Q i = x i := by
+  obtain ⟨hstart, hend, hmono⟩ := limit_knotX_ordered P φ x hx
+  let Q : OrderedKnots a b n :=
+    ⟨fun i => (x i, 0), hstart, hend, hmono⟩
+  refine ⟨Q, ?_⟩
+  intro i
+  rfl
+
+
 /-- Every segment with positive limiting width has finite limits at both
     endpoint heights along the common classified subsequence. -/
 theorem positive_width_segments_have_finite_height_limits

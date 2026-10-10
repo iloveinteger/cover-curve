@@ -1181,14 +1181,14 @@ theorem finite_endpoint_heights_of_positive_width_limit
         R < knotY (P (φ k)) i.castSucc) := by
     intro htop
     have hz := hwidth_zero.1 htop
-    have heq : d = 0 := hwidth.unique hz
+    have heq : d = 0 := tendsto_nhds_unique hwidth hz
     linarith
   have hright_not_top :
       ¬ (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
         R < knotY (P (φ k)) i.succ) := by
     intro htop
     have hz := hwidth_zero.2 htop
-    have heq : d = 0 := hwidth.unique hz
+    have heq : d = 0 := tendsto_nhds_unique hwidth hz
     linarith
   constructor
   · rcases hclass i.castSucc with htop | ⟨y, hy⟩

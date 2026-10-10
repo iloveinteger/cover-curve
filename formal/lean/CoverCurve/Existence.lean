@@ -1385,7 +1385,18 @@ theorem segmentFeasible_limit
               (x₁seq k - x₀seq k) =
           y₀seq k + t * (y₁seq k - y₀seq k) := by
       rw [hxkdiff]
-      field_simp [ne_of_gt hpos] <;> ring_nf
+      have hd : x₁seq k - x₀seq k ≠ 0 := ne_of_gt hpos
+      calc
+        y₀seq k +
+            (t * (x₁seq k - x₀seq k)) * (y₁seq k - y₀seq k) /
+              (x₁seq k - x₀seq k) =
+            y₀seq k +
+              t * (x₁seq k - x₀seq k) *
+                (y₁seq k - y₀seq k) /
+                  (x₁seq k - x₀seq k) := by ring
+        _ = y₀seq k + t * (y₁seq k - y₀seq k) := by
+          congr 1
+          field_simp [hd] <;> ring
     calc
       f (xk k) ≤
           y₀seq k +

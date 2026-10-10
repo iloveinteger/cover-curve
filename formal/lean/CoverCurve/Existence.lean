@@ -1322,7 +1322,7 @@ theorem segmentFeasible_limit
     (hfeas : ∀ᶠ k in (Filter.atTop : Filter ℕ),
       segmentFeasible f (x₀seq k) (y₀seq k) (x₁seq k) (y₁seq k)) :
     segmentFeasible f x₀ y₀ x₁ y₁ := by
-  simp only [segmentFeasible, if_pos hxy]
+  rw [segmentFeasible, ite_eq_left hxy]
   intro x hx
   have hxmem : x ∈ Set.Icc a b :=
     ⟨le_trans hx₀mem.1 hx.1, le_trans hx.2 hx₁mem.2⟩
@@ -1343,7 +1343,7 @@ theorem segmentFeasible_limit
     have h := hx₀.add (ht.mul (hx₁.sub hx₀))
     have hident : x₀ + t * (x₁ - x₀) = x := by
       dsimp [t]
-      field_simp [hden] <;> ring
+      field_simp [hden]; ring
     simpa [xk, hident] using h
   have hwidth : Filter.Tendsto
       (fun k => x₁seq k - x₀seq k)
@@ -1396,7 +1396,7 @@ theorem segmentFeasible_limit
                   (x₁seq k - x₀seq k) := by ring
         _ = y₀seq k + t * (y₁seq k - y₀seq k) := by
           congr 1
-          field_simp [hd] <;> ring
+          field_simp [hd]
     calc
       f (xk k) ≤
           y₀seq k +

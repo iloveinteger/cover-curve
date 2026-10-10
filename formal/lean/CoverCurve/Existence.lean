@@ -1178,13 +1178,24 @@ theorem exists_adjacent_convergent_knot_heights
             knotX (P (φ k)) i.castSucc)
         (Filter.atTop : Filter ℕ) (nhds 0) := by
     intro i
+    have hnotboth :
+        ¬ ((∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.castSucc)
+              (Filter.atTop : Filter ℕ) (nhds y)) ∧
+          (∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.succ)
+              (Filter.atTop : Filter ℕ) (nhds y))) := by
+      intro h
+      exact hnone ⟨i, h.1, h.2⟩
     rcases hclass i.castSucc with hleft | hleft
     · exact (classified_segment_widths_tendsto_zero
         f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).1 hleft
     · rcases hclass i.succ with hright | hright
       · exact (classified_segment_widths_tendsto_zero
           f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).2 hright
-      · exact False.elim (hnone ⟨i, hleft, hright⟩)
+      · exact False.elim (hnotboth ⟨hleft, hright⟩)
   let width : Fin n → ℕ → ℝ := fun i k =>
     knotX (P (φ k)) i.succ - knotX (P (φ k)) i.castSucc
   have hsum : Filter.Tendsto

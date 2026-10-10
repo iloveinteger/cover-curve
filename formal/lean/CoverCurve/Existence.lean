@@ -1324,6 +1324,8 @@ theorem segmentFeasible_limit
     segmentFeasible f x₀ y₀ x₁ y₁ := by
   simp only [segmentFeasible, if_pos hxy]
   intro x hx
+  have hxmem : x ∈ Set.Icc a b :=
+    ⟨le_trans hx₀mem.1 hx.1, le_trans hx.2 hx₁mem.2⟩
   let t : ℝ := (x - x₀) / (x₁ - x₀)
   have hden : x₁ - x₀ ≠ 0 := ne_of_gt (sub_pos.mpr hxy)
   have ht₀ : 0 ≤ t := by
@@ -1377,23 +1379,28 @@ theorem segmentFeasible_limit
       dsimp [xk]
       field_simp [ne_of_gt hpos]
       ring
-    exact le_of_eq_of_le hline.symm hpoint
+    calc
+      f (xk k) ≤
+          y₀seq k +
+            (xk k - x₀seq k) * (y₁seq k - y₀seq k) /
+              (x₁seq k - x₀seq k) := hpoint
+      _ = y₀seq k + t * (y₁seq k - y₀seq k) := hline
+  have hxkmem_eventually : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      xk k ∈ Set.Icc a b := by
+    filter_upwards [hpositive] with k hpos
+    have hxk₀ : x₀seq k ≤ xk k := by
+      dsimp [xk]
+      nlinarith [mul_nonneg ht₀ (sub_nonneg.mpr hpos.le)]
+    have hxk₁ : xk k ≤ x₁seq k := by
+      dsimp [xk]
+      nlinarith [mul_le_mul_of_nonneg_right ht₁ (sub_nonneg.mpr hpos.le)]
+    exact ⟨le_trans (h₀mem k).1 hxk₀, le_trans hxk₁ (h₁mem k).2⟩
   have hxwithin : Filter.Tendsto xk (Filter.atTop : Filter ℕ)
       (nhdsWithin x (Set.Icc a b)) :=
-    tendsto_nhdsWithin_iff.mpr
-      ⟨hxk_tendsto, Filter.Eventually.of_forall (fun k => by
-        have hpos := hpositive
-        filter_upwards [hpos] with k hpos
-        have hxk₀ : x₀seq k ≤ xk k := by
-          dsimp [xk]
-          nlinarith [mul_nonneg ht₀ (sub_nonneg.mpr hpos.le)]
-        have hxk₁ : xk k ≤ x₁seq k := by
-          dsimp [xk]
-          nlinarith [mul_le_mul_of_nonneg_right ht₁ (sub_nonneg.mpr hpos.le)]
-        exact ⟨le_trans (h₀mem k).1 hxk₀, le_trans hxk₁ (h₁mem k).2⟩)⟩
+    tendsto_nhdsWithin_iff.mpr ⟨hxk_tendsto, hxkmem_eventually⟩
   have hfx : Filter.Tendsto (fun k => f (xk k))
       (Filter.atTop : Filter ℕ) (nhds (f x)) :=
-    (hf x hx₀mem).tendsto.comp hxwithin
+    (hf x hxmem).tendsto.comp hxwithin
   have hlim := le_of_tendsto_of_tendsto hfx hyline hineq
   calc
     f x ≤ y₀ + t * (y₁ - y₀) := hlim

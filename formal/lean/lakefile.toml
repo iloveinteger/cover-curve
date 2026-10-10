@@ -1,5 +1,7 @@
 name = "cover_curve"
 version = "0.1.0"
+lintDriver = "batteries/runLinter"
+lintDriverArgs = ["CoverCurve"]
 defaultTargets = ["CoverCurve"]
 
 [[require]]

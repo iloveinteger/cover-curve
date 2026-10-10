@@ -1138,4 +1138,131 @@ theorem exists_two_convergent_knot_heights
     (tendsto_const_nhds_iff.mp hconst)
   linarith
 
+
+/-- Some segment has two endpoint heights converging to finite limits
+    along the classified bounded-cost subsequence. -/
+theorem exists_adjacent_convergent_knot_heights
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∃ i : Fin n,
+      (∃ y₀ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.castSucc)
+          (Filter.atTop : Filter ℕ) (nhds y₀)) ∧
+      (∃ y₁ : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i.succ)
+          (Filter.atTop : Filter ℕ) (nhds y₁)) := by
+  by_contra hnone
+  have hwidth : ∀ i : Fin n,
+      Filter.Tendsto
+        (fun k =>
+          knotX (P (φ k)) i.succ -
+            knotX (P (φ k)) i.castSucc)
+        (Filter.atTop : Filter ℕ) (nhds 0) := by
+    intro i
+    have hnotboth :
+        ¬ ((∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.castSucc)
+              (Filter.atTop : Filter ℕ) (nhds y)) ∧
+          (∃ y : ℝ,
+            Filter.Tendsto
+              (fun k => knotY (P (φ k)) i.succ)
+              (Filter.atTop : Filter ℕ) (nhds y)) := by
+      intro h
+      exact hnone ⟨i, h.1, h.2⟩
+    rcases hclass i.castSucc with hleft | hleft
+    · exact (classified_segment_widths_tendsto_zero
+        f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).1 hleft
+    · rcases hclass i.succ with hright | hright
+      · exact (classified_segment_widths_tendsto_zero
+          f P hab hf hμ hM hfeas hcost hC φ hφ hclass i).2 hright
+      · exact False.elim (hnotboth ⟨hleft, hright⟩)
+  let width : Fin n → ℕ → ℝ := fun i k =>
+    knotX (P (φ k)) i.succ - knotX (P (φ k)) i.castSucc
+  have hsum : Filter.Tendsto
+      (fun k => ∑ i : Fin n, width i k)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+    simpa [width] using
+      (tendsto_finsetSum (s := Finset.univ)
+        (f := width)
+        (a := fun _ : Fin n => 0)
+        (x := (Filter.atTop : Filter ℕ)) (by
+          intro i hi
+          simpa [width] using hwidth i))
+  have heq :
+      (fun k => ∑ i : Fin n, width i k) =
+        (fun _ : ℕ => b - a) := by
+    funext k
+    let x : Fin (n + 1) → ℝ := knotX (P (φ k))
+    let z : ℕ → ℝ := fun i =>
+      if hi : i ≤ n then x ⟨i, Nat.lt_succ_of_le hi⟩ else 0
+    let d : ℕ → ℝ := fun i =>
+      if hi : i < n then z (i + 1) - z i else 0
+    have hsumx :
+        (∑ i : Fin n, (x i.succ - x i.castSucc)) =
+          x (Fin.last n) - x 0 := by
+      have hconvert :
+          (∑ i : Fin n, (x i.succ - x i.castSucc)) =
+            ∑ i : Fin n, d i.val := by
+        apply Finset.sum_congr rfl
+        intro i hi
+        have hs : i.succ = ⟨i.val + 1, by omega⟩ := by
+          apply Fin.ext
+          simp
+        have hc : i.castSucc = ⟨i.val, by omega⟩ := by
+          apply Fin.ext
+          rfl
+        rw [hs, hc]
+        simp [d, z, i.isLt]
+      rw [hconvert, Fin.sum_univ_eq_sum_range]
+      have hrewrite :
+          (∑ i ∈ Finset.range n, d i) =
+            ∑ i ∈ Finset.range n, (z (i + 1) - z i) := by
+        apply Finset.sum_congr rfl
+        intro i hi
+        have hix : i < n := Finset.mem_range.mp hi
+        simp [d, hix]
+      rw [hrewrite, Finset.sum_range_sub]
+      change z n - z 0 = x (Fin.last n) - x 0
+      have hzn : z n = x (Fin.last n) := by
+        simp [z]
+        congr 1
+      have hz0 : z 0 = x 0 := by
+        simp [z]
+      rw [hzn, hz0]
+    have hx0 : x 0 = a := by
+      simpa [x, knotX] using (P (φ k)).property.1
+    have hxn : x (Fin.last n) = b := by
+      simpa [x, knotX] using (P (φ k)).property.2.1
+    rw [hx0, hxn] at hsumx
+    change (∑ i : Fin n, (x i.succ - x i.castSucc)) = b - a
+    exact hsumx
+  have hconst : Filter.Tendsto
+      (fun _ : ℕ => b - a)
+      (Filter.atTop : Filter ℕ) (nhds 0) := by
+    rw [← heq]
+    exact hsum
+  have hzero : b - a = 0 :=
+    (tendsto_const_nhds_iff.mp hconst)
+  linarith
+
 end

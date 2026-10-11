@@ -1688,9 +1688,8 @@ theorem segmentFeasible_limit_degenerate
     (hfeas : ∀ᶠ k in (Filter.atTop : Filter ℕ),
       segmentFeasible f (x₀seq k) (y₀seq k) (x₁seq k) (y₁seq k)) :
     segmentFeasible f x₀ y₀ x₁ y₁ := by
-  have hnot : ¬ x₀ < x₁ := by
-    rw [hxeq]
-    exact lt_irrefl x₀
+  have hnot : ¬ x₀ < x₁ :=
+    not_lt_of_ge (le_of_eq hxeq.symm)
   simp only [segmentFeasible, if_neg hnot]
   refine ⟨hxeq, ?_, ?_⟩
   · have hxwithin : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ)
@@ -1714,6 +1713,6 @@ theorem segmentFeasible_limit_degenerate
         f (x₁seq k) ≤ y₁seq k := by
       filter_upwards [hfeas] with k hk
       exact segmentFeasible_right f hk
-    exact le_of_tendsto_of_tendsto hfx hy₁ hineq
+    simpa [hxeq] using le_of_tendsto_of_tendsto hfx hy₁ hineq
 
 end

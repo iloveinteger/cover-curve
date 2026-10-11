@@ -1865,4 +1865,50 @@ theorem divergent_knot_forces_adjacent_limit_coalescence
       tendsto_nhds_unique hwidth_limit hzero
     linarith
 
+
+
+/-- A knot with a finite limiting height remains above the function at
+    its limiting abscissa. -/
+theorem finite_limit_knot_height_majorizes
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (i : Fin (n + 1))
+    {y : ℝ}
+    (hy : Filter.Tendsto
+      (fun k => knotY (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds y)) :
+    f (x i) ≤ y := by
+  have hcoords := tendsto_pi_nhds.mp hx
+  have hxi := hcoords i
+  have hximem : x i ∈ Set.Icc a b :=
+    isClosed_Icc.mem_of_tendsto hxi
+      (Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i)
+  have hpoint : ∀ k, f (knotX (P (φ k)) i) ≤ knotY (P (φ k)) i := by
+    intro k
+    refine Fin.cases ?_ (fun j => ?_) i
+    · have hseg := hfeas (φ k) ⟨0, by omega⟩
+      exact segmentFeasible_left f hseg
+    · have hseg := hfeas (φ k) j
+      exact segmentFeasible_right f hseg
+  have hxiwithin : Filter.Tendsto
+      (fun k => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhdsWithin (x i) (Set.Icc a b)) :=
+    tendsto_nhdsWithin_iff.mpr
+      ⟨hxi, Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i⟩
+  have hfx : Filter.Tendsto
+      (fun k => f (knotX (P (φ k)) i))
+      (Filter.atTop : Filter ℕ) (nhds (f (x i))) :=
+    (hf (x i) hximem).tendsto.comp hxiwithin
+  exact le_of_tendsto_of_tendsto hfx hy
+    (Filter.Eventually.of_forall hpoint)
+
 end

@@ -2158,4 +2158,26 @@ theorem vertical_replacement_chord_above_jump_value
   have hgap : 0 < v - u := sub_pos.mpr huv
   nlinarith
 
+
+/-- If the replacement chord's slope is at least the slope of the old
+    left segment, then it lies above that segment throughout the left
+    replacement interval. -/
+theorem vertical_replacement_chord_above_left_affine
+    {c η u σL m x : ℝ}
+    (hη : 0 < η)
+    (hxleft : c - η ≤ x)
+    (hxright : x ≤ c)
+    (hm : σL ≤ m) :
+    u + σL * (x - c) ≤
+      u - σL * η + (x - (c - η)) * m := by
+  have hx : 0 ≤ x - (c - η) := by linarith
+  have hd :
+      (u - σL * η + (x - (c - η)) * m) -
+          (u + σL * (x - c)) =
+        (x - (c - η)) * (m - σL) := by
+    ring
+  have hn : 0 ≤ (x - (c - η)) * (m - σL) :=
+    mul_nonneg hx (sub_nonneg.mpr hm)
+  linarith
+
 end

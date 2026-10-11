@@ -2146,10 +2146,11 @@ theorem vertical_replacement_chord_above_jump_value
         η * (v + 2 * σR * η - (u - σL * η)) / (3 * η) := by
   rw [vertical_replacement_chord_value_at_jump hη]
   have hlower : -(v - u) / 4 < (σR - σL) * η := by
+    have hneg : -(σR - σL) ≤ |σR - σL| := by
+      simpa [abs_neg] using (le_abs_self (-(σR - σL)))
     have hbound :
-        -(|σR - σL| * η) ≤ (σR - σL) * η :=
-      mul_le_mul_of_nonneg_right (neg_abs_le_self (σR - σL))
-        (le_of_lt hη)
+        -(|σR - σL| * η) ≤ (σR - σL) * η := by
+      nlinarith [mul_nonneg (le_of_lt hη) (hneg)]
     nlinarith
   have hgap : 0 < v - u := sub_pos.mpr huv
   nlinarith

@@ -1806,4 +1806,63 @@ theorem finite_height_segments_remain_feasible
     hseg_eventually
   exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
 
+
+
+/-- If a knot height diverges along a bounded-cost classified subsequence,
+    each adjacent limiting segment collapses to zero width. -/
+theorem divergent_knot_forces_adjacent_limit_coalescence
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    {μ M C : ℝ}
+    (hμ : ∀ x ∈ Set.Icc a b, μ ≤ f x)
+    (hM : ∀ x ∈ Set.Icc a b, f x ≤ M)
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hcost : ∀ k, relaxedObjective f (P k) ≤ C)
+    (hC : 0 ≤ C)
+    (φ : ℕ → ℕ)
+    (hφ : StrictMono φ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hclass : ∀ i : Fin (n + 1),
+      (∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+        R < knotY (P (φ k)) i) ∨
+      ∃ y : ℝ,
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∀ i : Fin n,
+      ((∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+          R < knotY (P (φ k)) i.castSucc) →
+        x i.castSucc = x i.succ) ∧
+      ((∀ R : ℝ, ∀ᶠ k in (Filter.atTop : Filter ℕ),
+          R < knotY (P (φ k)) i.succ) →
+        x i.castSucc = x i.succ) := by
+  intro i
+  have hwidth_zero := classified_segment_widths_tendsto_zero
+    f P hab hf hμ hM hfeas hcost hC φ hφ hclass i
+  have hcoords := tendsto_pi_nhds.mp hx
+  have hwidth_limit :
+      Filter.Tendsto
+        (fun k =>
+          knotX (P (φ k)) i.succ -
+            knotX (P (φ k)) i.castSucc)
+        (Filter.atTop : Filter ℕ)
+        (nhds (x i.succ - x i.castSucc)) :=
+    (hcoords i.succ).sub (hcoords i.castSucc)
+  constructor
+  · intro hdiv
+    have hzero := hwidth_zero.1 hdiv
+    have heq : x i.succ - x i.castSucc = 0 :=
+      tendsto_nhds_unique hwidth_limit hzero
+    linarith
+  · intro hdiv
+    have hzero := hwidth_zero.2 hdiv
+    have heq : x i.succ - x i.castSucc = 0 :=
+      tendsto_nhds_unique hwidth_limit hzero
+    linarith
+
 end

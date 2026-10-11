@@ -1894,11 +1894,13 @@ theorem finite_limit_knot_height_majorizes
         knotX_mem_Icc (P (φ k)) i)
   have hpoint : ∀ k, f (knotX (P (φ k)) i) ≤ knotY (P (φ k)) i := by
     intro k
-    refine Fin.cases ?_ (fun j => ?_) i
-    · have hseg := hfeas (φ k) ⟨0, hn⟩
-      exact segmentFeasible_left f hseg
-    · have hseg := hfeas (φ k) j
-      exact segmentFeasible_right f hseg
+    cases i using Fin.cases with
+    | zero =>
+        have hseg := hfeas (φ k) ⟨0, hn⟩
+        exact segmentFeasible_left f hseg
+    | succ j =>
+        have hseg := hfeas (φ k) j
+        exact segmentFeasible_right f hseg
   have hxiwithin : Filter.Tendsto
       (fun k => knotX (P (φ k)) i)
       (Filter.atTop : Filter ℕ) (nhdsWithin (x i) (Set.Icc a b)) :=

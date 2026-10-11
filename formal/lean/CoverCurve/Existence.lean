@@ -2006,4 +2006,28 @@ theorem exists_finite_height_limit_configuration
   · intro i
     exact ⟨Y i, rfl, hY i⟩
 
+
+/-- Exact objective change when two affine pieces around a vertical jump are
+    replaced by one affine segment. The interval-integral terms cancel, so
+    the change depends only on the endpoint heights and the two slopes. -/
+theorem vertical_replacement_cost_formula
+    (f : ℝ → ℝ) {c η u v σL σR : ℝ}
+    (hη : 0 < η)
+    (hleft : IntervalIntegrable f volume (c - η) c)
+    (hright : IntervalIntegrable f volume c (c + 2 * η)) :
+    segmentCost f (c - η) (u - σL * η) (c + 2 * η) (v + 2 * σR * η) -
+      (segmentCost f (c - η) (u - σL * η) c u +
+        segmentCost f c v (c + 2 * η) (v + 2 * σR * η)) =
+      -((v - u) / 2 * η) + (σR - σL) * η ^ 2 := by
+  have hsc : c - η < c := by linarith
+  have hct : c < c + 2 * η := by linarith
+  have hst : c - η < c + 2 * η := by linarith
+  have hint :
+      (∫ x in c - η..c, f x) + ∫ x in c..c + 2 * η, f x =
+        ∫ x in c - η..c + 2 * η, f x :=
+    intervalIntegral.integral_add_adjacent_intervals hleft hright
+  simp only [segmentCost, if_pos hst, if_pos hsc, if_pos hct]
+  rw [hint]
+  ring
+
 end

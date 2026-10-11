@@ -1943,4 +1943,67 @@ theorem finite_classified_knots_majorize
   exact ⟨y, hy,
     finite_limit_knot_height_majorizes f hn P hf φ x hx hfeas i hy⟩
 
+
+/-- If every knot height has a finite limit along a feasible sequence, the
+    limiting knot coordinates and heights form one coherent feasible
+    relaxed configuration. -/
+theorem exists_finite_height_limit_configuration
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hclass : ∀ i : Fin (n + 1), ∃ y : ℝ,
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds y))
+    (hfeas : ∀ k, RelaxedFeasible f (P k)) :
+    ∃ Q : OrderedKnots a b n,
+      (∀ i : Fin (n + 1), knotX Q i = x i) ∧
+      (∀ i : Fin (n + 1), ∃ y : ℝ,
+        knotY Q i = y ∧
+        Filter.Tendsto
+          (fun k => knotY (P (φ k)) i)
+          (Filter.atTop : Filter ℕ) (nhds y)) ∧
+      RelaxedFeasible f Q := by
+  obtain ⟨Qx, hQx⟩ := orderedKnots_of_knotX_limit P φ x hx
+  let Y : Fin (n + 1) → ℝ := fun i => Classical.choose (hclass i)
+  have hY : ∀ i : Fin (n + 1),
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds (Y i)) := by
+    intro i
+    exact Classical.choose_spec (hclass i)
+  let Q : OrderedKnots a b n :=
+    ⟨fun i => (x i, Y i), by
+      change x 0 = a ∧ x (Fin.last n) = b ∧
+        ∀ i : Fin n, x i.castSucc ≤ x i.succ
+      constructor
+      · rw [← hQx 0]
+        exact Qx.2.1
+      constructor
+      · rw [← hQx (Fin.last n)]
+        exact Qx.2.2.1
+      · intro i
+        rw [← hQx i.castSucc, ← hQx i.succ]
+        exact Qx.2.2.2 i⟩
+  have hfeasQ : RelaxedFeasible f Q := by
+    intro i
+    obtain ⟨y₀, y₁, hy₀, hy₁, hseg⟩ :=
+      finite_height_segments_remain_feasible f P hf φ x hx hclass hfeas i
+    have hy₀eq : y₀ = Y i.castSucc :=
+      tendsto_nhds_unique hy₀ (hY i.castSucc)
+    have hy₁eq : y₁ = Y i.succ :=
+      tendsto_nhds_unique hy₁ (hY i.succ)
+    rw [hy₀eq, hy₁eq] at hseg
+    exact hseg
+  refine ⟨Q, ?_, ?_, hfeasQ⟩
+  · intro i
+    rfl
+  · intro i
+    exact ⟨Y i, rfl, hY i⟩
+
 end

@@ -2131,4 +2131,27 @@ theorem vertical_replacement_chord_slope_positive
   rw [hnum]
   exact div_pos hslope (by positivity)
 
+
+/-- At an upward jump, the replacement chord remains strictly above the
+    function's value at the jump point when the adjacent slopes are close
+    enough on the replacement scale. -/
+theorem vertical_replacement_chord_above_jump_value
+    (f : ℝ → ℝ) {c η u v σL σR : ℝ}
+    (huv : u < v)
+    (hη : 0 < η)
+    (hsmall : |σR - σL| * η < (v - u) / 4)
+    (hfc : f c ≤ u) :
+    f c <
+      u - σL * η +
+        η * (v + 2 * σR * η - (u - σL * η)) / (3 * η) := by
+  rw [vertical_replacement_chord_value_at_jump hη]
+  have hlower : -(v - u) / 4 < (σR - σL) * η := by
+    have hbound :
+        -(|σR - σL| * η) ≤ (σR - σL) * η :=
+      mul_le_mul_of_nonneg_right (neg_abs_le_self (σR - σL))
+        (le_of_lt hη)
+    nlinarith
+  have hgap : 0 < v - u := sub_pos.mpr huv
+  nlinarith
+
 end

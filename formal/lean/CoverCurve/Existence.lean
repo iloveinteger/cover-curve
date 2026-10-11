@@ -1690,7 +1690,7 @@ theorem segmentFeasible_limit_degenerate
     segmentFeasible f x₀ y₀ x₁ y₁ := by
   have hnot : ¬ x₀ < x₁ :=
     not_lt_of_ge (le_of_eq hxeq.symm)
-  simp only [segmentFeasible, if_neg hnot]
+  simp only [segmentFeasible, ite_eq_right hnot]
   refine ⟨hxeq, ?_, ?_⟩
   · have hxwithin : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ)
         (nhdsWithin x₀ (Set.Icc a b)) :=

@@ -2056,4 +2056,52 @@ theorem vertical_replacement_cost_strictly_less
   have hde : 0 < (v - u) * η :=
     mul_pos (sub_pos.mpr huv) hη
   nlinarith
+
+
+/-- The mirrored cost identity for a downward vertical jump. The longer
+    replacement interval lies to the left of the jump. -/
+theorem vertical_replacement_cost_formula_mirrored
+    (f : ℝ → ℝ) {c η u v σL σR : ℝ}
+    (hη : 0 < η)
+    (hleft : IntervalIntegrable f volume (c - 2 * η) c)
+    (hright : IntervalIntegrable f volume c (c + η)) :
+    segmentCost f (c - 2 * η) (v - 2 * σL * η) (c + η) (u + σR * η) -
+      (segmentCost f (c - 2 * η) (v - 2 * σL * η) c v +
+        segmentCost f c u (c + η) (u + σR * η)) =
+      -((v - u) / 2 * η) + (σR - σL) * η ^ 2 := by
+  have hsc : c - 2 * η < c := by linarith
+  have hct : c < c + η := by linarith
+  have hst : c - 2 * η < c + η := by linarith
+  have hint :
+      (∫ x in c - 2 * η..c, f x) + ∫ x in c..c + η, f x =
+        ∫ x in c - 2 * η..c + η, f x :=
+    intervalIntegral.integral_add_adjacent_intervals hleft hright
+  simp [segmentCost, hst, hsc, hct]
+  rw [← hint]
+  ring
+
+/-- The mirrored replacement also strictly decreases cost when the slope
+    mismatch is small relative to the jump height. -/
+theorem vertical_replacement_cost_mirrored_strictly_less
+    (f : ℝ → ℝ) {c η u v σL σR : ℝ}
+    (huv : u < v)
+    (hη : 0 < η)
+    (hsmall : |σR - σL| * η < (v - u) / 4)
+    (hleft : IntervalIntegrable f volume (c - 2 * η) c)
+    (hright : IntervalIntegrable f volume c (c + η)) :
+    segmentCost f (c - 2 * η) (v - 2 * σL * η) (c + η) (u + σR * η) -
+      (segmentCost f (c - 2 * η) (v - 2 * σL * η) c v +
+        segmentCost f c u (c + η) (u + σR * η)) < 0 := by
+  rw [vertical_replacement_cost_formula_mirrored f hη hleft hright]
+  have hprod :
+      (σR - σL) * η ^ 2 < (v - u) / 4 * η := by
+    calc
+      (σR - σL) * η ^ 2 ≤ |σR - σL| * η ^ 2 :=
+        mul_le_mul_of_nonneg_right (le_abs_self _) (sq_nonneg η)
+      _ = (|σR - σL| * η) * η := by ring
+      _ < ((v - u) / 4) * η :=
+        mul_lt_mul_of_pos_right hsmall hη
+  have hde : 0 < (v - u) * η :=
+    mul_pos (sub_pos.mpr huv) hη
+  nlinarith
 end

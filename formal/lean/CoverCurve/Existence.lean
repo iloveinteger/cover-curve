@@ -2030,4 +2030,30 @@ theorem vertical_replacement_cost_formula
   rw [← hint]
   ring
 
+
+
+/-- A sufficiently small slope mismatch cannot offset the first-order area
+    saved by removing an upward vertical jump. -/
+theorem vertical_replacement_cost_strictly_less
+    (f : ℝ → ℝ) {c η u v σL σR : ℝ}
+    (huv : u < v)
+    (hη : 0 < η)
+    (hsmall : |σR - σL| * η < (v - u) / 4)
+    (hleft : IntervalIntegrable f volume (c - η) c)
+    (hright : IntervalIntegrable f volume c (c + 2 * η)) :
+    segmentCost f (c - η) (u - σL * η) (c + 2 * η) (v + 2 * σR * η) -
+      (segmentCost f (c - η) (u - σL * η) c u +
+        segmentCost f c v (c + 2 * η) (v + 2 * σR * η)) < 0 := by
+  rw [vertical_replacement_cost_formula f hη hleft hright]
+  have hprod :
+      (σR - σL) * η ^ 2 < (v - u) / 4 * η := by
+    calc
+      (σR - σL) * η ^ 2 ≤ |σR - σL| * η ^ 2 :=
+        mul_le_mul_of_nonneg_right (le_abs_self _) (sq_nonneg η)
+      _ = (|σR - σL| * η) * η := by ring
+      _ < ((v - u) / 4) * η :=
+        mul_lt_mul_of_pos_right hsmall hη
+  have hde : 0 < (v - u) * η :=
+    mul_pos (sub_pos.mpr huv) hη
+  nlinarith
 end

@@ -2026,7 +2026,7 @@ theorem vertical_replacement_cost_formula
       (∫ x in c - η..c, f x) + ∫ x in c..c + 2 * η, f x =
         ∫ x in c - η..c + 2 * η, f x :=
     intervalIntegral.integral_add_adjacent_intervals hleft hright
-  simp only [segmentCost, hst, hsc, hct]
+  simp [segmentCost, hst, hsc, hct]
   rw [← hint]
   ring
 

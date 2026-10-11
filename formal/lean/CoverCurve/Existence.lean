@@ -1715,4 +1715,33 @@ theorem segmentFeasible_limit_degenerate
       exact segmentFeasible_right f hk
     simpa [hxeq] using le_of_tendsto_of_tendsto hfx hy₁ hineq
 
+
+
+/-- Feasibility passes to the limit for a segment whose endpoint heights
+    converge finitely, including when its limiting width is zero. -/
+theorem segmentFeasible_limit_of_finite_heights
+    (f : ℝ → ℝ) {a b x₀ x₁ y₀ y₁ : ℝ}
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hx₀mem : x₀ ∈ Set.Icc a b)
+    (hx₁mem : x₁ ∈ Set.Icc a b)
+    (hxy : x₀ ≤ x₁)
+    (x₀seq x₁seq y₀seq y₁seq : ℕ → ℝ)
+    (hx₀ : Filter.Tendsto x₀seq (Filter.atTop : Filter ℕ) (nhds x₀))
+    (hx₁ : Filter.Tendsto x₁seq (Filter.atTop : Filter ℕ) (nhds x₁))
+    (hy₀ : Filter.Tendsto y₀seq (Filter.atTop : Filter ℕ) (nhds y₀))
+    (hy₁ : Filter.Tendsto y₁seq (Filter.atTop : Filter ℕ) (nhds y₁))
+    (h₀mem : ∀ k, x₀seq k ∈ Set.Icc a b)
+    (h₁mem : ∀ k, x₁seq k ∈ Set.Icc a b)
+    (hfeas : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      segmentFeasible f (x₀seq k) (y₀seq k) (x₁seq k) (y₁seq k)) :
+    segmentFeasible f x₀ y₀ x₁ y₁ := by
+  by_cases hpos : x₀ < x₁
+  · exact segmentFeasible_limit f hf hx₀mem hx₁mem hpos
+      x₀seq x₁seq y₀seq y₁seq hx₀ hx₁ hy₀ hy₁
+      h₀mem h₁mem hfeas
+  · have hxeq : x₀ = x₁ := le_antisymm hxy (le_of_not_gt hpos)
+    exact segmentFeasible_limit_degenerate f hf hx₀mem hx₁mem hxeq
+      x₀seq x₁seq y₀seq y₁seq hx₀ hx₁ hy₀ hy₁
+      h₀mem h₁mem hfeas
+
 end

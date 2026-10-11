@@ -1744,4 +1744,66 @@ theorem segmentFeasible_limit_of_finite_heights
       x₀seq x₁seq y₀seq y₁seq hx₀ hx₁ hy₀ hy₁
       h₀mem h₁mem hfeas
 
+
+
+/-- If every knot height has a finite limit, every limiting segment remains
+    feasible, including segments whose limiting width collapses to zero. -/
+theorem finite_height_segments_remain_feasible
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (P : ℕ → OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hclass : ∀ i : Fin (n + 1), ∃ y : ℝ,
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds y))
+    (hfeas : ∀ k, RelaxedFeasible f (P k)) :
+    ∀ i : Fin n, ∃ y₀ y₁ : ℝ,
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i.castSucc)
+        (Filter.atTop : Filter ℕ) (nhds y₀) ∧
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i.succ)
+        (Filter.atTop : Filter ℕ) (nhds y₁) ∧
+      segmentFeasible f (x i.castSucc) y₀ (x i.succ) y₁ := by
+  intro i
+  obtain ⟨y₀, hy₀⟩ := hclass i.castSucc
+  obtain ⟨y₁, hy₁⟩ := hclass i.succ
+  have hcoords := tendsto_pi_nhds.mp hx
+  have hx₀ := hcoords i.castSucc
+  have hx₁ := hcoords i.succ
+  have hxy : x i.castSucc ≤ x i.succ :=
+    le_of_tendsto_of_tendsto hx₀ hx₁
+      (Filter.Eventually.of_forall fun k => knotX_mono (P (φ k)) i)
+  have hx₀mem : x i.castSucc ∈ Set.Icc a b :=
+    isClosed_Icc.mem_of_tendsto hx₀
+      (Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i.castSucc)
+  have hx₁mem : x i.succ ∈ Set.Icc a b :=
+    isClosed_Icc.mem_of_tendsto hx₁
+      (Filter.Eventually.of_forall fun k =>
+        knotX_mem_Icc (P (φ k)) i.succ)
+  have hseg_eventually : ∀ᶠ k in (Filter.atTop : Filter ℕ),
+      segmentFeasible f
+        (knotX (P (φ k)) i.castSucc)
+        (knotY (P (φ k)) i.castSucc)
+        (knotX (P (φ k)) i.succ)
+        (knotY (P (φ k)) i.succ) :=
+    Filter.Eventually.of_forall fun k => hfeas (φ k) i
+  have hseg := segmentFeasible_limit_of_finite_heights f hf
+    hx₀mem hx₁mem hxy
+    (fun k => knotX (P (φ k)) i.castSucc)
+    (fun k => knotX (P (φ k)) i.succ)
+    (fun k => knotY (P (φ k)) i.castSucc)
+    (fun k => knotY (P (φ k)) i.succ)
+    hx₀ hx₁ hy₀ hy₁
+    (fun k => knotX_mem_Icc (P (φ k)) i.castSucc)
+    (fun k => knotX_mem_Icc (P (φ k)) i.succ)
+    hseg_eventually
+  exact ⟨y₀, y₁, hy₀, hy₁, hseg⟩
+
 end

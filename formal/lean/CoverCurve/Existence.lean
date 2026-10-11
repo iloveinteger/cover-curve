@@ -2164,9 +2164,7 @@ theorem vertical_replacement_chord_above_jump_value
     replacement interval. -/
 theorem vertical_replacement_chord_above_left_affine
     {c η u σL m x : ℝ}
-    (hη : 0 < η)
     (hxleft : c - η ≤ x)
-    (hxright : x ≤ c)
     (hm : σL ≤ m) :
     u + σL * (x - c) ≤
       u - σL * η + (x - (c - η)) * m := by

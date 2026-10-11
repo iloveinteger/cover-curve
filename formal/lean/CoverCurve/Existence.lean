@@ -2178,4 +2178,30 @@ theorem vertical_replacement_chord_above_left_affine
     mul_nonneg hx (sub_nonneg.mpr hm)
   linarith
 
+
+/-- A strict margin at the jump persists to the right by continuity.
+    If the chord is nondecreasing and the function stays within the
+    margin around the jump value, the chord strictly majorizes the
+    function on that right-hand neighborhood. -/
+theorem vertical_replacement_chord_above_right_of_local_margin
+    {f : ℝ → ℝ} {c A m δ x : ℝ}
+    (hclose : ∀ y, |y - c| < δ → |f y - f c| < A - f c)
+    (hmargin : f c < A)
+    (hm : 0 ≤ m)
+    (hxleft : c ≤ x)
+    (hxright : x < c + δ) :
+    f x < A + m * (x - c) := by
+  have hxclose : |x - c| < δ := by
+    rw [abs_of_nonneg (sub_nonneg.mpr hxleft)]
+    linarith
+  have hnear := hclose x hxclose
+  have hfx : f x < A := by
+    have hupper : f x - f c < A - f c := (abs_lt.mp hnear).2
+    linarith
+  have hline : A ≤ A + m * (x - c) := by
+    have hprod : 0 ≤ m * (x - c) :=
+      mul_nonneg hm (sub_nonneg.mpr hxleft)
+    linarith
+  exact lt_of_lt_of_le hfx hline
+
 end

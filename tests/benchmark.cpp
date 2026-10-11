@@ -7,7 +7,8 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <stdexcept>\n#include <string>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 

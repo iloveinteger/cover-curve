@@ -1871,6 +1871,7 @@ theorem divergent_knot_forces_adjacent_limit_coalescence
     its limiting abscissa. -/
 theorem finite_limit_knot_height_majorizes
     (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 0 < n)
     (P : ℕ → OrderedKnots a b n)
     (hf : ContinuousOn f (Set.Icc a b))
     (φ : ℕ → ℕ)
@@ -1894,7 +1895,7 @@ theorem finite_limit_knot_height_majorizes
   have hpoint : ∀ k, f (knotX (P (φ k)) i) ≤ knotY (P (φ k)) i := by
     intro k
     refine Fin.cases ?_ (fun j => ?_) i
-    · have hseg := hfeas (φ k) ⟨0, by omega⟩
+    · have hseg := hfeas (φ k) ⟨0, hn⟩
       exact segmentFeasible_left f hseg
     · have hseg := hfeas (φ k) j
       exact segmentFeasible_right f hseg

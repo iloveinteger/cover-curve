@@ -1914,4 +1914,33 @@ theorem finite_limit_knot_height_majorizes
   exact le_of_tendsto_of_tendsto hfx hy
     (Filter.Eventually.of_forall hpoint)
 
+
+/-- Every knot whose height has a finite limit remains above the function
+    at the limiting abscissa. This packages the pointwise limit argument for
+    a whole classified finite-height subsequence. -/
+theorem finite_classified_knots_majorize
+    (f : ℝ → ℝ) {a b : ℝ} {n : ℕ}
+    (hn : 0 < n)
+    (P : ℕ → OrderedKnots a b n)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (φ : ℕ → ℕ)
+    (x : Fin (n + 1) → ℝ)
+    (hx : Filter.Tendsto
+      (fun k i => knotX (P (φ k)) i)
+      (Filter.atTop : Filter ℕ) (nhds x))
+    (hfeas : ∀ k, RelaxedFeasible f (P k))
+    (hclass : ∀ i : Fin (n + 1), ∃ y : ℝ,
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds y)) :
+    ∀ i : Fin (n + 1), ∃ y : ℝ,
+      Filter.Tendsto
+        (fun k => knotY (P (φ k)) i)
+        (Filter.atTop : Filter ℕ) (nhds y) ∧
+      f (x i) ≤ y := by
+  intro i
+  obtain ⟨y, hy⟩ := hclass i
+  exact ⟨y, hy,
+    finite_limit_knot_height_majorizes f hn P hf φ x hx hfeas i hy⟩
+
 end

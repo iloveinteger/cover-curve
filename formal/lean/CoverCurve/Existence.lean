@@ -2104,4 +2104,31 @@ theorem vertical_replacement_cost_mirrored_strictly_less
   have hde : 0 < (v - u) * η :=
     mul_pos (sub_pos.mpr huv) hη
   nlinarith
+
+/-- The replacement chord's height at the jump point is determined by
+    the jump size and the two adjacent slopes. -/
+theorem vertical_replacement_chord_value_at_jump
+    {η u v σL σR : ℝ}
+    (hη : 0 < η) :
+    u - σL * η +
+        η * (v + 2 * σR * η - (u - σL * η)) / (3 * η) =
+      u + (v - u) / 3 + (2 / 3) * (σR - σL) * η := by
+  have hden : 3 * η ≠ 0 := by positivity
+  field_simp
+  ring
+
+/-- The replacement chord is increasing precisely when its endpoint-height
+    difference is positive; this algebraic form is convenient for the
+    local majorization argument. -/
+theorem vertical_replacement_chord_slope_positive
+    {η u v σL σR : ℝ}
+    (hη : 0 < η)
+    (hslope : (v - u) + (σL + 2 * σR) * η > 0) :
+    0 < (v + 2 * σR * η - (u - σL * η)) / (3 * η) := by
+  have hnum :
+      v + 2 * σR * η - (u - σL * η) =
+        (v - u) + (σL + 2 * σR) * η := by ring
+  rw [hnum]
+  exact div_pos hslope (by positivity)
+
 end

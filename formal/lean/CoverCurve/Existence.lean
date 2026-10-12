@@ -2197,3 +2197,10 @@ theorem vertical_replacement_chord_above_right_of_local_margin
   have hfx : f x < A := by
     have hupper : f x - f c < A - f c := (abs_lt.mp hnear).2
     linarith
+  have hline : A ≤ A + m * (x - c) := by
+    have hprod : 0 ≤ m * (x - c) :=
+      mul_nonneg hm (sub_nonneg.mpr hxleft)
+    linarith
+  exact lt_of_lt_of_le hfx hline
+
+end

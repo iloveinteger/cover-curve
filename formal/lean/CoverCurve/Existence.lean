@@ -2203,4 +2203,24 @@ theorem vertical_replacement_chord_above_right_of_local_margin
     linarith
   exact lt_of_lt_of_le hfx hline
 
+
+/-- The strict smallness condition used in the jump replacement makes
+    its area change negative. -/
+theorem vertical_replacement_cost_change_negative
+    {d η s : ℝ}
+    (hd : 0 < d)
+    (hη : 0 < η)
+    (hsmall : |s| * η < d / 4) :
+    -d * η / 2 + s * η ^ 2 < 0 := by
+  have hs : s * η < d / 4 := by
+    have hle : s * η ≤ |s| * η :=
+      mul_le_mul_of_nonneg_right (le_abs_self s) (le_of_lt hη)
+    linarith
+  have hfactor : -d / 2 + s * η < 0 := by
+    linarith
+  have hrewrite : -d * η / 2 + s * η ^ 2 =
+      η * (-d / 2 + s * η) := by ring
+  rw [hrewrite]
+  exact mul_neg_of_pos_of_neg hη hfactor
+
 end

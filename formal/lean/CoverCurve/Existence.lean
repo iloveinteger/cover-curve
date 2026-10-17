@@ -137,6 +137,20 @@ theorem interval_integral_le_const
   exact hle
 
 /-- On a positive-width segment, its cost is bounded below by its
+
+/-- If the replacement chord is strictly above the old left segment at
+    the jump point, its slope must be strictly larger than the old slope. -/
+theorem vertical_replacement_chord_slope_exceeds_left
+    {η u σL m : ℝ}
+    (hη : 0 < η)
+    (hmargin : u < u - σL * η + η * m) :
+    σL < m := by
+  by_contra hnot
+  have hmle : m ≤ σL := le_of_not_gt hnot
+  have hprod : 0 ≤ η * (σL - m) :=
+    mul_nonneg (le_of_lt hη) (sub_nonneg.mpr hmle)
+  nlinarith
+
 endpoint-height average minus an upper bound for f. -/
 theorem segmentCost_lower_bound
     (f : ℝ → ℝ) {x₀ y₀ x₁ y₁ M : ℝ}
@@ -2205,22 +2219,3 @@ theorem vertical_replacement_chord_above_right_of_local_margin
 
 
 /-- The strict smallness condition used in the jump replacement makes
-    its area change negative. -/
-theorem vertical_replacement_cost_change_negative
-    {d η s : ℝ}
-    (hd : 0 < d)
-    (hη : 0 < η)
-    (hsmall : |s| * η < d / 4) :
-    -d * η / 2 + s * η ^ 2 < 0 := by
-  have hs : s * η < d / 4 := by
-    have hle : s * η ≤ |s| * η :=
-      mul_le_mul_of_nonneg_right (le_abs_self s) (le_of_lt hη)
-    linarith
-  have hfactor : -d / 2 + s * η < 0 := by
-    linarith
-  have hrewrite : -d * η / 2 + s * η ^ 2 =
-      η * (-d / 2 + s * η) := by ring
-  rw [hrewrite]
-  exact mul_neg_of_pos_of_neg hη hfactor
-
-end
